@@ -1,1 +1,189 @@
-<!DOCTYPE html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>convert srt to vtt</title><link rel='stylesheet' href='../settings/web_assets/style.css'></head><body><header class='topbar'><div class='container topbar-inner'><a class='brand' href='https://www.happyscribe.com'><img src='../settings/web_assets/logo.png' alt='HappyScribe logo'></a><nav class='main-nav'><a href='#'>Tools</a><a href='#'>Resources</a><a href='#'>Pricing</a><a href='#' class='btn-primary'>Start for Free</a></nav></div></header><main class='container'><h1>Convert SRT to VTT with HappyScribe tools</h1><h2>Understanding SRT and VTT formats</h2><h3>What is SRT?</h3><p>The SubRip subtitle format (SRT) is a plain text file that contains sequential subtitle entries. Each entry has an index, a timecode in HH:MM:SS,MS format, and the subtitle text. SRT is widely supported by video players, editing software such as Premiere, and online platforms.</p><h3>What is VTT?</h3><p>Web Video Text Tracks (VTT) uses the .vtt extension and supports features like styling, positioning, and metadata. VTT is required for HTML5 <track> elements and is compatible with streaming services and browser-based caption generators.</p><h2>Methods to convert srt to vtt</h2><p>You can convert srt to vtt using online tools, command-line utilities, or manual editing.</p><h3>Use the HappyScribe API for online conversion</h3><p>You can call the HappyScribe API endpoint to upload an SRT file and receive a VTT output. This free convert srt to vtt endpoint requires an API key. Example using curl:</p><ul><li><strong>curl -X POST</strong> -H "Authorization: Bearer YOUR_API_KEY" -F "file=@subtitles.srt" https://api.happyscribe.com/v1/convert/srt-to-vtt -o subtitles.vtt</li></ul><h3>Manual conversion using a text editor</h3><p>You can rename the file extension from .srt to .vtt and add the file header. Open in Notepad or any text editor and prepend "WEBVTT" on the first line, then save as .vtt. This method is free and works offline.</p><h3>Command-line conversion with FFMPEG</h3><p>Use ffmpeg in the terminal: <strong>ffmpeg -i subtitles.srt subtitles.vtt</strong>. This single command batch converts files and integrates with scripting. FFMPEG must be installed and in your PATH.</p><h3>Convert srt to vtt with a Python snippet</h3><p>Load the SRT file, replace commas in timecodes, add the header. Example Python script:</p><ul><li><strong>import re</strong></li><li>with open('subtitles.srt', 'r') as f: data = f.read()</li><li>vtt = 'WEBVTT\n\n' + re.sub(r'(\d{2}),(\d{3})', r'\1.\2', data)</li><li>with open('subtitles.vtt', 'w') as f: f.write(vtt)</li></ul><h2>Ensuring compliant VTT subtitle playback</h2><h3>Validate timing and format</h3><p>After conversion, use the Subtitle editor on HappyScribe or online validators to check timecode accuracy and styling tags. VTT requires dot notation in timecodes and optional cues for positions.</p><h3>Workflows for content creators and developers</h3><p>Video pros can integrate Automatic transcription with the Caption generator and batch export VTT files. Content creators can refine transcripts via Human-made subtitles, then run a single click conversion with the Subtitle editor or API.</p><h2>Related Articles</h2><ul><li><a href="blog_1_how-to-batch-convert-srt-to-vtt-using-ffmpeg.html">How to batch convert SRT to VTT using FFMPEG</a></li><li><a href="blog_2_convert-srt-to-vtt-manually-in-notepad.html">Convert SRT to VTT manually in Notepad</a></li><li><a href="blog_3_integrating-subtitle-conversion-in-premiere-pro.html">Integrating subtitle conversion in Premiere Pro</a></li><li><a href="blog_4_free-online-tools-to-convert-srt-to-vtt.html">Free online tools to convert SRT to VTT</a></li><li><a href="blog_5_automate-srt-to-vtt-conversion-with-python.html">Automate SRT to VTT conversion with Python</a></li><li><a href="blog_6_using-the-happyscribe-api-for-subtitle-conversion.html">Using the HappyScribe API for subtitle conversion</a></li><li><a href="blog_7_how-to-convert-subtitles-in-adobe-products.html">How to convert subtitles in Adobe products</a></li><li><a href="blog_8_best-practices-for-vtt-subtitle-styling.html">Best practices for VTT subtitle styling</a></li><li><a href="blog_9_batch-processing-subtitles-for-large-video-projects.html">Batch processing subtitles for large video projects</a></li><li><a href="blog_10_optimizing-subtitles-for-html5-with-vtt.html">Optimizing subtitles for HTML5 with VTT</a></li></ul><h2>Professional Use Cases</h2><ul><li><a href="use_1_webinar-captioning.html">Webinar captioning</a></li><li><a href="use_2_e-learning-modules.html">E-learning modules</a></li><li><a href="use_3_corporate-training-videos.html">Corporate training videos</a></li><li><a href="use_4_accessibility-compliance.html">Accessibility compliance</a></li><li><a href="use_5_streaming-platform-integration.html">Streaming platform integration</a></li><li><a href="use_6_social-media-clips.html">Social media clips</a></li><li><a href="use_7_conference-recordings.html">Conference recordings</a></li><li><a href="use_8_podcast-show-notes.html">Podcast show notes</a></li><li><a href="use_9_mobile-app-subtitles.html">Mobile app subtitles</a></li><li><a href="use_10_game-localization.html">Game localization</a></li></ul></main><footer><div class='container'><p>&copy; HappyScribe</p></div></footer></body></html>
+<!DOCTYPE html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>convert srt to vtt</title><link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' rel='stylesheet'><link rel='stylesheet' href='../settings/web_assets/style.css'></head><body><header class='topbar'><div class='container topbar-inner'><a class='brand' href='https://www.happyscribe.com'><img src='../settings/web_assets/logo.png' alt='HappyScribe logo'></a><nav class='main-nav'><a href='#'>Tools</a><a href='#'>Resources</a><a href='#'>Pricing</a><a href='#' class='btn-primary'>Start for Free</a></nav></div></header><main class='container'><h1>Convert srt to vtt with HappyScribe tools</h1>
+<p>SRT (SubRip Text) files consist of sequential numbered cues with start and end timecodes in HH:MM:SS,MMM format, making them ideal for legacy media players and offline workflows. VTT (Web Video Text Tracks) is a W3C standard for HTML5 captions that begins with a <strong>WEBVTT</strong> header and uses timecodes in HH:MM:SS.MMM format. VTT is native to browsers, streaming services, and the HappyScribe Caption generator.</p>
+
+<h2>When to use SRT or VTT</h2>
+<p>Choose SRT for simple transcript editing in text editors and compatibility with desktop players. Opt for VTT when you need styling, cue settings, metadata tags, or direct embedding in web pages via the Subtitle editor.</p>
+
+<h2>Convert SRT to VTT manually with text editor</h2>
+<h3>Using Notepad for quick edits</h3>
+<p>Open your .srt file in Notepad or any UTF-8 text editor. Add <strong>WEBVTT</strong> on the first line, then replace commas in timecodes with dots. Save the file with a .vtt extension to complete srt to vtt conversion without additional tools.</p>
+
+<h2>Convert SRT to VTT with FFmpeg</h2>
+<p>In your terminal run <strong>ffmpeg -i input.srt output.vtt</strong>. FFmpeg detects SRT cues, inserts the VTT header, and adjusts timecode delimiters. For batch conversion use a shell loop:</p>
+<ul>
+  <li><strong>for f in *.srt; do ffmpeg -i "$f" "${f%.srt}.vtt"; done</strong></li>
+</ul>
+
+<h2>Convert SRT to VTT using Python script</h2>
+<p>Install the webvtt-py library and run a two-line script:</p>
+<ul>
+  <li><strong>pip install webvtt-py</strong></li>
+  <li><em>import webvtt; webvtt.from_srt('input.srt').save('output.vtt')</em></li>
+</ul>
+
+<h2>Batch convert multiple SRT files with Python</h2>
+<p>Automate folder-wide conversion with Python:</p>
+<ul>
+  <li><em>import os, webvtt</em></li>
+  <li><em>for f in os.listdir('.'): if f.endswith('.srt'): webvtt.from_srt(f).save(f.replace('.srt','.vtt'))</em></li>
+</ul>
+
+<h2>Export VTT from Adobe Premiere Pro</h2>
+<p>In Premiere Pro, import your SRT via File &gt; Import. Open the Captions panel, then choose Export &gt; Media and select WebVTT as the caption format.</p>
+
+<h2>Convert SRT to VTT online free with Subtitle editor</h2>
+<p>Upload your SRT to the HappyScribe Subtitle editor. Click export and select VTT. This free online tool lets you preview and adjust captions before downloading.</p>
+
+<h2>Automate conversion with the HappyScribe API</h2>
+<p>To convert srt to vtt in bulk, use the HappyScribe API endpoint with your API key. Send a transcription job request specifying <em>vtt</em> as the output format for seamless automation.</p>
+
+<h2>Access human-made subtitles and translations</h2>
+<p>Order Human-made subtitles in SRT format then use the built-in Subtitle editor to export VTT. Combine with HappyScribe translation services for multilingual WebVTT files.</p>
+
+<h2>Tips for smooth workflows in web projects</h2>
+<p>After conversion, import VTT into your web player or integrate via the Caption generator. Use the Subtitle editor to fine-tune timing and styling before publishing.</p><div>
+  <h2>Subtitle Format Comparison: SRT vs VTT 📑🎬</h2>
+  <table style="width:100%; border:1px solid #ddd; border-collapse:collapse; font-family:Arial, sans-serif;">
+    <thead style="background-color:#f4f4f4;">
+      <tr>
+        <th style="padding:8px; border:1px solid #ddd; text-align:left;">Feature 🔍</th>
+        <th style="padding:8px; border:1px solid #ddd; text-align:left;">SRT (SubRip) 📄</th>
+        <th style="padding:8px; border:1px solid #ddd; text-align:left;">VTT (WebVTT) 🌐</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding:8px; border:1px solid #ddd;">File Extension 📂</td>
+        <td style="padding:8px; border:1px solid #ddd;">.srt</td>
+        <td style="padding:8px; border:1px solid #ddd;">.vtt</td>
+      </tr>
+      <tr>
+        <td style="padding:8px; border:1px solid #ddd;">MIME Type 📦</td>
+        <td style="padding:8px; border:1px solid #ddd;">text/plain</td>
+        <td style="padding:8px; border:1px solid #ddd;">text/vtt or text/webvtt</td>
+      </tr>
+      <tr>
+        <td style="padding:8px; border:1px solid #ddd;">Syntax Differences 🖋️</td>
+        <td style="padding:8px; border:1px solid #ddd;">
+          • No header<br>
+          • Timestamps: <code>hh:mm:ss,ms</code> (comma)<br>
+          • Sequence numbers
+        </td>
+        <td style="padding:8px; border:1px solid #ddd;">
+          • Header: <code>WEBVTT</code><br>
+          • Timestamps: <code>hh:mm:ss.ms</code> (dot)<br>
+          • Cue settings inline
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:8px; border:1px solid #ddd;">Metadata & Styling 🎨</td>
+        <td style="padding:8px; border:1px solid #ddd;">
+          • No native styling<br>
+          • Plain text only
+        </td>
+        <td style="padding:8px; border:1px solid #ddd;">
+          • CSS-like cues (color, font-size)<br>
+          • Regions & classes supported
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:8px; border:1px solid #ddd;">Web & Browser Compatibility 🌍</td>
+        <td style="padding:8px; border:1px solid #ddd;">
+          • Requires JS or conversion<br>
+          • Not native in HTML5
+        </td>
+        <td style="padding:8px; border:1px solid #ddd;">
+          • Native <code>&lt;track&gt;</code> support<br>
+          • All modern browsers
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:8px; border:1px solid #ddd;">Positioning Features 📐</td>
+        <td style="padding:8px; border:1px solid #ddd;">
+          • No controls<br>
+          • Player default position
+        </td>
+        <td style="padding:8px; border:1px solid #ddd;">
+          • <code>line</code>, <code>position</code>, <code>align</code><br>
+          • Regions for multi-block
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:8px; border:1px solid #ddd;">Common Use Cases 🎯</td>
+        <td style="padding:8px; border:1px solid #ddd;">
+          • Offline players<br>
+          • DVD/Blu-ray authoring<br>
+          • Simple transcription
+        </td>
+        <td style="padding:8px; border:1px solid #ddd;">
+          • HTML5 video captions<br>
+          • Interactive transcripts<br>
+          • Live streaming
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:8px; border:1px solid #ddd;">File Size Implications 📈</td>
+        <td style="padding:8px; border:1px solid #ddd;">
+          • Very lightweight<br>
+          • Minimal overhead
+        </td>
+        <td style="padding:8px; border:1px solid #ddd;">
+          • Slightly larger (header + cues)<br>
+          • Still small overall
+        </td>
+      </tr>
+      <tr>
+        <td style="padding:8px; border:1px solid #ddd;">Code Sample 📋</td>
+        <td style="padding:8px; border:1px solid #ddd;">
+          <pre style="margin:0; font-family:monospace; background:#f9f9f9; padding:5px;">
+1
+00:00:01,000 --> 00:00:04,000
+Hello, world!</pre>
+        </td>
+        <td style="padding:8px; border:1px solid #ddd;">
+          <pre style="margin:0; font-family:monospace; background:#f9f9f9; padding:5px;">
+WEBVTT
+
+00:00:01.000 --> 00:00:04.000 position:10%,line:90% align:start
+Hello, world!</pre>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>Pros & Cons 💡</h3>
+  <ul>
+    <li><strong>SRT Pros:</strong> Ultra-simple, tiny file size 🏋️‍♂️, universal player support 🎵🎥</li>
+    <li><strong>SRT Cons:</strong> No styling/positioning ❌, not native in HTML5 🕸️</li>
+    <li><strong>VTT Pros:</strong> Native HTML5 via &lt;track&gt; 🌐, rich styling & positioning 🎨, better accessibility ♿</li>
+    <li><strong>VTT Cons:</strong> Slightly larger file size 📈, more complex syntax 🔧</li>
+  </ul>
+
+  <h3>Use This If… ✅🚩</h3>
+  <table style="width:100%; border:1px solid #ddd; border-collapse:collapse; font-family:Arial, sans-serif;">
+    <thead style="background-color:#f4f4f4;">
+      <tr>
+        <th style="padding:8px; border:1px solid #ddd; text-align:left;">Scenario 🎯</th>
+        <th style="padding:8px; border:1px solid #ddd; text-align:left;">Best Format</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding:8px; border:1px solid #ddd;">Simple offline playback, minimal styling</td>
+        <td style="padding:8px; border:1px solid #ddd;">SRT</td>
+      </tr>
+      <tr>
+        <td style="padding:8px; border:1px solid #ddd;">Web video with native captions</td>
+        <td style="padding:8px; border:1px solid #ddd;">VTT</td>
+      </tr>
+      <tr>
+        <td style="padding:8px; border:1px solid #ddd;">Interactive transcripts or live streams</td>
+        <td style="padding:8px; border:1px solid #ddd;">VTT</td>
+      </tr>
+      <tr>
+        <td style="padding:8px; border:1px solid #ddd;">Legacy player or DVD authoring</td>
+        <td style="padding:8px; border:1px solid #ddd;">SRT</td>
+      </tr>
+    </tbody>
+  </table>
+</div><h2>Related Articles</h2><ul><li><a href="blog_1_optimizing-html5-caption-workflows-with-webvtt.html">Optimizing HTML5 caption workflows with WebVTT</a></li><li><a href="blog_2_batch-converting-subtitles-with-python-and-webvtt-py.html">Batch converting subtitles with Python and webvtt-py</a></li><li><a href="blog_3_how-to-edit-webvtt-files-in-notepad-for-quick-fixes.html">How to edit WebVTT files in Notepad for quick fixes</a></li><li><a href="blog_4_integrating-happyscribe-api-into-your-media-pipeline.html">Integrating HappyScribe API into your media pipeline</a></li><li><a href="blog_5_adding-styled-captions-with-webvtt-cue-settings.html">Adding styled captions with WebVTT cue settings</a></li><li><a href="blog_6_converting-srt-to-vtt-in-adobe-premiere-pro.html">Converting SRT to VTT in Adobe Premiere Pro</a></li><li><a href="blog_7_free-online-tools-for-srt-to-vtt-conversion.html">Free online tools for srt to vtt conversion</a></li><li><a href="blog_8_ensuring-accessibility-with-accurate-vtt-captions.html">Ensuring accessibility with accurate VTT captions</a></li><li><a href="blog_9_managing-multi-language-captions-on-streaming-platforms.html">Managing multi-language captions on streaming platforms</a></li><li><a href="blog_10_troubleshooting-common-vtt-formatting-errors.html">Troubleshooting common VTT formatting errors</a></li></ul><h2>Professional Use Cases</h2><ul><li><a href="use_1_e-learning-video-localization.html">E-learning video localization</a></li><li><a href="use_2_corporate-training-video-workflows.html">Corporate training video workflows</a></li><li><a href="use_3_accessibility-compliance-reviews.html">Accessibility compliance reviews</a></li><li><a href="use_4_podcast-video-captioning.html">Podcast video captioning</a></li><li><a href="use_5_social-media-content-captioning.html">Social media content captioning</a></li><li><a href="use_6_streaming-platform-subtitle-management.html">Streaming platform subtitle management</a></li><li><a href="use_7_video-game-cutscene-subtitles.html">Video game cutscene subtitles</a></li><li><a href="use_8_broadcast-television-caption-formatting.html">Broadcast television caption formatting</a></li><li><a href="use_9_online-course-subtitle-localization.html">Online course subtitle localization</a></li><li><a href="use_10_ux-testing-with-interactive-captions.html">UX testing with interactive captions</a></li></ul></main><footer><div class='container'><p>&copy; HappyScribe</p></div></footer></body></html>
