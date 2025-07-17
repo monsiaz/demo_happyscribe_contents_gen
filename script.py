@@ -272,6 +272,11 @@ async def main() -> None:
 
     generator = SEOGenerator(concurrency=args.concurrency, serpapi_api_key=SERPAPI_API_KEY)
 
+    with open(os.path.join(PROMPTS_DIR, "usecase_prompt.txt"), "r", encoding="utf-8") as fp:
+        use_tpl = Template(fp.read())
+    with open(os.path.join(PROMPTS_DIR, "comparison_prompt.txt"), "r", encoding="utf-8") as fp:
+        comp_tpl = Template(fp.read())
+
     async def _wrap(idx: int, row: pd.Series):
         kw_primary = row["Keyword 1"]
         kw_secondary = row["Keyword 2"]
@@ -289,14 +294,16 @@ async def main() -> None:
         )
 
         content, faq, blogs, uses = await generator._single_call(SYSTEM_MESSAGE, prompt)  # type: ignore
-        return idx, content, faq, blogs, uses, serp_context
+        comp_prompt = comp_tpl.substitute(FORMAT_1=row["format_1"].upper(), FORMAT_2=row["format_2"].upper())
+        comp_html, *_ = await generator._single_call(SYSTEM_MESSAGE, comp_prompt)  # type: ignore
+        return idx, content, faq, blogs, uses, serp_context, comp_html
 
     tasks = [asyncio.create_task(_wrap(idx, row)) for idx, row in df.iterrows()]
     logging.info("Queued %d rows", len(tasks))
 
     results: List[Dict[str, object]] = []
     for fut in asyncio.as_completed(tasks):
-        idx, content, faq, blogs, uses, rel = await fut
+        idx, content, faq, blogs, uses, rel, comp_html = await fut
         results.append({
             "url": df.at[idx, "URL"],
             "format_1": df.at[idx, "format_1"],
@@ -308,6 +315,7 @@ async def main() -> None:
             "faq": faq,
             "blog_ideas": blogs,
             "use_cases": uses,
+            "comparison": comp_html,
         })
         with open(args.output_json, "w", encoding="utf-8") as fp:
             json.dump(results, fp, ensure_ascii=False, indent=2)
@@ -321,8 +329,6 @@ async def main() -> None:
 
     with open(os.path.join(PROMPTS_DIR, "article_prompt.txt"), "r", encoding="utf-8") as fp:
         article_tpl = Template(fp.read())
-    with open(os.path.join(PROMPTS_DIR, "usecase_prompt.txt"), "r", encoding="utf-8") as fp:
-        use_tpl = Template(fp.read())
 
     async def _write_page(path: str, title: str, body_html: str, extra_nav: str = "", meta_desc: str = ""):
         """Write an HTML page with optional navigation/footer."""
@@ -330,10 +336,11 @@ async def main() -> None:
             "<!DOCTYPE html><html><head><meta charset='utf-8'>"
             "<meta name='viewport' content='width=device-width,initial-scale=1'>"
             f"<title>{title}</title>"
-            "<link rel='stylesheet' href='../settings/web_assets/style.css'>"
+            "<link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' rel='stylesheet'>"
+            "<link rel='stylesheet' href='settings/web_assets/style.css'>"
             "</head><body>"
             "<header class='topbar'><div class='container topbar-inner'>"
-            "<a class='brand' href='https://www.happyscribe.com'><img src='../settings/web_assets/logo.png' alt='HappyScribe logo'></a>"
+            "<a class='brand' href='https://www.happyscribe.com'><img src='settings/web_assets/logo.png' alt='HappyScribe logo'></a>"
             "<nav class='main-nav'>"
             "<a href='#'>Tools</a>"
             "<a href='#'>Resources</a>"
@@ -423,6 +430,7 @@ async def main() -> None:
 
         # --- Write (or rewrite) the landing page with navigation ---------------
         content_html = _ensure_html(row["content"])
+        comp_html = _ensure_html(row.get("comparison", ""))
 
         if content_html:
             nav_html = ""
@@ -435,7 +443,7 @@ async def main() -> None:
                     f'<li><a href="{fname}">{name}</a></li>' for fname, name, _ in use_links
                 ) + "</ul>"
 
-            landing_html = content_html + nav_html
+            landing_html = content_html + comp_html + nav_html
             # Always overwrite to ensure links are up to date
             await _write_page(landing_path, kw_p, landing_html)
 
