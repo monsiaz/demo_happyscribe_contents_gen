@@ -154,25 +154,15 @@ class SEOGenerator:
 
         cleaned = _strip(answer)
         parsed = None
-        # Try strict JSON first
+        # Try parsing JSON; fallback to Python literal eval if it fails
         try:
             parsed = json.loads(cleaned)
-        except json.JSONDecodeError:
-            # Attempt to fix common issues (trailing commas, stray backslashes etc.)
-            _tmp = cleaned
-            # remove trailing commas before } or ]
-            _tmp = re.sub(r",\s*([}\]])", r"\\1", _tmp)
-            # unescape smart quotes if model returned them
-            _tmp = _tmp.replace("“", '"').replace("”", '"').replace("’", "'")
+        except Exception:
             try:
-                parsed = json.loads(_tmp)
-            except Exception:
-                # final fallback: use ast.literal_eval on a pythonified json
                 import ast
-                try:
-                    parsed = ast.literal_eval(_tmp)
-                except Exception:
-                    parsed = None
+                parsed = ast.literal_eval(cleaned)
+            except Exception:
+                parsed = None
 
         if parsed:
             return (
@@ -447,6 +437,20 @@ async def main() -> None:
             # Always overwrite to ensure links are up to date
             await _write_page(landing_path, kw_p, landing_html)
 
+    # Generate an index.html listing all generated pages
+    pages = sorted([f for f in os.listdir(demo_dir) if f.endswith('.html')])
+    list_items = ''.join(f'<li><a href="{p}">{p.replace(".html"," ").replace('-',' ').title()}</a></li>' for p in pages)
+    index_content = (
+        '<!DOCTYPE html><html><head><meta charset="utf-8">'
+        '<meta name="viewport" content="width=device-width,initial-scale=1">'
+        '<title>Demo Index</title>'
+        '<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">'
+        '<link rel="stylesheet" href="settings/web_assets/style.css">'
+        '</head><body><div class="container">'
+        '<h1>Available Pages</h1><ul>' + list_items + '</ul></div></body></html>'
+    )
+    with open(os.path.join(demo_dir, 'index.html'), 'w', encoding='utf-8') as f:
+        f.write(index_content)
     logging.info("Static pages generated in %s", demo_dir)
 
 if __name__ == "__main__":
