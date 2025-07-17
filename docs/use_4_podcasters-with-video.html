@@ -1,0 +1,107 @@
+<!DOCTYPE html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Podcasters with video</title><link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' rel='stylesheet'><link rel='stylesheet' href='settings/web_assets/style.css'></head><body><header class='topbar'><div class='container topbar-inner'><a class='brand' href='https://www.happyscribe.com'><img src='settings/web_assets/logo.png' alt='HappyScribe logo'></a><nav class='main-nav'><a href='#'>Tools</a><a href='#'>Resources</a><a href='#'>Pricing</a><a href='#' class='btn-primary'>Start for Free</a></nav></div></header><main class='container'><h2>Why Podcasters with video needs SRT to VTT</h2>
+<p>Podcasters who incorporate video often rely on subtitles to make their content accessible to a broader audience. While SRT is a common subtitle format, many modern video players and web platforms require VTT (WebVTT) to synchronize captions correctly with HTML5 video. Converting SRT to VTT ensures your video chapters, speaker labels, and timecodes display perfectly across every device. Whether you host episodes on your own website, on YouTube, or on streaming platforms, having a VTT file improves compatibility, search engine optimization, and viewer engagement.</p>
+<p>For professional podcasters, minutes of setup time translate into lost opportunities for listeners and sponsors. Manually editing timecodes and formats can introduce errors such as misaligned captions or missing speaker tags. An automated, precise conversion from SRT to VTT saves hours per episode and prevents costly mistakes. With HappyScribe’s reliable tools and API integration, you can streamline your subtitle workflow and focus on what matters most—delivering high-quality audio-visual content that resonates with your audience.</p>
+
+<h3>Step-by-step workflow</h3>
+<ol>
+  <li>
+    <strong>Prepare your SRT file</strong>
+    <p>Export your raw subtitles from your video editing software. If you record in Adobe Premiere Pro, Final Cut Pro, or DaVinci Resolve, go to the Subtitles panel and choose “Export SRT.” Review the file in a text editor to ensure speaker labels and timestamps are correct.</p>
+  </li>
+  <li>
+    <strong>Set up your environment</strong>
+    <p>Install necessary tools and libraries. You will need:</p>
+    <ul>
+      <li>cURL or HTTP client (for API calls)</li>
+      <li>A scripting language like Python or Node.js</li>
+      <li>A HappyScribe API key (sign up for a free trial at HappyScribe.com)</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Upload and convert with HappyScribe API</strong>
+    <p>Use the following cURL command or script snippet to upload your SRT file and request conversion to VTT:</p>
+    <pre><code>curl -X POST https://api.happyscribe.com/v1/subtitles/convert \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -H "Content-Type: multipart/form-data" \
+  -F "file=@your-file.srt" \
+  -F "source_format=srt" \
+  -F "target_format=vtt" \
+  -o output.vtt</code></pre>
+    <p>In Node.js you could use:</p>
+    <pre><code>const fs = require('fs');
+const fetch = require('node-fetch');
+const FormData = require('form-data');
+
+async function convert() {
+  const form = new FormData();
+  form.append('file', fs.createReadStream('your-file.srt'));
+  form.append('source_format', 'srt');
+  form.append('target_format', 'vtt');
+
+  const res = await fetch('https://api.happyscribe.com/v1/subtitles/convert', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer YOUR_API_KEY' },
+    body: form
+  });
+
+  const buffer = await res.buffer();
+  fs.writeFileSync('output.vtt', buffer);
+  console.log('VTT file saved as output.vtt');
+}
+
+convert();</code></pre>
+  </li>
+  <li>
+    <strong>Review and edit with our subtitle editor</strong>
+    <p>Log into HappyScribe and open the subtitle editor. Import the VTT file if you prefer a visual interface. Use the timeline scrubber to check alignment, correct typos, and adjust speaker names. The subtitle editor highlights overlapping cues, missing punctuation, and length issues in real time.</p>
+  </li>
+  <li>
+    <strong>Enhance with AI notetaker</strong>
+    <p>If you want to create show notes or timestamps, use the AI notetaker feature. It automatically extracts key topics, generates a structured summary, and timestamps each point. Copy these notes directly into your podcast show notes or blog post to boost SEO and engagement.</p>
+  </li>
+  <li>
+    <strong>Export final VTT and integrate</strong>
+    <p>Once edits are complete, export the finalized VTT file from the editor. Upload it to your hosting platform or attach it in your HTML5 video tag like this:</p>
+    <pre><code>&lt;video controls&gt;
+  &lt;source src="episode.mp4" type="video/mp4"&gt;
+  &lt;track label="English" kind="subtitles" srclang="en" src="output.vtt" default&gt;
+&lt;/video&gt;</code></pre>
+    <p>This code snippet ensures cross-browser compatibility and SEO benefits by making your captions indexable by search engines.</p>
+  </li>
+</ol>
+
+<h3>Highlighted features that boost your productivity</h3>
+<ul>
+  <li>
+    <strong>Subtitle editor</strong>
+    <p>Our intuitive subtitle editor displays audio waveforms alongside text. You can spot misalignments in one glance. Batch edit cue timings, style lines, and validate formatting without leaving the browser.</p>
+  </li>
+  <li>
+    <strong>AI notetaker</strong>
+    <p>Transform long episodes into concise summaries in seconds. The AI notetaker identifies speakers, extracts highlights, and organizes key moments with timestamps. Use those notes for blog posts, social media clips, or show notes without manual effort.</p>
+  </li>
+  <li>
+    <strong>API and developer tools</strong>
+    <p>Whether you code in Python, Node.js, PHP, or Go, HappyScribe’s REST API supports bulk conversions, custom workflows, and webhook notifications. Automate subtitle tasks within minutes of receiving new episode files in your CMS or cloud storage.</p>
+  </li>
+  <li>
+    <strong>Multiple export formats</strong>
+    <p>Beyond VTT, you can export to DFXP, TTML, WebSRT, or plain text transcripts. This variety ensures you always have the right file for your publishing workflow.</p>
+  </li>
+  <li>
+    <strong>Collaboration tools</strong>
+    <p>Invite teammates, assign roles, and track version history. When your guest host or editor needs to check captions, they can annotate directly in the platform and sync changes in real time.</p>
+  </li>
+</ul>
+
+<h3>Mini FAQ</h3>
+<dl>
+  <dt>1. Can I automate subtitle conversion for every episode?</dt>
+  <dd>Yes. Use our API with webhooks. Upload your SRT file to an S3 bucket or FTP server. Trigger a conversion job via a webhook or scheduled script. The API will return a VTT file to a destination of your choice.</dd>
+  <dt>2. How accurate is the AI notetaker with podcast transcripts?</dt>
+  <dd>Our AI notetaker achieves over 90% accuracy on clear audio recordings. It identifies speaker changes, key topics, and timestamps. For episodes with multiple speakers, be sure to label speakers in your audio metadata for best results.</dd>
+  <dt>3. Do I need technical skills to use the subtitle editor?</dt>
+  <dd>No. The subtitle editor is user-friendly and designed for nontechnical team members. For developers, the API provides additional flexibility. You can choose whichever approach suits your workflow.</dd>
+</dl>
+
+<p>Ready to streamline your podcast production and ensure flawless caption delivery on every platform? <a href="https://www.happyscribe.com" target="_blank" rel="noopener">Get started with HappyScribe today</a> and convert SRT to VTT in seconds. Elevate your video podcast with perfect captions, SEO-optimized transcripts, and AI-powered show notes—no coding required!</p><p><a href="convert-srt-to-vtt.html">&larr; Back to converter landing</a></p><h2>More Use Cases</h2><ul><li><a href="use_1_online-course-creators.html">Online course creators</a></li><li><a href="use_2_marketing-agencies.html">Marketing agencies</a></li><li><a href="use_3_news-broadcasters.html">News broadcasters</a></li><li><a href="use_5_corporate-training-teams.html">Corporate training teams</a></li><li><a href="use_6_video-platforms.html">Video platforms</a></li><li><a href="use_7_film-festival-coordinators.html">Film festival coordinators</a></li><li><a href="use_8_university-media-departments.html">University media departments</a></li><li><a href="use_9_localization-teams.html">Localization teams</a></li><li><a href="use_10_accessibility-consultants.html">Accessibility consultants</a></li></ul></main><footer><div class='container'><p>&copy; HappyScribe</p></div></footer></body></html>

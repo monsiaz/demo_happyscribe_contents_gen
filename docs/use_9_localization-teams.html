@@ -1,0 +1,105 @@
+<!DOCTYPE html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Localization teams</title><link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' rel='stylesheet'><link rel='stylesheet' href='settings/web_assets/style.css'></head><body><header class='topbar'><div class='container topbar-inner'><a class='brand' href='https://www.happyscribe.com'><img src='settings/web_assets/logo.png' alt='HappyScribe logo'></a><nav class='main-nav'><a href='#'>Tools</a><a href='#'>Resources</a><a href='#'>Pricing</a><a href='#' class='btn-primary'>Start for Free</a></nav></div></header><main class='container'><h2>Why Localization teams needs SRT to VTT</h2>
+<p>Localization teams working on global video content face tight deadlines, multiple language versions, and stringent quality standards. When sourcing subtitles, the industry-standard SRT format may not be compatible with all modern video players or online platforms. VTT (WebVTT) is required by many HTML5 video players and streaming services for caption display and advanced features such as chapter markers, styling cues, and accessibility metadata. Converting SRT to VTT manually can be error prone and time consuming, especially when handling multiple files in different languages. Automating the conversion with HappyScribe not only saves hours of manual work but also ensures consistency across your localized assets, lets your QA team spot timing or formatting issues early, and integrates seamlessly with your existing CI/CD pipelines for continuous delivery of on-brand, on-time video releases.</p>
+
+<h3>Step by step workflow</h3>
+<p>This workflow outlines how localization teams can automate SRT to VTT conversion using the HappyScribe API, local scripts, and the web subtitle editor for final QA.</p>
+<ol>
+  <li>
+    <strong>Get your API credentials</strong>
+    <p>Sign up or log in to your HappyScribe account, navigate to the <code>API settings</code> page, and generate a secure API key. Store this key in an environment variable in your CI system or local machine:</p>
+    <pre><code>export HAPPYSCRIBE_API_KEY="your_api_key_here"</code></pre>
+  </li>
+  <li>
+    <strong>Install the HappyScribe CLI or SDK</strong>
+    <p>Choose the language of your CI pipeline—Node.js or Python are common. Install via npm or pip:</p>
+    <pre><code>// Node.js
+npm install --save @happyscribe/api
+
+# Python
+pip install happyscribe</code></pre>
+  </li>
+  <li>
+    <strong>Upload your SRT file</strong>
+    <p>Use a script to upload the raw SRT file to HappyScribe and request a VTT conversion. Below is an example in Node.js:</p>
+    <pre><code>const HappyScribe = require('@happyscribe/api');
+const client = new HappyScribe(process.env.HAPPYSCRIBE_API_KEY);
+
+async function convertSrtToVtt(filePath) {
+  const response = await client.transcriptions.create({
+    file_url: filePath,
+    source_language: 'en',
+    format: 'vtt',
+    input_format: 'srt'
+  });
+  console.log('Conversion job created:', response.id);
+  return response.id;
+}
+
+convertSrtToVtt('https://cdn.mycompany.com/subtitles/video123_en.srt');</code></pre>
+  </li>
+  <li>
+    <strong>Poll for job completion</strong>
+    <p>After creating the job, periodically check its status. When the conversion is finished, the API returns a URL to download the VTT file.</p>
+    <pre><code>// Node.js status polling
+async function checkStatus(jobId) {
+  const job = await client.transcriptions.get(jobId);
+  if (job.status === 'done') {
+    console.log('VTT ready at', job.output_url);
+  } else {
+    console.log('Still processing…');
+    setTimeout(() => checkStatus(jobId), 5000);
+  }
+}
+
+checkStatus('job_id_from_previous_step');</code></pre>
+  </li>
+  <li>
+    <strong>Download the VTT file</strong>
+    <p>Use curl or wget in your CI pipeline to fetch the converted VTT file:</p>
+    <pre><code>curl -o video123_en.vtt "https://api.happyscribe.com/output/your_job_id.vtt"</code></pre>
+  </li>
+  <li>
+    <strong>Review and edit with subtitle editor</strong>
+    <p>Open the converted VTT in the HappyScribe subtitle editor to adjust timing, fix mistranslations, or add styling cues. This visual editor lets you spot line breaks, overlapping timestamps, or missing speaker cues quickly.</p>
+  </li>
+  <li>
+    <strong>Integrate into your localization pipeline</strong>
+    <p>Store the final VTT in your version control system or push it to your CDN. Configure your video player to load the VTT file for captions, ensuring that all localized variants are available on release.</p>
+  </li>
+</ol>
+
+<h3>HappyScribe features that improve your workflow</h3>
+<ul>
+  <li>
+    <strong>Subtitle editor</strong>
+    <p>The web-based subtitle editor gives you a timeline view, side by side translation columns, speaker labels, and the ability to insert CSS styling cues. You can batch-assign translator comments or track quality issues for your LQA team.</p>
+  </li>
+  <li>
+    <strong>API for batch processing</strong>
+    <p>Our RESTful API supports bulk requests, asynchronous job polling, and multi-format conversion. Integrate it into your Jenkins or GitLab pipeline to convert hundreds of SRT files in minutes without manual intervention.</p>
+  </li>
+  <li>
+    <strong>AI notetaker for transcripts</strong>
+    <p>Leverage the AI notetaker to automatically extract key points from conference calls or recorded interviews. Generate a preliminary transcript in VTT that your translators can refine, speeding up turnaround time for localized subtitles.</p>
+  </li>
+  <li>
+    <strong>Collaboration tools</strong>
+    <p>Invite reviewers, assign time-coded comments, and export audit logs. Every change in the subtitle editor is versioned so you can roll back if a translation string was overwritten by mistake.</p>
+  </li>
+  <li>
+    <strong>Multiple language support</strong>
+    <p>Whether you need simplified Chinese, German, Spanish, or right-to-left scripts like Arabic, HappyScribe handles all Unicode characters and language tags seamlessly in VTT files, preserving directionality and styling.</p>
+  </li>
+</ul>
+
+<h3>Mini FAQ</h3>
+<h4>Can I convert multiple SRT files at once?</h4>
+<p>Yes. Use the HappyScribe API in batch mode by looping through your file list or by sending multiple file URLs in a single API request. The API returns separate job IDs so you can track and download each VTT file individually.</p>
+
+<h4>Is there a file size limit for SRT uploads?</h4>
+<p>There is no hard limit for text-only subtitle files like SRT, but we recommend keeping individual files under 10 MB for best performance. For larger files or full video transcripts, split into smaller segments or use the AI notetaker to generate timed paragraphs.</p>
+
+<h4>How do I ensure the converted VTT matches my branding guidelines?</h4>
+<p>Use the subtitle editor to insert CSS styling cues (such as <code>::cue</code> selectors for font, color, and positioning). You can also add custom meta tags at the top of the VTT file. Once you have a template, reuse it across all your VTT exports.</p>
+
+<p>Ready to reduce manual workload, maintain translation quality, and deliver accessible captions at scale? <a href="https://www.happyscribe.com" title="Convert SRT to VTT with HappyScribe" target="_blank">Start converting your SRT files to VTT with HappyScribe today</a> and give your localization team the power of automation.</p><p><a href="convert-srt-to-vtt.html">&larr; Back to converter landing</a></p><h2>More Use Cases</h2><ul><li><a href="use_1_online-course-creators.html">Online course creators</a></li><li><a href="use_2_marketing-agencies.html">Marketing agencies</a></li><li><a href="use_3_news-broadcasters.html">News broadcasters</a></li><li><a href="use_4_podcasters-with-video.html">Podcasters with video</a></li><li><a href="use_5_corporate-training-teams.html">Corporate training teams</a></li><li><a href="use_6_video-platforms.html">Video platforms</a></li><li><a href="use_7_film-festival-coordinators.html">Film festival coordinators</a></li><li><a href="use_8_university-media-departments.html">University media departments</a></li><li><a href="use_10_accessibility-consultants.html">Accessibility consultants</a></li></ul></main><footer><div class='container'><p>&copy; HappyScribe</p></div></footer></body></html>

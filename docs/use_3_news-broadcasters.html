@@ -1,0 +1,90 @@
+<!DOCTYPE html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>News broadcasters</title><link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' rel='stylesheet'><link rel='stylesheet' href='settings/web_assets/style.css'></head><body><header class='topbar'><div class='container topbar-inner'><a class='brand' href='https://www.happyscribe.com'><img src='settings/web_assets/logo.png' alt='HappyScribe logo'></a><nav class='main-nav'><a href='#'>Tools</a><a href='#'>Resources</a><a href='#'>Pricing</a><a href='#' class='btn-primary'>Start for Free</a></nav></div></header><main class='container'><h2>Why News broadcasters needs SRT to VTT</h2>
+<p>News broadcasters operate in a fast-paced environment where delivering accurate captions across multiple platforms is essential for compliance, accessibility, and viewer engagement. While the SRT format is widely used in broadcast tools and editing suites, modern web players and streaming services often require WebVTT (VTT) for HTML5 compatibility. Converting from SRT to VTT ensures your captions display correctly on websites, mobile apps, and social media embeds without manual reformatting.</p>
+<p>By automating SRT to VTT conversion, newsrooms can eliminate repetitive tasks and reduce human error. Instead of manually editing timecodes or adding WebVTT headers, broadcasters can integrate a streamlined API-based workflow. This not only saves time but also allows teams to focus on story development and live reporting rather than technical workarounds.</p>
+<p>HappyScribe’s robust API and intuitive tools let news professionals convert thousands of subtitle files in minutes, maintain strict quality control, and collaborate across departments. Whether you’re repurposing previously aired segments for online archives or preparing live streams with real-time captions, SRT to VTT conversion becomes a non-issue.</p>
+
+<h3>Step by step workflow</h3>
+<p>The following workflow outlines how news broadcasters can set up an automated pipeline to convert SRT files to VTT using local scripts, the HappyScribe API, and post-conversion editing in the browser. Each step can be adapted to existing newsroom systems or cloud-based servers.</p>
+<ol>
+  <li><strong>Collect SRT files</strong><br>
+    Use your newsroom asset management system (e.g., Dalet, Avid, or a custom CMS) to gather all completed captions in SRT format. Store them in a dedicated input folder on your server or cloud storage bucket. Naming conventions like “YYYYMMDD_location_program.srt” help track files by date and segment.</li>
+  <li><strong>Install command-line dependencies</strong><br>
+    On your local machine or build server, install the HappyScribe CLI and any required language runtimes. For example, with npm:<br>
+    <pre><code>npm install -g @happyscribe/cli</code></pre>
+    Or using pip for Python scripts:<br>
+    <pre><code>pip install happyscribe</code></pre>
+    Ensure you have a valid API key stored securely in an environment variable: <code>export HS_API_KEY="your_api_key_here"</code>.</li>
+  <li><strong>Write a conversion script</strong><br>
+    Create a shell or Python script that loops through your input folder. In Bash:<br>
+    <pre><code>for file in /input/*.srt; do
+  basename=$(basename "$file" .srt)
+  npx happyscribe convert \
+    --input "$file" \
+    --output "/output/${basename}.vtt" \
+    --from-format srt \
+    --to-format vtt
+done</code></pre>
+    This uses the HappyScribe CLI to convert each file and save it in the designated output folder.</li>
+  <li><strong>Call the HappyScribe API for advanced control</strong><br>
+    For more customization, use the REST API. Here’s a Node.js example:<br>
+    <pre><code>const fs = require('fs');
+const fetch = require('node-fetch');
+const API_KEY = process.env.HS_API_KEY;
+
+async function convertSrtToVtt(inputPath, outputPath) {
+  const form = new FormData();
+  form.append('file', fs.createReadStream(inputPath));
+  form.append('source_format', 'srt');
+  form.append('target_format', 'vtt');
+
+  const res = await fetch('https://api.happyscribe.com/v1/convert', {
+    method: 'POST',
+    headers: { Authorization: `Bearer ${API_KEY}` },
+    body: form
+  });
+  const buffer = await res.buffer();
+  fs.writeFileSync(outputPath, buffer);
+}
+
+convertSrtToVtt('./input/news_headlines.srt', './output/news_headlines.vtt');</code></pre>
+    This approach allows you to set metadata, callback URLs, or batch operations.</li>
+  <li><strong>Monitor conversion status</strong><br>
+    Use the HappyScribe API’s job endpoints to track progress. Poll <code>GET /v1/jobs/:job_id</code> or set up webhook notifications. Webhooks can push a JSON payload to your newsroom dashboard whenever a conversion finishes or encounters an error.</li>
+  <li><strong>Edit captions in the subtitle editor</strong><br>
+    After conversion, open the VTT file in the HappyScribe subtitle editor. Here you can adjust timecodes, fix typos, and review speaker labels. The visual editor highlights overlapping captions and provides shortcuts for quick corrections, ensuring broadcast quality before publishing.</li>
+  <li><strong>Integrate with your CMS or publishing platform</strong><br>
+    Once the VTT file is fully verified, automatically push it back into your CMS via API or FTP. Name the file with your standard convention so the player on your website or app picks it up. Many broadcasters use continuous integration pipelines to deploy updated captions to staging and production environments.</li>
+  <li><strong>Publish and repurpose</strong><br>
+    Use your VTT captions across live streams, on-demand video portals, and social media platforms. Since VTT is supported by HTML5 video and major players like JW Player and Video.js, your captions render natively without additional processing. For archived segments, embed or package VTT files alongside MP4s for a seamless viewer experience.</li>
+</ol>
+
+<h3>Best practices for news broadcasters</h3>
+<p>Maintain a clear file naming convention. Prefix SRT and VTT files with date, location, and show title to avoid confusion when batching hundreds of segments daily. This practice also simplifies audit trails for legal compliance and accessibility reporting.</p>
+<p>Set up role-based access control in HappyScribe. Grant editors permission to review captions while limiting write access for junior staffers. This ensures that only senior captioners or quality controllers can finalize VTT exports, maintaining broadcast standards.</p>
+<p>Schedule routine checks on webhook integrations and API quotas. High-volume news operations can exceed rate limits if conversions spike during breaking news. Automated monitoring alerts teams when usage thresholds approach limits, letting you scale your plan or optimize scripts in advance.</p>
+
+<h3>Key HappyScribe features that improve this workflow</h3>
+<ul>
+  <li><strong>Subtitle editor</strong><br>
+    Edit, review, and approve VTT captions in a web interface designed for speed. Keyboard shortcuts, speaker labels, and inline spell check reduce manual errors. Real-time previews show how captions appear on different screen sizes, ensuring broadcast compliance.</li>
+  <li><strong>AI notetaker</strong><br>
+    Automatically generate a synchronized transcription alongside your captions. For post-broadcast analysis, interviews, or transcripts, AI notetaker creates searchable notes with timestamped highlights, enabling quick clip retrieval for breaking news follow-ups.</li>
+  <li><strong>Developer-friendly API</strong><br>
+    Extend your newsroom software with RESTful endpoints for conversion, job tracking, and file management. Detailed API documentation and code samples in multiple languages (Node.js, Python, PHP, Ruby) let you prototype and deploy in hours, not weeks.</li>
+  <li><strong>Webhook notifications</strong><br>
+    Receive instant callbacks when a file is converted or an error occurs. Webhooks deliver payloads containing job status, file metadata, and error messages directly to your dashboard or Slack channel, ensuring you never miss a failed conversion during a live broadcast.</li>
+  <li><strong>Batch processing</strong><br>
+    Convert dozens or thousands of files in a single API call or CLI command. Batch endpoints accept a JSON array of file URLs or paths, returning individual job IDs you can track in parallel. This is perfect for nightly repurposing of daily news segments.</li>
+  <li><strong>Secure file handling</strong><br>
+    All uploads and downloads occur over TLS, and files are encrypted at rest. Enterprise plans include IP allowlisting and custom data retention policies, meeting GDPR and FCC compliance requirements critical for reputable news organizations.</li>
+</ul>
+
+<h3>Mini faq</h3>
+<h4>Can we integrate SRT to VTT conversion directly into our broadcast automation?</h4>
+<p>Yes. The HappyScribe API is designed for seamless integration with automation tools like Airflow, Jenkins, or proprietary newsroom control systems. You can trigger conversions via CLI, REST calls, or webhooks, making it a native step in your broadcast pipeline.</p>
+<h4>How fast is the conversion for a standard 30-minute newscast?</h4>
+<p>Typical conversion time for a 30-minute SRT file is under 10 seconds. Actual performance depends on file size and network latency, but HappyScribe infrastructure is optimized for low-latency processing to meet live news demands.</p>
+<h4>Do we lose any style or positioning information when converting?</h4>
+<p>Basic WebVTT styling (italic, bold) and cue settings (line position, alignment) are preserved. Complex SRT features like background color tags may require manual adjustment in the subtitle editor, but core timecodes and text remain intact for broadcast accuracy.</p>
+
+<p>Ready to eliminate caption bottlenecks and deliver WebVTT captions instantly across all your digital channels? <a href="https://www.happyscribe.com">Get started with HappyScribe today</a> and revolutionize your SRT to VTT workflow in minutes.</p><p><a href="convert-srt-to-vtt.html">&larr; Back to converter landing</a></p><h2>More Use Cases</h2><ul><li><a href="use_1_online-course-creators.html">Online course creators</a></li><li><a href="use_2_marketing-agencies.html">Marketing agencies</a></li><li><a href="use_4_podcasters-with-video.html">Podcasters with video</a></li><li><a href="use_5_corporate-training-teams.html">Corporate training teams</a></li><li><a href="use_6_video-platforms.html">Video platforms</a></li><li><a href="use_7_film-festival-coordinators.html">Film festival coordinators</a></li><li><a href="use_8_university-media-departments.html">University media departments</a></li><li><a href="use_9_localization-teams.html">Localization teams</a></li><li><a href="use_10_accessibility-consultants.html">Accessibility consultants</a></li></ul></main><footer><div class='container'><p>&copy; HappyScribe</p></div></footer></body></html>

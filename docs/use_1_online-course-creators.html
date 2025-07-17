@@ -1,0 +1,146 @@
+<!DOCTYPE html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Online course creators</title><link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' rel='stylesheet'><link rel='stylesheet' href='settings/web_assets/style.css'></head><body><header class='topbar'><div class='container topbar-inner'><a class='brand' href='https://www.happyscribe.com'><img src='settings/web_assets/logo.png' alt='HappyScribe logo'></a><nav class='main-nav'><a href='#'>Tools</a><a href='#'>Resources</a><a href='#'>Pricing</a><a href='#' class='btn-primary'>Start for Free</a></nav></div></header><main class='container'><h2>Why Online course creators needs SRT to VTT</h2>
+<p>Online course creators rely on clear, accurate captions to keep learners engaged and ensure content is accessible. SubRip Subtitle files (SRT) are a common export format from many transcription tools, but modern web video players and learning management systems often require WebVTT (VTT) format for seamless integration. Converting SRT to VTT manually can be time consuming and error prone. With HappyScribe, you can automate this process, maintain perfect timing, optimize styling, and deliver a polished viewing experience. Whether you host lectures on your own site, publish on Udemy, or embed videos in Moodle, converting SRT to VTT quickly ensures captions display correctly and enhance comprehension.</p>
+
+<h3>Step-by-step workflow for converting SRT to VTT with HappyScribe</h3>
+<ol>
+  <li>
+    <strong>Prepare your SRT files</strong>
+    <p>Gather all the SRT files generated from your transcription service or created manually. Make sure the timestamps are correct and the text is proofread. Keep your files organized in a dedicated folder, for example <code>course-subtitles/srt/</code>.</p>
+  </li>
+  <li>
+    <strong>Install necessary tools</strong>
+    <p>Depending on your preferred environment, install one of these:</p>
+    <ul>
+      <li>Node.js and npm (for JavaScript scripts)</li>
+      <li>Python 3 with <code>requests</code> library</li>
+      <li>cURL for direct API calls</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Configure your HappyScribe API credentials</strong>
+    <p>Sign up for a HappyScribe account and obtain your API key. Store it in an environment variable for security:</p>
+    <pre><code># Bash example
+export HAPPYSCRIBE_API_KEY="your_secret_key"
+    </code></pre>
+  </li>
+  <li>
+    <strong>Write a script to upload SRT and request VTT conversion</strong>
+    <p>Choose your environment and use the HappyScribe API to upload and convert files. Below is a Node.js example using <code>axios</code>:</p>
+    <pre><code>const fs = require('fs')
+const axios = require('axios')
+
+async function convertSrtToVtt(filePath) {
+  const apiKey = process.env.HAPPYSCRIBE_API_KEY
+  const fileName = filePath.split('/').pop()
+
+  // Upload the SRT file
+  const uploadResponse = await axios.post('https://api.happyscribe.com/v1/uploads', 
+    fs.createReadStream(filePath), {
+    headers: {
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/octet-stream'
+    }
+  })
+
+  const uploadId = uploadResponse.data.id
+
+  // Request conversion
+  const conversionResponse = await axios.post('https://api.happyscribe.com/v1/subtitles', {
+    upload_id: uploadId,
+    language: 'en-US',
+    format: 'vtt'
+  }, {
+    headers: { 'Authorization': `Bearer ${apiKey}` }
+  })
+
+  const subtitleId = conversionResponse.data.id
+
+  // Poll for completion
+  let status = ''
+  while (status !== 'completed') {
+    const statusResponse = await axios.get(
+      `https://api.happyscribe.com/v1/subtitles/${subtitleId}`, {
+      headers: { 'Authorization': `Bearer ${apiKey}` }
+    })
+    status = statusResponse.data.status
+    await new Promise(resolve => setTimeout(resolve, 2000))
+  }
+
+  // Download the VTT
+  const downloadResponse = await axios.get(
+    `https://api.happyscribe.com/v1/subtitles/${subtitleId}/download`, {
+    headers: { 'Authorization': `Bearer ${apiKey}` },
+    responseType: 'stream'
+  })
+
+  const outputPath = filePath.replace(/\.srt$/, '.vtt')
+  const writer = fs.createWriteStream(outputPath)
+  downloadResponse.data.pipe(writer)
+  console.log(`Converted ${fileName} to VTT at ${outputPath}`)
+}
+
+// Example usage
+convertSrtToVtt('course-subtitles/srt/lecture1.srt')
+    </code></pre>
+  </li>
+  <li>
+    <strong>Review and edit in the HappyScribe subtitle editor</strong>
+    <p>Once the VTT file is generated, open it in the HappyScribe subtitle editor. Here you can:</p>
+    <ul>
+      <li>Fine-tune timing and split long captions</li>
+      <li>Adjust font size and styling for readability</li>
+      <li>Add speaker labels or sound effects transcripts</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Use AI notetaker to extract highlights</strong>
+    <p>Activate the AI notetaker feature to automatically generate course notes and timestamps. With one click, you get:</p>
+    <ul>
+      <li>Chapter summaries</li>
+      <li>Key takeaways for each segment</li>
+      <li>Action items and quiz question suggestions</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Export and integrate into your LMS or video player</strong>
+    <p>Download the finalized VTT file and upload it to your platform of choice. Most HTML5 players detect the VTT format automatically:</p>
+    <pre><code>&lt;video controls&gt;
+  &lt;source src="lecture1.mp4" type="video/mp4"&gt;
+  &lt;track kind="captions" src="lecture1.vtt" srclang="en" label="English"&gt;
+&lt;/video&gt;
+    </code></pre>
+    <p>If you use a learning management system like Moodle, Canvas, or Blackboard, simply attach the VTT as the transcript source and ensure it displays alongside the video.</p>
+  </li>
+</ol>
+
+<h3>Key HappyScribe features that improve your workflow</h3>
+<p>HappyScribe offers powerful tools tailored for online educators. Here is how three core features streamline subtitle management and enhance your course content.</p>
+<h4>1. Subtitle editor</h4>
+<p>The built-in subtitle editor allows you to visually adjust captions in real time. Drag and drop cues on the timeline to correct overlaps, split or merge segments, and ensure perfect sync. The interface supports live preview so you can see how captions appear in your final video player.</p>
+
+<h4>2. AI notetaker</h4>
+<p>With the AI notetaker, spend less time summarizing lectures and more time teaching. The AI reviews your transcribed content, extracts key concepts, and generates structured notes. You can customize the style of notes—bulleted lists, paragraph summaries, or quiz-ready questions—to suit your course format.</p>
+
+<h4>3. Robust API</h4>
+<p>The HappyScribe API automates the end-to-end conversion from SRT to VTT. Whether you have ten files or a thousand, script the upload, conversion, and download processes. Poll the API to track progress, handle errors gracefully, and integrate conversions into your existing content management systems.</p>
+
+<h4>Additional features that make a difference</h4>
+<ul>
+  <li>Automated translations: Translate VTT files into multiple target languages in minutes, broadening your audience reach.</li>
+  <li>Collaboration tools: Invite team members to review and annotate subtitles, maintaining version control and feedback loops.</li>
+  <li>Custom styling: Add CSS classes or inline styles to VTT cues for branding, color coding speakers, or highlighting technical terms.</li>
+</ul>
+
+<h3>Mini FAQ</h3>
+<h4>How long does it take to convert an SRT file to VTT?</h4>
+<p>Conversion typically completes within seconds to a few minutes, depending on file size and server load. The HappyScribe API provides status updates so you can poll until the VTT is ready.</p>
+
+<h4>Can I bulk convert multiple SRT files at once?</h4>
+<p>Yes. By using a loop in your script or batching requests, you can upload and convert dozens or hundreds of SRT files in a single automated workflow. The API scales with your needs.</p>
+
+<h4>Will the VTT file preserve my original timestamp accuracy?</h4>
+<p>Absolutely. The conversion process retains the exact timestamps from the SRT. You can fine-tune any timing issues in the subtitle editor after conversion.</p>
+
+<h3>Ready to transform your online courses?</h3>
+<p>Make caption management a seamless part of your content creation pipeline. With HappyScribe, converting SRT to VTT is fast, accurate, and integrates effortlessly into your learning platform. Enhance accessibility, boost engagement, and deliver polished professional videos that meet global standards.</p>
+<p><a href="https://www.happyscribe.com" target="_blank">Try HappyScribe today and streamline your subtitle workflow</a></p><p><a href="convert-srt-to-vtt.html">&larr; Back to converter landing</a></p><h2>More Use Cases</h2><ul><li><a href="use_2_marketing-agencies.html">Marketing agencies</a></li><li><a href="use_3_news-broadcasters.html">News broadcasters</a></li><li><a href="use_4_podcasters-with-video.html">Podcasters with video</a></li><li><a href="use_5_corporate-training-teams.html">Corporate training teams</a></li><li><a href="use_6_video-platforms.html">Video platforms</a></li><li><a href="use_7_film-festival-coordinators.html">Film festival coordinators</a></li><li><a href="use_8_university-media-departments.html">University media departments</a></li><li><a href="use_9_localization-teams.html">Localization teams</a></li><li><a href="use_10_accessibility-consultants.html">Accessibility consultants</a></li></ul></main><footer><div class='container'><p>&copy; HappyScribe</p></div></footer></body></html>
