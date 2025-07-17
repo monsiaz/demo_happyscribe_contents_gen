@@ -1,0 +1,164 @@
+<!DOCTYPE html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Web developer caption integration</title><link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' rel='stylesheet'><link rel='stylesheet' href='../settings/web_assets/style.css'></head><body><header class='topbar'><div class='container topbar-inner'><a class='brand' href='https://www.happyscribe.com'><img src='../settings/web_assets/logo.png' alt='HappyScribe logo'></a><nav class='main-nav'><a href='#'>Tools</a><a href='#'>Resources</a><a href='#'>Pricing</a><a href='#' class='btn-primary'>Start for Free</a></nav></div></header><main class='container'><h2>Why Web developer caption integration needs SRT to VTT</h2>
+<p>Web developers building modern video experiences face a common challenge: integrating accurate, accessible captions into HTML5 players and custom front ends. SubRip Text (SRT) is a widely supported subtitle format, but HTML5 video players and many JavaScript libraries expect WebVTT (VTT). Converting from SRT to VTT before deploying ensures your captions maintain proper timecodes, styling cues, and compatibility with cues JavaScript APIs. Manual conversion can introduce errors, slow down release cycles, and frustrate QA testers. Automating SRT to VTT conversion with HappyScribe’s robust API, subtitle editor, and AI-driven tools streamlines your workflow, reduces manual fixes, and helps you ship accessible video features faster. </p>
+
+<h3>Workflow overview</h3>
+<p>This section outlines a complete workflow for integrating captions into a web development pipeline. You’ll see how to:</p>
+<ol>
+  <li>Prepare SRT source files.</li>
+  <li>Use a Node.js script or command-line tool to call the HappyScribe API.</li>
+  <li>Convert SRT to VTT programmatically.</li>
+  <li>Download and validate the VTT output.</li>
+  <li>Integrate the VTT file into your HTML5 video player or React/Vue component.</li>
+  <li>Optionally fine-tune captions in the HappyScribe subtitle editor.</li>
+  <li>Generate transcript highlights with the AI notetaker.</li>
+  <li>Automate the entire process with webhooks or CI/CD pipelines.</li>
+</ol>
+
+<h3>Step-by-step workflow with HappyScribe</h3>
+
+<h4>1. install prerequisites</h4>
+<p>Make sure you have Node.js installed, or you can use Curl for quick testing. You’ll also need a HappyScribe API key, which you can get by signing up at <a href="https://www.happyscribe.com">HappyScribe.com</a> and navigating to your dashboard under “API keys.”</p>
+<pre><code>npm install node-fetch@2 dotenv
+</code></pre>
+<p>Create a <code>.env</code> file in your project root:</p>
+<pre><code>HAPPYSCRIBE_API_KEY=your_happyscribe_api_key
+</code></pre>
+
+<h4>2. upload your SRT file</h4>
+<p>Use the HappyScribe API to upload the SRT file. This step returns a <code>transcript_id</code> you’ll use for conversion.</p>
+<pre><code>require('dotenv').config();
+const fs = require('fs');
+const fetch = require('node-fetch');
+(async () =&gt; {
+  const fileStream = fs.createReadStream('captions.srt');
+  const response = await fetch('https://api.happyscribe.com/v1/transcriptions', {
+    method: 'POST',
+    headers: {
+      'Authorization': `Bearer ${process.env.HAPPYSCRIBE_API_KEY}`
+    },
+    body: fileStream
+  });
+  const data = await response.json();
+  console.log('Uploaded transcript ID:', data.id);
+})();</code></pre>
+
+<h4>3. convert SRT to VTT</h4>
+<p>Once your transcript is uploaded, initiate a format conversion. HappyScribe handles timecode adjustments automatically to produce a standards-compliant VTT file.</p>
+<pre><code>(async () =&gt; {
+  const transcriptId = 'your_transcript_id';
+  const convertResponse = await fetch(
+    `https://api.happyscribe.com/v1/transcriptions/${transcriptId}/formats/vtt`,
+    {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.HAPPYSCRIBE_API_KEY}`
+      }
+    }
+  );
+  const convertData = await convertResponse.json();
+  console.log('Conversion started, format ID:', convertData.format_id);
+})();</code></pre>
+
+<h4>4. poll for completion and download</h4>
+<p>After kicking off the conversion, poll the format status until it’s <code>completed</code>. Then download the VTT file.</p>
+<pre><code>(async () =&gt; {
+  const transcriptId = 'your_transcript_id';
+  const formatId = 'your_format_id';
+  let status = '';
+  do {
+    const statusRes = await fetch(
+      `https://api.happyscribe.com/v1/transcriptions/${transcriptId}/formats/${formatId}`,
+      {
+        headers: { 'Authorization': `Bearer ${process.env.HAPPYSCRIBE_API_KEY}` }
+      }
+    );
+    const statusData = await statusRes.json();
+    status = statusData.status;
+    console.log('Current status:', status);
+    await new Promise(r =&gt; setTimeout(r, 2000));
+  } while (status !== 'completed');
+
+  const downloadRes = await fetch(
+    statusData.url,
+    { headers: { 'Authorization': `Bearer ${process.env.HAPPYSCRIBE_API_KEY}` } }
+  );
+  const fileStream = fs.createWriteStream('captions.vtt');
+  downloadRes.body.pipe(fileStream);
+  console.log('Downloaded captions.vtt');
+})();</code></pre>
+
+<h4>5. validate and integrate</h4>
+<p>Before deploying, quickly validate the VTT file with a command-line tool like <code>vttlint</code> or by loading it in your local dev server:</p>
+<pre><code>vttlint captions.vtt</code></pre>
+<p>In your HTML5 page or component, reference the VTT file:</p>
+<pre><code>&lt;video controls&gt;
+  &lt;source src="video.mp4" type="video/mp4"&gt;
+  &lt;track src="captions.vtt" kind="subtitles" srclang="en" label="English"&gt;
+&lt;/video&gt;</code></pre>
+
+<h4>6. refine captions in the subtitle editor</h4>
+<p>HappyScribe’s subtitle editor offers a visual interface to tweak timecodes, split or merge cues, and adjust on-screen text. Changes sync back via API, so your team can collaborate in real time without juggling multiple files.</p>
+<ul>
+  <li>Drag-and-drop cue adjustments on the waveform.</li>
+  <li>Batch find-and-replace for common transcription errors.</li>
+  <li>Keyboard shortcuts to speed up edits.</li>
+</ul>
+
+<h4>7. leverage the AI notetaker for highlights</h4>
+<p>Use the AI notetaker to automatically extract key topics, timestamps, and summaries. This is perfect for generating chapter markers or enriching your video player UI with dynamic jump points.</p>
+<pre><code>POST https://api.happyscribe.com/v1/notetaker
+Headers:
+  Authorization: Bearer your_happyscribe_api_key
+Body:
+  {
+    "transcript_id": "your_transcript_id",
+    "language": "en"
+  }</code></pre>
+
+<h4>8. automate with webhooks or CI/CD</h4>
+<p>For enterprise-grade pipelines, configure a webhook in your HappyScribe dashboard to notify your CI server when the VTT is ready. Have a build job that automatically pulls the latest VTT, runs validation, and deploys to your staging environment.</p>
+<pre><code>{
+  "url": "https://ci.yourdomain.com/hooks/happyscribe",
+  "events": ["format.completed"]
+}</code></pre>
+
+<h3>Key HappyScribe features that streamline your integration</h3>
+<ul>
+  <li><strong>Developer-friendly API</strong>  
+    A RESTful API with clear endpoints for uploading files, requesting format conversions, and downloading results. Built-in pagination, status polling, and error handling reduce integration friction.
+  </li>
+  <li><strong>Subtitle editor</strong>  
+    A browser-based interface tailored for caption editing. Visual timecode display, waveform view, and collaborative editing tools speed up manual tweaks after automated conversion.
+  </li>
+  <li><strong>AI notetaker</strong>  
+    Automatically generates summaries, chapter markers, and keyword highlights. Perfect for creating interactive transcripts, jump-to-section navigation, or show notes.
+  </li>
+  <li><strong>Webhook support</strong>  
+    Real-time notifications push conversion events to your endpoints. Automate deployments, trigger tests, or alert team chat channels when captions are ready.
+  </li>
+  <li><strong>Multi-format export</strong>  
+    In addition to VTT, export to SRT, TXT, DOCX, JSON, or custom templates. Keep a consistent workflow across localization, e-learning, and marketing teams.
+  </li>
+</ul>
+
+<h3>Mini FAQ</h3>
+<dl>
+  <dt>Can I convert multiple SRT files in a single API call?</dt>
+  <dd>
+    Currently, you upload and convert each file separately, but you can script batch operations using a loop or job queue. Webhooks notify you as each conversion completes.
+  </dd>
+
+  <dt>What happens if my SRT file has malformed timestamps?</dt>
+  <dd>
+    The HappyScribe API runs a validation pass and corrects common timestamp issues automatically. If it encounters unresolvable errors, it returns an error object in the response for manual review.
+  </dd>
+
+  <dt>How do I secure my API key in production?</dt>
+  <dd>
+    Store your API key in environment variables, secret managers (AWS Secrets Manager, Google Secret Manager), or encrypted CI variables. Never commit your key to version control.
+  </dd>
+</dl>
+
+<h3>Ready to streamline your caption workflow?</h3>
+<p>Automate SRT to VTT conversion, refine captions with our subtitle editor, and enrich your videos with AI-powered highlights—all through a single API. Join thousands of developers who trust HappyScribe to deliver accurate, accessible captions at scale.</p>
+<p><a href="https://www.happyscribe.com" target="_blank" rel="noopener" style="display:inline-block;padding:12px 24px;background-color:#4CAF50;color:#fff;text-decoration:none;border-radius:4px">Start your free trial on HappyScribe</a></p><p><a href="convert-srt-to-vtt.html">&larr; Back to converter landing</a></p><h2>More Use Cases</h2><ul><li><a href="use_2_online-course-creator-localization.html">Online course creator localization</a></li><li><a href="use_3_live-streaming-platform-subtitles.html">Live streaming platform subtitles</a></li><li><a href="use_4_video-production-post-processing.html">Video production post processing</a></li><li><a href="use_5_e-learning-content-formatting.html">E learning content formatting</a></li><li><a href="use_6_broadcast-caption-compliance.html">Broadcast caption compliance</a></li><li><a href="use_7_mobile-app-accessibility-feature.html">Mobile app accessibility feature</a></li><li><a href="use_8_marketing-video-optimization.html">Marketing video optimization</a></li><li><a href="use_9_corporate-training-distribution.html">Corporate training distribution</a></li><li><a href="use_10_ott-platform-subtitle-management.html">OTT platform subtitle management</a></li></ul></main><footer><div class='container'><p>&copy; HappyScribe</p></div></footer></body></html>
