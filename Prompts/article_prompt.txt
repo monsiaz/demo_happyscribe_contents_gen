@@ -1,0 +1,16 @@
+Generate a comprehensive (~1500 words) technical blog article.
+
+Topic title: "${TITLE}"
+Primary keyword: "${KW_PRIMARY}"
+Secondary keyword: "${KW_SECONDARY}"
+
+Requirements
+1. Start with an engaging introduction framing the problem or opportunity.
+2. Provide at least four detailed sections (use <h2>, <h3>) that include real command examples, code snippets, tooling recommendations (e.g., FFMPEG, webvtt-py, HappyScribe API).
+3. Intersperse best-practice tips and pitfalls to avoid.
+4. Integrate HappyScribe product mentions naturally (Automatic transcription, Human-made subtitles, API, Subtitle editor, etc.). Include at least three internal links using <a href="#">placeholder</a>.
+5. Headings must use sentence case; acronyms like FFMPEG, SRT, VTT uppercase. No bland headings ("Conclusion").
+6. End with a strong call-to-action to try HappyScribe tools.
+7. Basic HTML only, no markdown, no em dashes (—).
+
+Return STRICT valid HTML (no wrapper tags). 

@@ -1,0 +1,4 @@
+# Ignore secrets file
+keys.txt 
+__pycache__/
+.venv/

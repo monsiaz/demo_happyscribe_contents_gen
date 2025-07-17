@@ -1,0 +1,137 @@
+<!DOCTYPE html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Automate SRT to VTT conversion with Python</title><link rel='stylesheet' href='../settings/web_assets/style.css'></head><body><header class='topbar'><div class='container topbar-inner'><a class='brand' href='https://www.happyscribe.com'><img src='../settings/web_assets/logo.png' alt='HappyScribe logo'></a><nav class='main-nav'><a href='#'>Tools</a><a href='#'>Resources</a><a href='#'>Pricing</a><a href='#' class='btn-primary'>Start for Free</a></nav></div></header><main class='container'><h2>introduction: why automate srt to vtt conversion with python</h2>
+<p>Subtitles and transcripts play a key role in making audio and video content accessible to a wider audience. Many platforms require WebVTT (VTT) files rather than SubRip (SRT) format. Doing manual conversions for each file not only wastes time but also introduces errors in timestamps and formatting. By using Python to automate the process you can scale subtitle workflows, reduce human error, and integrate with transcription services.</p>
+<p>In this article we cover multiple approaches to convert srt to vtt using command-line tools, Python libraries, and the HappyScribe API. You will get real command examples, code snippets, tooling recommendations and tips on best practices. We also link to resources like <a href="#">placeholder</a> and <a href="#">placeholder</a> so you can dive deeper into advanced topics.</p>
+
+<h2>select the right tool for srt to vtt conversion</h2>
+<p>Depending on your environment and requirements you may choose a simple command-line tool or a more flexible Python library. Below are two common methods.</p>
+
+<h3>using FFMPEG for file based conversion</h3>
+<p>FFMPEG is a powerful multimedia framework that can convert between subtitle formats without re-encoding video.</p>
+<pre><code># Install FFMPEG (macOS with Homebrew)
+brew install ffmpeg
+
+# Convert SRT to VTT
+ffmpeg -i input.srt output.vtt
+</code></pre>
+<p>Tip: Ensure your SRT file uses UTF-8 encoding. Use <code>iconv</code> to convert if needed:</p>
+<pre><code>iconv -f ISO-8859-1 -t UTF-8 input.srt -o input-utf8.srt</code></pre>
+<p>Pitfall to avoid: FFMPEG preserves the SRT timestamp style (commas for milliseconds). If your target platform expects dots, verify the output. Some versions handle it automatically while others may not.</p>
+
+<h3>installing and using webvtt-py</h3>
+<p>webvtt-py is a Python library dedicated to parsing and writing WebVTT files.</p>
+<pre><code># Install the library
+pip install webvtt-py
+
+# Quick conversion script
+import webvtt
+
+webvtt.from_srt('input.srt').save('output.vtt')
+</code></pre>
+<p>Best-practice tip: Handle large batches by using generators to avoid loading all files in memory:</p>
+<pre><code>import glob
+import webvtt
+
+for srt_file in glob.glob('subs/*.srt'):
+    vtt_file = srt_file.replace('.srt', '.vtt')
+    webvtt.from_srt(srt_file).save(vtt_file)
+</code></pre>
+<p>Pitfall to avoid: webvtt-py expects valid SRT input. Validate your file for missing sequence numbers or blank lines.</p>
+
+<h2>convert srt to vtt with a python script</h2>
+<p>Writing your own script gives full control over formatting, error handling, and integration. Below is a sample script that reads an SRT file, adjusts timestamps and writes a VTT file.</p>
+<pre><code>import re
+
+def parse_srt_timestamps(line):
+    # Replace comma with dot for WebVTT
+    return line.replace(',', '.')
+
+def srt_to_vtt(input_path, output_path):
+    with open(input_path, 'r', encoding='utf-8') as infile:
+        lines = infile.readlines()
+
+    vtt_lines = ['WEBVTT\n\n']
+    for line in lines:
+        # Match SRT timestamp lines
+        if re.match(r'\d{2}:\d{2}:\d{2},\d{3}', line):
+            vtt_lines.append(parse_srt_timestamps(line))
+        else:
+            vtt_lines.append(line)
+
+    with open(output_path, 'w', encoding='utf-8') as outfile:
+        outfile.writelines(vtt_lines)
+
+if __name__ == '__main__':
+    srt_to_vtt('input.srt', 'output.vtt')
+</code></pre>
+<p>Best-practice tip: Add logging to report conversion status and catch unreadable files. Use the built-in <code>logging</code> module:</p>
+<pre><code>import logging
+
+logging.basicConfig(level=logging.INFO)
+
+try:
+    srt_to_vtt('input.srt', 'output.vtt')
+    logging.info('Conversion successful')
+except Exception as e:
+    logging.error(f'Conversion failed: {e}')
+</code></pre>
+<p>Pitfall to avoid: Do not assume all SRT files use the same line endings. Normalize Windows (CRLF) and Unix (LF) line endings at the start of the script:</p>
+<pre><code>content = content.replace('\r\n', '\n')</code></pre>
+
+<h2>leveraging the HappyScribe API for seamless workflows</h2>
+<p>HappyScribe offers both Automatic transcription and Human-made subtitles. You can upload audio or video, receive an SRT file, then convert or edit subtitles via the <a href="#">placeholder</a>. Below is an example of calling the HappyScribe API to request subtitles and output in VTT format.</p>
+<pre><code>import requests
+import time
+
+API_KEY = 'YOUR_HAPPYSCRIBE_API_KEY'
+UPLOAD_URL = 'https://api.happyscribe.com/v1/uploads'
+TRANSCRIPT_URL = 'https://api.happyscribe.com/v1/transcripts'
+
+def upload_file(filepath):
+    files = {'file': open(filepath, 'rb')}
+    headers = {'Authorization': f'Bearer {API_KEY}'}
+    r = requests.post(UPLOAD_URL, files=files, headers=headers)
+    return r.json()['upload_id']
+
+def request_transcript(upload_id, use_human=False):
+    headers = {'Authorization': f'Bearer {API_KEY}', 'Content-Type': 'application/json'}
+    data = {
+        'upload_id': upload_id,
+        'language': 'en',
+        'format': 'vtt',
+        'subtitles': True,
+        'human': use_human
+    }
+    r = requests.post(TRANSCRIPT_URL, json=data, headers=headers)
+    return r.json()['transcript_id']
+
+def poll_transcript(transcript_id):
+    url = f'{TRANSCRIPT_URL}/{transcript_id}'
+    headers = {'Authorization': f'Bearer {API_KEY}'}
+    while True:
+        r = requests.get(url, headers=headers).json()
+        if r['status'] == 'done':
+            return r['file_url']
+        time.sleep(5)
+
+if __name__ == '__main__':
+    upload_id = upload_file('video.mp4')
+    transcript_id = request_transcript(upload_id, use_human=False)
+    vtt_url = poll_transcript(transcript_id)
+    print('Download your VTT at', vtt_url)
+</code></pre>
+<p>Tooling recommendation: Use the HappyScribe <a href="#">Subtitle editor</a> to fine-tune captions with a user interface after automatic conversion. You can also call the API again to fetch <em>Human-made subtitles</em> if you need higher accuracy.</p>
+
+<h2>best practices and common pitfalls for subtitle conversion</h2>
+<ul>
+  <li><strong>Validate character encoding</strong>: Always confirm UTF-8 encoding to prevent unreadable characters in WebVTT files.</li>
+  <li><strong>Preserve timestamp accuracy</strong>: Millisecond mismatches can cause viewer desync. Use precise decimal conversions and avoid rounding errors.</li>
+  <li><strong>Batch process carefully</strong>: If you convert hundreds of files use job queues like Celery to manage load instead of triggering thousands of simultaneous processes.</li>
+  <li><strong>Monitor file sizes</strong>: VTT files can grow large with annotations or styling. Clean unused cues to avoid bloated files.</li>
+  <li><strong>Use version control</strong>: Check subtitle edits into Git or another VCS so you can track changes made by the <em>Subtitle editor</em> or human transcribers.</li>
+</ul>
+<p>Pitfall to avoid: Ignoring local regulations on caption accuracy. Automated tools can be fast but may miss speaker labels or sound descriptions. Consider hybrid workflows mixing <em>Automatic transcription</em> with review by a human editor using the HappyScribe API.</p>
+
+<h2>next steps: integrate with HappyScribe for full workflow</h2>
+<p>By now you have seen how to convert srt to vtt using FFMPEG, webvtt-py, a custom Python script or the HappyScribe API. For production level workflows we recommend combining HappyScribe Automatic transcription with edits in the Subtitle editor and final delivery via the API. You can still automate file conversion locally with Python and integrate the results back into your content delivery pipeline.</p>
+<p>Ready to speed up your subtitle workflow and improve accessibility? Try HappyScribe tools today for seamless transcription, human-made subtitles, and powerful API integrations. Empower your team to focus on content while we handle the subtitles.</p>
+<p><strong>Get started with HappyScribe now and transform the way you convert SRT to VTT!</strong></p><p><a href="convert-srt-to-vtt.html">&larr; Back to converter landing</a></p><h2>More Articles</h2><ul><li><a href="blog_1_how-to-batch-convert-srt-to-vtt-using-ffmpeg.html">How to batch convert SRT to VTT using FFMPEG</a></li><li><a href="blog_2_convert-srt-to-vtt-manually-in-notepad.html">Convert SRT to VTT manually in Notepad</a></li><li><a href="blog_3_integrating-subtitle-conversion-in-premiere-pro.html">Integrating subtitle conversion in Premiere Pro</a></li><li><a href="blog_4_free-online-tools-to-convert-srt-to-vtt.html">Free online tools to convert SRT to VTT</a></li><li><a href="blog_6_using-the-happyscribe-api-for-subtitle-conversion.html">Using the HappyScribe API for subtitle conversion</a></li><li><a href="blog_7_how-to-convert-subtitles-in-adobe-products.html">How to convert subtitles in Adobe products</a></li><li><a href="blog_8_best-practices-for-vtt-subtitle-styling.html">Best practices for VTT subtitle styling</a></li><li><a href="blog_9_batch-processing-subtitles-for-large-video-projects.html">Batch processing subtitles for large video projects</a></li><li><a href="blog_10_optimizing-subtitles-for-html5-with-vtt.html">Optimizing subtitles for HTML5 with VTT</a></li></ul></main><footer><div class='container'><p>&copy; HappyScribe</p></div></footer></body></html>

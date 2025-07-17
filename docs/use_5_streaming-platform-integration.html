@@ -1,0 +1,115 @@
+<!DOCTYPE html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Streaming platform integration</title><link rel='stylesheet' href='../settings/web_assets/style.css'></head><body><header class='topbar'><div class='container topbar-inner'><a class='brand' href='https://www.happyscribe.com'><img src='../settings/web_assets/logo.png' alt='HappyScribe logo'></a><nav class='main-nav'><a href='#'>Tools</a><a href='#'>Resources</a><a href='#'>Pricing</a><a href='#' class='btn-primary'>Start for Free</a></nav></div></header><main class='container'><h1>Streaming platform integration: SRT to VTT conversion</h1>
+
+<h2>scenario: moving from SRT to VTT for modern web players</h2>
+<p>Your company runs a fast-growing streaming platform that serves millions of viewers around the world. You spend weeks producing and curating video content, partnering with talent and handling complex licensing. Now the team faces its next challenge: ensuring your subtitles and captions work flawlessly across every device, screen reader, and browser. Your subtitle files currently follow the SubRip Text (SRT) format, a legacy standard that lacks full support for styling, positioning, metadata and advanced accessibility features. Meanwhile, your HTML5 players and embedded video tags demand WebVTT (VTT) to enable chapter markers, voice descriptions and live transcript features. Every day that your viewers encounter playback errors or missing captions is a day they might abandon your platform or file a support ticket.</p>
+<p>In this scenario you need a streamlined process to convert vast libraries of SRT files to VTT without introducing manual errors, missing timestamps or broken formatting. You also need the ability to integrate this conversion into your existing CI/CD pipelines, video encoders and content delivery network workflows. You want to minimize manual intervention while maintaining quality, auditability and compliance with accessibility standards like WCAG 2.1. By building a robust SRT to VTT conversion pipeline powered by HappyScribe, you can ensure your video subtitles are consistent, accessible and ready to delight audiences across desktop browsers, smart TVs and mobile apps.</p>
+
+<h2>why SRT to VTT conversion matters in streaming</h2>
+<p>WebVTT is the W3C standard for displaying timed text tracks in HTML5 media elements and JavaScript-based players. Compared to SRT, VTT offers powerful features:</p>
+<ul>
+  <li>Styling and positioning: apply CSS classes, inline styling and cue positioning to control how captions appear on screen.</li>
+  <li>Chapter and cue metadata: embed chapter markers, speaker labels and directional cues for immersive experiences.</li>
+  <li>Accessibility enhancements: support voice descriptions, audio descriptions and caption customization for users with hearing or visual impairments.</li>
+</ul>
+<p>Failing to provide VTT files means your platform cannot fully leverage browser-based caption controls, live transcripts or chapter navigation. Users may see blank captions, unsupported formatting or even playback errors on certain browsers. For a professional streaming service, this leads to increased churn, compliance risks and a damaged brand reputation. Automated SRT to VTT conversion ensures every subtitle track is optimized for modern web playback, reducing manual QA cycles and support tickets.</p>
+
+<h2>step-by-step workflow</h2>
+<p>Below is a detailed guide to building an end-to-end SRT to VTT conversion workflow using HappyScribe’s API and supporting tools. This workflow can be integrated into your build server, content pipeline or cloud functions.</p>
+
+<h3>1. prepare your SRT files</h3>
+<p>Collect your SRT subtitle files into a source directory. Ensure the file naming convention matches your video asset identifiers (for example, <code>video-1234-en.srt</code> for English captions of video 1234). Organize files by language, region or video quality as needed.</p>
+
+<h3>2. authenticate with HappyScribe API</h3>
+<p>Create an API key in your HappyScribe account settings. Store the key securely as an environment variable:</p>
+<pre>export HAPPYSCRIBE_API_KEY="your_api_key_here"</pre>
+
+<h3>3. upload SRT files to HappyScribe</h3>
+<p>Use the file upload endpoint to push your SRT files for conversion. In this example we use curl in a shell script:</p>
+<pre>
+for file in ./subtitles/*.srt; do
+  echo "Uploading ${file}"
+  curl -X POST https://api.happyscribe.com/v1/files \
+    -H "Authorization: Bearer $HAPPYSCRIBE_API_KEY" \
+    -F "file=@${file}" \
+    -F "filename=$(basename "${file}")" \
+    -F "type=srt"
+done
+</pre>
+
+<h3>4. convert SRT files to VTT</h3>
+<p>After upload, trigger the conversion using the convert endpoint. You may poll or subscribe to webhooks to get notified when conversion is complete.</p>
+<pre>
+curl -X POST https://api.happyscribe.com/v1/transcriptions/convert \
+  -H "Authorization: Bearer $HAPPYSCRIBE_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "file_id": "abc123def456",
+    "source_format": "srt",
+    "target_format": "vtt"
+  }'
+</pre>
+<p>The response returns a <code>conversion_id</code>. Poll the status:</p>
+<pre>
+curl -X GET https://api.happyscribe.com/v1/transcriptions/convert/abc123def456 \
+  -H "Authorization: Bearer $HAPPYSCRIBE_API_KEY"
+</pre>
+<p>Wait for <code>"status": "completed"</code>.</p>
+
+<h3>5. download the converted VTT files</h3>
+<p>Once conversion is complete, download the VTT file automatically:</p>
+<pre>
+curl -X GET https://api.happyscribe.com/v1/transcriptions/convert/abc123def456/download \
+  -H "Authorization: Bearer $HAPPYSCRIBE_API_KEY" \
+  -o ./vtt/video-1234-en.vtt
+</pre>
+
+<h3>6. integrate with your CDN or media server</h3>
+<p>Upload the downloaded VTT files to your content delivery network alongside the video manifests (HLS or DASH). Ensure your player configuration points to the correct VTT URLs:</p>
+<pre>
+&lt;video controls crossorigin&gt;
+  &lt;source src="https://cdn.example.com/videos/video-1234.m3u8" type="application/x-mpegURL"&gt;
+  &lt;track
+    kind="subtitles"
+    src="https://cdn.example.com/subtitles/video-1234-en.vtt"
+    srclang="en"
+    label="English"
+    default&gt;
+&lt;/video&gt;
+</pre>
+
+<h3>7. automate with CI/CD or cloud functions</h3>
+<p>Embed the above steps in a pipeline such as GitLab CI, GitHub Actions or AWS Lambda. For example, create a Node.js script triggered on file push to your repository that runs the HappyScribe conversion calls and sends a notification to Slack when complete.</p>
+
+<h2>happy scribe features that improve your workflow</h2>
+<p>HappyScribe offers powerful features that help you maintain quality, speed and flexibility in your subtitle conversion process. Here are three key capabilities:</p>
+
+<h3>1. subtitle editor for real-time review</h3>
+<p>After conversion, open the VTT file in HappyScribe’s online subtitle editor for a quick QA pass. The editor highlights timing mismatches, overlapping cues and missing punctuation. You can adjust timestamps, speaker labels and cue settings in a few clicks. Any changes sync back to the file instantly, so your VTT download always reflects the latest edits.</p>
+
+<h3>2. AI notetaker for metadata enhancement</h3>
+<p>In addition to basic conversion, HappyScribe’s AI notetaker can analyze audio content and automatically generate speaker diarization, chapter summaries and highlights. Embed these metadata cues directly into the VTT file under the chapter header syntax. Now your HTML5 player can display interactive chapter markers and summaries to boost viewer engagement and navigation.</p>
+
+<h3>3. robust REST API for full automation</h3>
+<p>Whether you use Python, JavaScript, Go or Bash, HappyScribe’s REST API is designed for seamless integration. Endpoints cover file upload, format conversion, status polling, download and metadata retrieval. You can convert thousands of files per hour, handle bulk operations or set up webhook callbacks for event-driven workflows.</p>
+
+<h3>4. bulk conversion for peak workloads</h3>
+<p>Process entire libraries of subtitle files in parallel. HappyScribe’s bulk conversion endpoint lets you submit up to 100 files in a single API call. You can track each file’s status independently and download all converted VTT files in one compressed archive to speed up deployment.</p>
+
+<h3>5. enterprise-grade security and compliance</h3>
+<p>All data transfers are secured via TLS 1.2 encryption. You can configure access controls, IP allow lists and audit logs in your HappyScribe account. Meet GDPR, CCPA and accessibility compliance requirements for your global streaming audience.</p>
+
+<h2>mini faq</h2>
+<dl>
+  <dt>Q: Can I preserve cue styling and positioning when converting SRT to VTT?</dt>
+  <dd>A: Yes. HappyScribe’s converter maps SRT cue timing directly and supports VTT CSS styling syntax. You can edit or add <code>::cue</code> styles in the subtitle editor post-conversion to control font, color and placement.</dd>
+
+  <dt>Q: How does the API handle different languages and character sets?</dt>
+  <dd>A: The API fully supports UTF-8 encoding and a broad range of languages from Latin to CJK scripts. Simply upload the file with the correct charset and the converter will maintain all diacritics, special characters and RTL (right-to-left) text flows.</dd>
+
+  <dt>Q: What is the typical turnaround time for conversion?</dt>
+  <dd>A: Conversion time depends on file size and your plan’s processing speed. Small files (under 5 MB) often convert in under 30 seconds. For larger batches, HappyScribe’s bulk conversion can process hundreds of files in parallel, reducing total time significantly.</dd>
+</dl>
+
+<h2>ready to streamline your streaming subtitle workflow?</h2>
+<p>Don’t let outdated subtitle formats hold back your streaming platform. With HappyScribe you get a proven, enterprise-ready solution for converting SRT to VTT at scale. Automate your conversion pipeline, maintain full control over styling and accessibility, and deliver flawless captions across every device.</p>
+<p><a href="https://www.happyscribe.com">Start your free trial with HappyScribe today</a> and experience the easiest way to integrate WebVTT subtitles into your streaming infrastructure.</p><p><a href="convert-srt-to-vtt.html">&larr; Back to converter landing</a></p><h2>More Use Cases</h2><ul><li><a href="use_1_webinar-captioning.html">Webinar captioning</a></li><li><a href="use_2_e-learning-modules.html">E-learning modules</a></li><li><a href="use_3_corporate-training-videos.html">Corporate training videos</a></li><li><a href="use_4_accessibility-compliance.html">Accessibility compliance</a></li><li><a href="use_6_social-media-clips.html">Social media clips</a></li><li><a href="use_7_conference-recordings.html">Conference recordings</a></li><li><a href="use_8_podcast-show-notes.html">Podcast show notes</a></li><li><a href="use_9_mobile-app-subtitles.html">Mobile app subtitles</a></li><li><a href="use_10_game-localization.html">Game localization</a></li></ul></main><footer><div class='container'><p>&copy; HappyScribe</p></div></footer></body></html>

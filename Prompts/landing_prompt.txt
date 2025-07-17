@@ -1,0 +1,32 @@
+Generate a high-quality (600-800 words) landing page in English about converting ${F1} files to ${F2} files.
+
+Context: this page will be published on HappyScribe.com, a platform that offers advanced subtitle, transcription and translation services (automatic & human-made).
+
+Requirements
+1. Begin with a concise, technically accurate explanation of what ${F1} and ${F2} formats are and where each is used.
+2. Tone: professional, authoritative yet accessible (targeting developers, video pros, content creators). Provide concrete, technically detailed explanations and actionable steps (e.g., command-line, ffmpeg, Python snippets). Avoid fluff and marketing clichés.
+3. Structure the body using BASIC HTML ONLY (<h1>, <h2>, <h3>, <p>, <ul>, <li>, <strong>, <em>). Do NOT use markdown and do NOT wrap in <html>/<body> tags.
+4. Include the primary keyword "${KW_PRIMARY}" in the <h1> title and at least twice in the body. Include the secondary keyword "${KW_SECONDARY}" once.
+5. Provide a JSON field called "comparison_table" (NOT inside the HTML body) comparing at least five criteria. Structure:
+   "comparison_table": {
+     "headers": ["criterion", "${F1}", "${F2}"],
+     "rows": [ ["File header", "…", "…"], … ]
+   }
+6. Headings (<h1>, <h2>, <h3>) and use-case names must follow sentence case, acronyms like ${F1}/${F2}/FFMPEG uppercase. Each heading must be descriptive – DO NOT use bland titles like "Conclusion" or "Summary".
+7. Add exactly five FAQ pairs after the main body.
+8. Add exactly 10 blog idea objects (title + 120-150 char meta). Titles MUST follow sentence case and keep acronyms uppercase.
+9. Add exactly 10 professional use cases (name + 1-2 sentence description).
+10. Naturally reference relevant HappyScribe products & services where appropriate (e.g., Automatic transcription, Human-made subtitles, API, Caption generator, Subtitle editor, etc.).
+11. Do NOT use the em dash character (—); prefer commas or colons.
+12. Do NOT add generic marketing slogans.
+13. Incorporate ideas from these related searches to enrich the content:
+${RELATED_LIST}
+
+Return STRICT valid JSON with exactly these keys and nothing more:
+{
+  "content": "<HTML landing page>",
+  "comparison_table": { "headers": [...], "rows": [...] },
+  "faq": [ {"question": "...", "answer": "..."}, ... 5 items ],
+  "blog_ideas": [ {"title": "...", "meta": "..."}, ... 10 items ],
+  "use_cases": [ {"name": "...", "description": "..."}, ... 10 items ]
+} 

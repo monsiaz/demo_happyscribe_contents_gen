@@ -1,0 +1,164 @@
+<!DOCTYPE html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'><title>Social media clips</title><link rel='stylesheet' href='../settings/web_assets/style.css'></head><body><header class='topbar'><div class='container topbar-inner'><a class='brand' href='https://www.happyscribe.com'><img src='../settings/web_assets/logo.png' alt='HappyScribe logo'></a><nav class='main-nav'><a href='#'>Tools</a><a href='#'>Resources</a><a href='#'>Pricing</a><a href='#' class='btn-primary'>Start for Free</a></nav></div></header><main class='container'><h1>Social media clips: srt to vtt conversion made simple</h1>
+
+<p>In the fast-paced world of social media marketing, every second of video content counts. Imagine you have just wrapped up a successful live webinar or created a compelling interview with an industry expert. You slice that content into 30-second clips for Instagram Reels, 60-second snippets for TikTok, and a longer highlight reel for LinkedIn. Each platform uses its own closed caption format, and while SRT files are a familiar choice for desktop players, many social networks – including Facebook, YouTube, and Twitter – require VTT files for in-browser playback and accessibility compatibility. Without the correct format, captions fail to load, engagement drops, and you risk alienating viewers who rely on subtitles to follow your message. That is why converting SRT to VTT is a crucial step in any social media content strategy.</p>
+
+<p>Whether you are an in-house social media manager at an agency, a freelance video editor handling multiple clients, or part of an enterprise brand team aiming to scale your video efforts across dozens of channels, you need a reliable, automated workflow for subtitle conversion. Manually editing line breaks, timestamps, and file headers is error prone and time consuming. Missed captions can lead to lower watch time, reduced reach, and a failure to meet accessibility guidelines. With HappyScribe’s API and web interface, you gain full control of your subtitles, speed up your post-production process, and ensure that every clip appears perfectly captioned wherever you publish it.</p>
+
+<h2>Step by step workflow</h2>
+
+<p>This workflow outlines how to take an existing SRT file, convert it to VTT format automatically, review and fine-tune captions in our subtitle editor, and embed the final VTT file into your social media clips. We will use a mix of command line tools, a simple Node.js script, and HappyScribe’s API to demonstrate a fully automated solution.</p>
+
+<h3>1. prepare your environment</h3>
+
+<ul>
+  <li>Install Node.js (v14 or higher) from the official site: <a href="https://nodejs.org">nodejs.org</a>.</li>
+  <li>Make sure you have curl or httpie available for quick API testing in terminal.</li>
+  <li>Sign up for a HappyScribe account at <a href="https://www.happyscribe.com">happyscribe.com</a> and obtain your API key from the dashboard under “API settings”.</li>
+  <li>Create a project folder: <code>mkdir social-clips && cd social-clips</code>.</li>
+</ul>
+
+<h3>2. install the happyScribe helper library</h3>
+
+<p>Use npm or yarn to install the official helper library:</p>
+
+<pre><code>npm install @happyscribe/api-client
+# or
+yarn add @happyscribe/api-client
+</code></pre>
+
+<h3>3. write a conversion script</h3>
+
+<p>Create <code>convert.js</code> in your project folder and add the following code:</p>
+
+<pre><code>const fs = require('fs');
+const { HappyScribeApi } = require('@happyscribe/api-client');
+
+async function convertSrtToVtt(apiKey, inputPath, outputPath) {
+  const api = new HappyScribeApi({ apiKey });
+
+  // 1. upload the SRT file
+  const fileStream = fs.createReadStream(inputPath);
+  const uploadResponse = await api.uploadSubtitle({
+    file: fileStream,
+    format: 'srt'
+  });
+
+  // 2. trigger conversion
+  const convertResponse = await api.convertSubtitle({
+    id: uploadResponse.id,
+    to: 'vtt'
+  });
+
+  // 3. poll for completion
+  let status = convertResponse.status;
+  while (status !== 'finished' && status !== 'error') {
+    const check = await api.getSubtitleStatus({ id: convertResponse.id });
+    status = check.status;
+    await new Promise(res => setTimeout(res, 2000));
+  }
+
+  if (status === 'finished') {
+    // 4. download the VTT file
+    const vttStream = await api.downloadSubtitle({ id: convertResponse.id });
+    const writeStream = fs.createWriteStream(outputPath);
+    vttStream.pipe(writeStream);
+    writeStream.on('finish', () => {
+      console.log('Conversion completed:', outputPath);
+    });
+  } else {
+    console.error('Conversion failed:', convertResponse);
+  }
+}
+
+// replace with your actual key and paths
+const API_KEY = process.env.HS_API_KEY;
+convertSrtToVtt(API_KEY, 'input.srt', 'output.vtt');</code></pre>
+
+<p>Run the script with:</p>
+
+<pre><code>export HS_API_KEY=your_api_key_here
+node convert.js</code></pre>
+
+<h3>4. test with curl</h3>
+
+<p>You can also do a quick test using curl:</p>
+
+<pre><code>curl -X POST https://api.happyscribe.com/subtitles \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -F "file=@input.srt" \
+  -F "format=srt" \
+  -F "convert_to=vtt" \
+  -o output.vtt</code></pre>
+
+<p>This single command uploads the SRT file, converts it to VTT, and downloads the result as <code>output.vtt</code>.</p>
+
+<h3>5. review and fine-tune in subtitle editor</h3>
+
+<ul>
+  <li>Log in to HappyScribe and go to your project dashboard.</li>
+  <li>Open the converted <code>output.vtt</code> file in the subtitle editor.</li>
+  <li>Use the timeline view to adjust start and end times, edit text directly, or split long sentences into shorter caption blocks.</li>
+  <li>Enable real-time preview to see changes overlaid on a sample video clip.</li>
+</ul>
+
+<h3>6. embed in social media clips</h3>
+
+<p>Once your <code>output.vtt</code> file is polished, you can:</p>
+
+<ul>
+  <li>Upload the VTT alongside your MP4 to Facebook, Twitter, LinkedIn, or any HTML5 player.</li>
+  <li>Host the <code>.vtt</code> file on your CDN and reference it via <code>&lt;track&gt;</code> tags for websites and landing pages:</li>
+</ul>
+
+<pre><code>&lt;video controls&gt;
+  &lt;source src="clip.mp4" type="video/mp4"&gt;
+  &lt;track kind="captions" src="output.vtt" srclang="en" label="English"&gt;
+&lt;/video&gt;</code></pre>
+
+<h2>Key HappyScribe features for smoother conversion</h2>
+
+<p>HappyScribe is designed from the ground up to simplify every step of your subtitle and transcript workflow. Here are three standout features that will save you time and ensure perfect captions for social media clips:</p>
+
+<h3>1. subtitle editor</h3>
+<p>Our in-browser subtitle editor provides an intuitive timeline and waveform view. You can:</p>
+<ul>
+  <li>Quickly adjust timestamps with drag-and-drop controls.</li>
+  <li>Split or merge caption blocks to improve readability on small screens.</li>
+  <li>Preview edited captions in real time on a sample video frame.</li>
+</ul>
+
+<h3>2. AI notetaker</h3>
+<p>Beyond basic conversion, the AI notetaker automatically generates:  
+<ul>
+  <li>Key highlights and summary points from your video.  
+  <li>Time-coded chapters and action items—ideal for repurposing content or adding context to social posts.  
+  <li>Speaker labels and scene changes, giving you a structured outline in minutes.</li>
+</ul></p>
+
+<h3>3. robust subtitle API</h3>
+<p>The HappyScribe API offers:</p>
+<ul>
+  <li>Batch processing endpoints so you can convert dozens of files in one request.  
+  <li>Webhooks for status updates—get immediately notified when your conversion is complete.  
+  <li>Full format support, including SRT, VTT, TTML, and more.</li>
+</ul>
+
+<h3>4. team collaboration</h3>
+<p>Invite team members to review captions side by side, leave timestamped comments, and track revision history. Perfect for agencies working with remote editors or large marketing teams.</p>
+
+<h2>Mini faq</h2>
+
+<dl>
+  <dt>Can I convert multiple SRT files at once?</dt>
+  <dd>Yes. Use the HappyScribe batch API endpoint by sending an array of file uploads in a single request. You will receive separate VTT outputs for each file.</dd>
+
+  <dt>Will my original caption formatting be preserved in VTT?</dt>
+  <dd>Absolutely. The conversion engine retains line breaks, speaker labels, and timestamps. You only need to tweak minor details if you change durations or split blocks.</dd>
+
+  <dt>Which social platforms accept VTT files?</dt>
+  <dd>Most major platforms support VTT, including YouTube, Facebook, Twitter, LinkedIn, Vimeo, and HTML5 video players. Always check platform docs for any naming or hosting requirements.</dd>
+</dl>
+
+<h2>Ready to optimize your social media video strategy?</h2>
+<p>Start converting your SRT files to VTT in seconds and ensure every clip is accessible, engaging, and platform-ready. Sign up today to unlock the full power of HappyScribe’s API, subtitle editor, and AI notetaker. Your audience is waiting—make every word count.</p>
+<p><a href="https://www.happyscribe.com" style="display:inline-block;padding:12px 24px;background-color:#ff6b00;color:#fff;text-decoration:none;font-weight:bold;border-radius:4px;">Try HappyScribe now</a></p><p><a href="convert-srt-to-vtt.html">&larr; Back to converter landing</a></p><h2>More Use Cases</h2><ul><li><a href="use_1_webinar-captioning.html">Webinar captioning</a></li><li><a href="use_2_e-learning-modules.html">E-learning modules</a></li><li><a href="use_3_corporate-training-videos.html">Corporate training videos</a></li><li><a href="use_4_accessibility-compliance.html">Accessibility compliance</a></li><li><a href="use_5_streaming-platform-integration.html">Streaming platform integration</a></li><li><a href="use_7_conference-recordings.html">Conference recordings</a></li><li><a href="use_8_podcast-show-notes.html">Podcast show notes</a></li><li><a href="use_9_mobile-app-subtitles.html">Mobile app subtitles</a></li><li><a href="use_10_game-localization.html">Game localization</a></li></ul></main><footer><div class='container'><p>&copy; HappyScribe</p></div></footer></body></html>

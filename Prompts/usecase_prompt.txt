@@ -1,0 +1,15 @@
+Generate a detailed (~2300 words) landing page for the professional use case below.
+
+Use case name: "${USE_NAME}"
+Conversion context: "${F1} to ${F2}"
+
+Requirements
+1. Open with a scenario that explains why this conversion is important for the industry segment.
+2. Provide a step-by-step workflow (tools, scripts, HappyScribe API calls).
+3. Highlight at least three HappyScribe features that improve this workflow (subtitle editor, AI notetaker, API, etc.).
+4. Add a mini FAQ (3 pairs) specific to this use case.
+5. Finish with a persuasive CTA linking to HappyScribe.
+6. Sentence-case headings, acronyms uppercase, no em dashes.
+7. Basic HTML only, no generic "Conclusion".
+
+Return STRICT valid HTML (no wrapper tags). 
