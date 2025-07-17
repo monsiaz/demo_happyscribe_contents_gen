@@ -18,15 +18,12 @@ The output is a static HTML demo site that can be published directly on GitHub P
 
 ```mermaid
 flowchart TD
-    CSV[CSV Keyword List]
-    styleCSV[[settings/srt_contents.csv]]
-    subgraph Runtime
-      A[script.py] -->|OpenAI ChatCompletion| B((LLM))
-      A -->|SerpAPI| C((Google SERP))
-      B --> D[JSON Blocks (content, FAQ, blogs, uses)]
-      D --> E[Static Page Builder]
-    end
-    E --> F[demo_site/*.html]
+    CSV["CSV Keyword List"] --> Script[script.py]
+    Script -->|"OpenAI"| LLM["ChatCompletion"]
+    Script -->|"SerpAPI"| SERP["Google SERP"]
+    LLM --> JSON["Parsed JSON (content, FAQ, blogs, uses)"]
+    JSON --> Builder["Static Page Builder"]
+    Builder --> Site["docs/ *.html"]
 ```
 
 ### Main Components
