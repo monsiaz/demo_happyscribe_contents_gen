@@ -3,7 +3,9 @@
 ## Project Purpose
 
 This repository contains a small yet powerful **SEO landing-page generator** written in Python.  
-It automates the creation of:
+Its primary goal is **optimising for long-tail keywords** – targeting very specific, low-competition search phrases that HappyScribe’s main site may overlook – in order to capture incremental organic traffic.
+
+The script automates the creation of:
 
 * A conversion landing page for every subtitle format pair (eg. *SRT → VTT*)
 * Ten in-depth blog articles that expand on the topic
