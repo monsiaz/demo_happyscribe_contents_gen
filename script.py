@@ -52,7 +52,7 @@ HARDCODED_API_KEY = ""  # DO NOT store real keys in the repo
 # ---------------------------------------------------------------------------
 # User-tweakable defaults                                                     
 # ---------------------------------------------------------------------------
-DEFAULT_TEST_MODE: bool = True
+DEFAULT_TEST_MODE: bool = False  # disable test mode by default
 TEST_ROW_COUNT: int = 1  # rows processed when test mode active
 
 ###############################################################################
@@ -233,7 +233,7 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--input_csv", default=DEFAULT_CSV)
     p.add_argument("--output_json", default=DEFAULT_OUTPUT)
     p.add_argument("--concurrency", type=int, default=3)
-    p.add_argument("--test", action="store_true", default=DEFAULT_TEST_MODE)
+    p.add_argument("--test", action="store_true", default=DEFAULT_TEST_MODE, help="enable test mode to process only top rows")
     p.add_argument("--limit", type=int)
     p.add_argument("--debug", action="store_true")
     return p.parse_args()
