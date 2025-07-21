@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Software developer - HappyScribe</title>
+    <meta name="description" content="A dev integrates a command line script into CI/CD to convert SRT to VTT automatically when new media is deployed.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <link rel="canonical" href="https://monsiaz.github.io/demo_happyscribe_contents_gen/srt-to-vtt_use_10.html">
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="https://www.happyscribe.com/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://www.happyscribe.com/favicon/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="https://www.happyscribe.com/favicon/apple-touch-icon.png">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="https://www.happyscribe.com/assets/hs.landing-42122b4ad66b2e1435c21ff4c12c2cadf6b5aa464214dc79f1ad1ebd2d99aa21.css">
+    <link rel="stylesheet" href="/settings/web_assets/style.css">
+</head>
+<body>
+    <header class='topbar'>
+        <div class='container topbar-inner'>
+            <a class='brand' href='/'><img src='/settings/web_assets/png-transparent-happy-scribe-logo-tech-companies.png' alt='HappyScribe logo'></a>
+            <nav class='main-nav'>
+                <a href='#'>Tools</a>
+                <a href='#'>Resources</a>
+                <a href='#'>Log in</a>
+                <a href='#' class='btn btn-secondary'>Start for Free</a>
+                <a href='#' class='btn btn-primary'>Get a demo</a>
+            </nav>
+        </div>
+    </header>
+    <main class='container'>
+        <h1>Software developer use case: converting SRT to VTT</h1>
+<p>Your video platform depends on WebVTT files for subtitles, but your content team keeps sending you SRT files. Manually converting hundreds of files with custom scripts adds hours of work and hidden bugs. In this use case, we’ll show you how to build a reliable SRT to VTT conversion pipeline using the HappyScribe API. You’ll learn how to set up a script, call the API, review results in our subtitle editor, and automate the flow inside your CI/CD pipeline.</p>
+
+<h2>Ever wrestled with mismatched subtitle formats?</h2>
+<p>Imagine you’re integrating captions into a React video player or building a custom CMS for media. Your front end needs .vtt files to display captions, but contributors keep uploading .srt. Browser support for .vtt is universal, and search engines can index WebVTT metadata. Without a quick conversion step, every video release stalls while someone on your team runs manual commands or fiddles with command-line tools. You need a solid conversion service you can tap into from your code, not another bash script that breaks when the format changes by a few milliseconds or a platform update.</p>
+<p>That’s where HappyScribe comes in. Our API takes the guesswork out of subtitle conversion. You send us an SRT file, we send back a WebVTT file in seconds. No manual steps. No extra dependencies. You or your team can focus on building features for your users, not fixing timecode bugs or edge cases.</p>
+
+<h2>Why should you convert SRT to VTT for your projects?</h2>
+<ul>
+  <li><strong>Browser compatibility</strong>: All modern browsers support WebVTT captions natively. That means fewer polyfills and less playback code.</li>
+  <li><strong>SEO and accessibility</strong>: VTT files can include metadata and chapter markers. Search engines and assistive tech pick up on that data.</li>
+  <li><strong>Standardized timecode</strong>: WebVTT uses a strict HH:MM:SS.mmm format. Consistent timing avoids drift and flicker on-screen.</li>
+  <li><strong>Easy styling</strong>: You can style WebVTT captions with CSS cues, giving you more control over captions design.</li>
+  <li><strong>Automated pipelines</strong>: Convert subs on the fly in your build pipeline, so every deploy includes the latest .vtt files without manual intervention.</li>
+</ul>
+
+<h2>What common challenges come up when converting SRT to VTT?</h2>
+<ul>
+  <li><strong>Timecode mismatches</strong>: SRT allows comma separators (00:00:01,500), while VTT requires dots (00:00:01.500). A simple find-and-replace can cause errors if timecodes include hours or blank lines.</li>
+  <li><strong>File encoding</strong>: SRT files can be encoded in UTF-8, UTF-16 or even ANSI. You need to normalize encoding to avoid broken characters.</li>
+  <li><strong>Blank lines or duplicate indices</strong>: SRT files often have extra blank lines or wrong sequence numbers. A robust converter must handle those edge cases.</li>
+  <li><strong>Style tags and markup</strong>: Some SRT files include font or color tags that aren’t valid in VTT. You need to strip or map those tags correctly.</li>
+</ul>
+
+<h2>How do you set up a workflow for SRT to VTT conversion?</h2>
+
+<h3>1. Prepare your environment and API key</h3>
+<p>First, sign up for a HappyScribe account and generate an API token. In your terminal, install a CLI tool or choose your preferred HTTP library. We’ll show you examples in curl, Node.js, and Python. If you haven’t already, store your API key in an environment variable for security. For example:</p>
+<pre><code>export HAPPYSCRIBE_API_KEY="your_secret_token_here"</code></pre>
+
+<h3>2. Make your first API call for conversion</h3>
+<p>Once your key is set, call the HappyScribe conversion endpoint. Below is a curl example. This sends your SRT file and requests the VTT format.</p>
+<pre><code>curl -X POST "https://api.happyscribe.com/v1/subtitles" \
+  -H "Authorization: Bearer $HAPPYSCRIBE_API_KEY" \
+  -F "file=@/path/to/subtitles.srt" \
+  -F "format=vtt"</code></pre>
+<p>If you prefer Node.js, you can use the axios library:</p>
+<pre><code>const axios = require('axios');
+const fs = require('fs');
+
+async function convertSrtToVtt() {
+  const formData = new FormData();
+  formData.append('file', fs.createReadStream('subtitles.srt'));
+  formData.append('format', 'vtt');
+
+  const response = await axios.post(
+    'https://api.happyscribe.com/v1/subtitles',
+    formData,
+    {
+      headers: {
+        ...formData.getHeaders(),
+        Authorization: `Bearer ${process.env.HAPPYSCRIBE_API_KEY}`
+      }
+    }
+  );
+  console.log('Conversion result:', response.data);
+}</code></pre>
+
+<h3>3. Handle the response and save your VTT file</h3>
+<p>The API returns a JSON object with a download URL. Grab that URL and fetch your VTT file. In Node.js you might write:</p>
+<pre><code>const url = response.data.file; // URL to your .vtt file
+const fileStream = fs.createWriteStream('subtitles.vtt');
+const res = await axios.get(url, { responseType: 'stream' });
+res.data.pipe(fileStream);
+fileStream.on('finish', () => console.log('Saved subtitles.vtt'));</code></pre>
+
+<h3>4. Review and tweak with the subtitle editor</h3>
+<p>Open the converted file in HappyScribe’s online subtitle editor. Here you can:</p>
+<ul>
+  <li>Edit timecodes with a visual timeline</li>
+  <li>Fix any leftover text errors or tags</li>
+  <li>Add styling cues for color or positioning</li>
+  <li>Preview captions over your video</li>
+</ul>
+<p>No extra downloads or software installs. You and your team can make live edits in the browser and save changes in real time.</p>
+
+<h3>5. Automate within your CI/CD pipeline</h3>
+<p>Include the curl or Node.js script in your build step. For example, in a GitHub Actions workflow you might add:</p>
+<pre><code>jobs:
+  subtitle-conversion:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - name: Convert SRT to VTT
+        env:
+          HAPPYSCRIBE_API_KEY: ${{ secrets.HAPPYSCRIBE_API_KEY }}
+        run: |
+          curl -X POST "https://api.happyscribe.com/v1/subtitles" \
+            -H "Authorization: Bearer $HAPPYSCRIBE_API_KEY" \
+            -F "file=@subtitles.srt" \
+            -F "format=vtt" \
+            -o subtitles.vtt
+      - name: Commit and push VTT
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git add subtitles.vtt
+          git commit -m "Auto-update VTT subtitles"
+          git push</code></pre>
+
+<h2>What HappyScribe features speed up this workflow?</h2>
+
+<h3>Subtitle editor</h3>
+<p>Our subtitle editor is a web-based tool built with developers in mind. You can:</p>
+<ul>
+  <li>Drag and drop timecode markers</li>
+  <li>Search and replace text across all captions</li>
+  <li>Batch adjust time offsets</li>
+  <li>Export in multiple formats including SRT, VTT, TXT, and more</li>
+</ul>
+<p>No need to switch apps or learn a new desktop tool.</p>
+
+<h3>AI notetaker</h3>
+<p>If you record meetings or interviews, our AI notetaker can generate draft transcripts automatically. Then you can export those transcripts as SRT and instantly convert to VTT for your video highlights. It’s perfect for recording demos or team stand-ups and sharing them with clean captions.</p>
+
+<h3>API and integration</h3>
+<p>The HappyScribe API is designed for high throughput. You can:</p>
+<ul>
+  <li>Convert dozens or hundreds of files in parallel</li>
+  <li>Check job status with a simple GET call</li>
+  <li>Download multiple formats in one request</li>
+  <li>Integrate with any language or framework that can call a REST API</li>
+</ul>
+
+<h3>Multi-language support</h3>
+<p>Need subtitles in Spanish, German, or Japanese? Upload your SRT in any language we support and convert to VTT. The timecodes remain perfect, and you can edit text in the same editor. You’ll save hours on manual file handling.</p>
+
+<h3>Team collaboration</h3>
+<p>Invite your QA team or translators to review captions in the editor. Everyone works on the same file in real time. No more sending around versions named “final_revised_2.vtt” and losing track of changes.</p>
+
+<h2>Tips to streamline subtitle delivery in production</h2>
+<ul>
+  <li><strong>Validate encoding first</strong>: Run a quick script to detect and convert SRT files to UTF-8.</li>
+  <li><strong>Batch submit files</strong>: Group related SRT files and send them in one API call to save round-trip time.</li>
+  <li><strong>Cache results</strong>: If your subtitles rarely change, store converted VTT files in a CDN with long cache headers.</li>
+  <li><strong>Monitor job status</strong>: Poll the API or set up webhooks to get alerts when conversions fail.</li>
+  <li><strong>Use version control</strong>: Keep original SRT and converted VTT side by side in your repo or asset store.</li>
+  <li><strong>Automate QA checks</strong>: Write tests that verify WebVTT file format before merging changes.</li>
+</ul>
+
+<h3>Mini FAQ</h3>
+<div class="accordion" id="faqAccordion">
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="faqHeadingOne">
+      <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapseOne" aria-expanded="true" aria-controls="faqCollapseOne">
+        What file formats can the API convert?
+      </button>
+    </h2>
+    <div id="faqCollapseOne" class="accordion-collapse collapse show" aria-labelledby="faqHeadingOne" data-bs-parent="#faqAccordion">
+      <div class="accordion-body">
+        HappyScribe can convert between SRT, VTT, TXT, DOCX, and more. Just specify your target format in the “format” parameter of the API call.
+      </div>
+    </div>
+  </div>
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="faqHeadingTwo">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapseTwo" aria-expanded="false" aria-controls="faqCollapseTwo">
+        Can I convert multiple files in one request?
+      </button>
+    </h2>
+    <div id="faqCollapseTwo" class="accordion-collapse collapse" aria-labelledby="faqHeadingTwo" data-bs-parent="#faqAccordion">
+      <div class="accordion-body">
+        Yes. You can send a zip archive of multiple SRT files to the API. We’ll process each file and return a zip archive of converted VTT files.
+      </div>
+    </div>
+  </div>
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="faqHeadingThree">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapseThree" aria-expanded="false" aria-controls="faqCollapseThree">
+        Is my data secure during conversion?
+      </button>
+    </h2>
+    <div id="faqCollapseThree" class="accordion-collapse collapse" aria-labelledby="faqHeadingThree" data-bs-parent="#faqAccordion">
+      <div class="accordion-body">
+        All data transfers use HTTPS with TLS encryption. Files are stored temporarily and deleted automatically after 30 days or on demand via the API.
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2>Ready to streamline your subtitle workflow?</h2>
+<p>Stop wrestling with timecodes and manual scripts. Let HappyScribe handle your SRT to VTT conversions so you can focus on building great software. Get your API key, test a few conversions, and see how quickly you can serve WebVTT captions to your users.</p>
+<p><a href="https://www.happyscribe.com/api" class="btn btn-primary" target="_blank">Get started with HappyScribe API</a></p>
+        <p><a href="srt-to-vtt.html">&larr; Back to converter landing</a></p><h2>More Use Cases</h2><ul><li><a href="srt-to-vtt_use_1.html">Online course creator</a></li><li><a href="srt-to-vtt_use_2.html">Video marketing agency</a></li><li><a href="srt-to-vtt_use_3.html">Film post-production</a></li><li><a href="srt-to-vtt_use_4.html">E-learning developer</a></li><li><a href="srt-to-vtt_use_5.html">Corporate trainer</a></li><li><a href="srt-to-vtt_use_6.html">Podcast producer</a></li><li><a href="srt-to-vtt_use_7.html">Event streaming provider</a></li><li><a href="srt-to-vtt_use_8.html">News broadcaster</a></li><li><a href="srt-to-vtt_use_9.html">Accessibility specialist</a></li></ul>
+    </main>
+    <footer>
+      <div class="container small text-muted">
+         © HappyScribe · Generated by <strong>o4-mini-2025-04-16</strong>
+      </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

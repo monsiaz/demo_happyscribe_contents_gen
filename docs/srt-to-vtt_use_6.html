@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Podcast producer - HappyScribe</title>
+    <meta name="description" content="Producers transcribe audio, convert SRT to VTT for video versions of podcasts, and add styling with the Caption generator.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <link rel="canonical" href="https://monsiaz.github.io/demo_happyscribe_contents_gen/srt-to-vtt_use_6.html">
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="https://www.happyscribe.com/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://www.happyscribe.com/favicon/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="https://www.happyscribe.com/favicon/apple-touch-icon.png">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="https://www.happyscribe.com/assets/hs.landing-42122b4ad66b2e1435c21ff4c12c2cadf6b5aa464214dc79f1ad1ebd2d99aa21.css">
+    <link rel="stylesheet" href="/settings/web_assets/style.css">
+</head>
+<body>
+    <header class='topbar'>
+        <div class='container topbar-inner'>
+            <a class='brand' href='/'><img src='/settings/web_assets/png-transparent-happy-scribe-logo-tech-companies.png' alt='HappyScribe logo'></a>
+            <nav class='main-nav'>
+                <a href='#'>Tools</a>
+                <a href='#'>Resources</a>
+                <a href='#'>Log in</a>
+                <a href='#' class='btn btn-secondary'>Start for Free</a>
+                <a href='#' class='btn btn-primary'>Get a demo</a>
+            </nav>
+        </div>
+    </header>
+    <main class='container'>
+        <h1>Podcast producer use case: SRT to VTT</h1>
+
+<p>In this use case we’ll show you how a podcast producer can convert SRT files to VTT in minutes with HappyScribe. If you’re creating video clips for social media, embedding transcripts on your site or powering a web player with captions, you need the right format. We’ll guide you through the why and the how, share a step-by-step workflow, point out key features and wrap up with answers to your top questions.</p>
+
+<h2>What’s the scenario?</h2>
+<p>Imagine you’re wrapping up a new episode and you’ve got an SRT file from your caption service. Now you want to:</p>
+<ul>
+  <li>Publish captions on your website player that only accepts WebVTT (VTT).</li>
+  <li>Meet accessibility standards for hearing-impaired listeners.</li>
+  <li>Boost SEO by embedding searchable transcripts in HTML.</li>
+  <li>Create dynamic video quotes with time-coded subtitles for social channels.</li>
+</ul>
+<p>While SRT is great, most modern players and web apps prefer VTT. Manually converting your file can take time and risk errors in timestamps. That’s where HappyScribe steps in. You’ll learn how to go from SRT to VTT with a few clicks or a single API call, saving you hours of manual work.</p>
+
+<h2>How does the conversion workflow look?</h2>
+<p>We’ve broken down the process into clear steps. You can follow along in our web app, or plug into HappyScribe’s API if you want to build an automated pipeline. We’ll cover both paths.</p>
+
+<h3>Workflow with the HappyScribe web app</h3>
+<ol>
+  <li>Create or sign in to your HappyScribe account.</li>
+  <li>Go to your dashboard and click “New transcript or subtitle”.</li>
+  <li>Upload your SRT file.</li>
+  <li>Select “Convert to VTT” under output formats.</li>
+  <li>Click “Convert” and wait for the file to process.</li>
+  <li>Download the VTT file or copy a shareable link.</li>
+</ol>
+
+<p>This path is perfect if you want a quick visual check in our subtitle editor before you hit download. You can tweak text, adjust breaks or change speaker labels in just a few clicks.</p>
+
+<h3>Automated workflow with the HappyScribe API</h3>
+<p>For power users and developers, here’s how to build a simple script that:</p>
+<ul>
+  <li>Uploads your SRT file.</li>
+  <li>Triggers a conversion job.</li>
+  <li>Polls for completion.</li>
+  <li>Downloads your VTT file automatically.</li>
+</ul>
+
+<p>We’ll give you a sample in Node.js. Feel free to adapt to Python, Ruby or any language that can make HTTP calls.</p>
+
+<pre><code>// install axios: npm install axios
+const axios = require('axios');
+const fs = require('fs');
+const apiKey = 'YOUR_HAPPYSCRIBE_API_KEY';
+
+async function convertSrtToVtt(inputPath, outputPath) {
+  // 1. Upload SRT
+  const formData = new FormData();
+  formData.append('file', fs.createReadStream(inputPath));
+  formData.append('source_type', 'subtitle');
+  formData.append('format', 'srt');
+
+  const uploadRes = await axios.post('https://api.happyscribe.com/v1/uploads', formData, {
+    headers: formData.getHeaders({ Authorization: `Bearer ${apiKey}` })
+  });
+  const fileId = uploadRes.data.id;
+
+  // 2. Create conversion job
+  const jobRes = await axios.post(
+    'https://api.happyscribe.com/v1/conversions',
+    {
+      upload_id: fileId,
+      source_format: 'srt',
+      target_format: 'vtt'
+    },
+    { headers: { Authorization: `Bearer ${apiKey}` } }
+  );
+  const jobId = jobRes.data.id;
+
+  // 3. Poll for job status
+  let status = 'processing';
+  while (status === 'processing') {
+    await new Promise(r => setTimeout(r, 2000)); // wait 2 seconds
+    const statusRes = await axios.get(`https://api.happyscribe.com/v1/conversions/${jobId}`, {
+      headers: { Authorization: `Bearer ${apiKey}` }
+    });
+    status = statusRes.data.status;
+  }
+
+  // 4. Download VTT
+  const downloadUrl = statusRes.data.download_url;
+  const fileRes = await axios.get(downloadUrl, { responseType: 'stream' });
+  const writer = fs.createWriteStream(outputPath);
+  fileRes.data.pipe(writer);
+  return new Promise((resolve, reject) => {
+    writer.on('finish', resolve);
+    writer.on('error', reject);
+  });
+}
+
+convertSrtToVtt('episode123.srt', 'episode123.vtt')
+  .then(() => console.log('Conversion complete!'))
+  .catch(err => console.error(err));
+</code></pre>
+
+<p>With this script, you can drop your SRT file into a watched folder and get back a VTT without lifting a finger. That’s perfect for batch jobs or integrating into your CI/CD pipeline for podcast production.</p>
+
+<h2>What features speed up your podcast workflow?</h2>
+<p>HappyScribe is more than a file converter. It’s a full suite to support your content creation, publishing and editing needs. Here are three features that make your life easier:</p>
+<ul>
+  <li><strong>Subtitle editor.</strong> Our intuitive editor shows timecodes, speaker labels and text all in one view. You can search, split or merge captions instantly, fix typos and adjust timing with drag-and-drop.</li>
+  <li><strong>AI notetaker.</strong> Use our AI notetaker to get a summary of each segment, topic tags, action items and highlights. That means you spend less time scrolling transcripts for key quotes and more time creating engaging clips.</li>
+  <li><strong>Flexible API.</strong> Build your own integrations. Automate uploads, trigger conversions, fetch transcripts and consume captions in any format you need. It’s perfect for custom dashboards, content management systems or automated publishing.</li>
+</ul>
+
+<p>Other handy perks include:</p>
+<ul>
+  <li>Speaker diarization to separate host and guest lines automatically.</li>
+  <li>Timestamp export in JSON, TXT or CSV for data analysis.</li>
+  <li>Support for over 120 languages and dialects.</li>
+</ul>
+
+<h3>Mini FAQ</h3>
+<div class="accordion" id="faqAccordion">
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="faqHeadingOne">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapseOne" aria-expanded="false" aria-controls="faqCollapseOne">
+        Can I edit captions after conversion?
+      </button>
+    </h2>
+    <div id="faqCollapseOne" class="accordion-collapse collapse" aria-labelledby="faqHeadingOne" data-bs-parent="#faqAccordion">
+      <div class="accordion-body">
+        Yes, you can open your VTT file in our subtitle editor, make changes and re-export. All the tools for splitting, merging and fine tuning are right there.
+      </div>
+    </div>
+  </div>
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="faqHeadingTwo">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapseTwo" aria-expanded="false" aria-controls="faqCollapseTwo">
+        How accurate is the conversion from SRT to VTT?
+      </button>
+    </h2>
+    <div id="faqCollapseTwo" class="accordion-collapse collapse" aria-labelledby="faqHeadingTwo" data-bs-parent="#faqAccordion">
+      <div class="accordion-body">
+        The conversion is 100% precise for timecodes and text encoding. We simply wrap your existing captions in the VTT format and preserve all timing cues.
+      </div>
+    </div>
+  </div>
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="faqHeadingThree">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapseThree" aria-expanded="false" aria-controls="faqCollapseThree">
+        How long does a conversion take?
+      </button>
+    </h2>
+    <div id="faqCollapseThree" class="accordion-collapse collapse" aria-labelledby="faqHeadingThree" data-bs-parent="#faqAccordion">
+      <div class="accordion-body">
+        Conversions usually finish in under 30 seconds for files up to an hour long. If you have a batch of files, you can run them all in parallel with our API.
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2>Ready to start converting?</h2>
+<p>You’ve seen how simple it is to go from SRT to VTT with HappyScribe. Stop wrestling with manual edits and clunky scripts. Get back to what you love—producing amazing podcast episodes—and let our platform handle the rest.</p>
+<p><a href="https://www.happyscribe.com" target="_blank">Start your free trial with HappyScribe today</a> and convert your first file in seconds!</p>
+        <p><a href="srt-to-vtt.html">&larr; Back to converter landing</a></p><h2>More Use Cases</h2><ul><li><a href="srt-to-vtt_use_1.html">Online course creator</a></li><li><a href="srt-to-vtt_use_2.html">Video marketing agency</a></li><li><a href="srt-to-vtt_use_3.html">Film post-production</a></li><li><a href="srt-to-vtt_use_4.html">E-learning developer</a></li><li><a href="srt-to-vtt_use_5.html">Corporate trainer</a></li><li><a href="srt-to-vtt_use_7.html">Event streaming provider</a></li><li><a href="srt-to-vtt_use_8.html">News broadcaster</a></li><li><a href="srt-to-vtt_use_9.html">Accessibility specialist</a></li><li><a href="srt-to-vtt_use_10.html">Software developer</a></li></ul>
+    </main>
+    <footer>
+      <div class="container small text-muted">
+         © HappyScribe · Generated by <strong>o4-mini-2025-04-16</strong>
+      </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

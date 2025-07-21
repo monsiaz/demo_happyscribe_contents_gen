@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>E-learning developer - HappyScribe</title>
+    <meta name="description" content="A developer integrates srt to vtt conversion into the LMS pipeline using the HappyScribe API to automate caption delivery.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <link rel="canonical" href="https://monsiaz.github.io/demo_happyscribe_contents_gen/srt-to-vtt_use_4.html">
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="https://www.happyscribe.com/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://www.happyscribe.com/favicon/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="https://www.happyscribe.com/favicon/apple-touch-icon.png">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="https://www.happyscribe.com/assets/hs.landing-42122b4ad66b2e1435c21ff4c12c2cadf6b5aa464214dc79f1ad1ebd2d99aa21.css">
+    <link rel="stylesheet" href="/settings/web_assets/style.css">
+</head>
+<body>
+    <header class='topbar'>
+        <div class='container topbar-inner'>
+            <a class='brand' href='/'><img src='/settings/web_assets/png-transparent-happy-scribe-logo-tech-companies.png' alt='HappyScribe logo'></a>
+            <nav class='main-nav'>
+                <a href='#'>Tools</a>
+                <a href='#'>Resources</a>
+                <a href='#'>Log in</a>
+                <a href='#' class='btn btn-secondary'>Start for Free</a>
+                <a href='#' class='btn btn-primary'>Get a demo</a>
+            </nav>
+        </div>
+    </header>
+    <main class='container'>
+        <h1>E-learning developer: convert SRT to VTT for seamless captioning</h1>
+
+<p>As an e-learning developer, you know how critical accurate, accessible captions are for your online courses. whether you’re building a compliance training for a global workforce or launching a language learning series, the right subtitle format can make all the difference. in this guide, you’ll learn why converting SRT to VTT matters for modern platforms, how to set up a smooth workflow with HappyScribe, and which key features will save you time and keep your learners engaged.</p>
+
+<h2>why does SRT to VTT conversion matter for e-learning?</h2>
+<p>you might already have SRT files from past projects, client submissions, or auto-generation tools. but most modern video players and learning management systems (LMS) prefer WebVTT (.vtt) because it supports:</p>
+<ul>
+  <li>styled captions (colors, positioning)</li>
+  <li>chapter markers for long lectures</li>
+  <li>better browser compatibility</li>
+  <li>HTML5 video integration</li>
+</ul>
+<p>if you don’t convert, your captions might not appear, or you’ll lose styling and timing accuracy. every playback glitch can distract learners and hurt completion rates.</p>
+
+<h2>how can you set up an efficient conversion workflow?</h2>
+<p>we’ll walk through a simple, step-by-step workflow using HappyScribe tools and API calls. by the end, you’ll have a repeatable process to convert large batches of SRT files into VTT, customize captions, and push them to your LMS.</p>
+
+<h3>1. collect your SRT files</h3>
+<p>start by organizing all SRT files into a single folder. you can:</p>
+<ul>
+  <li>download exports from transcription services</li>
+  <li>gather client-provided captions</li>
+  <li>auto-generate SRT using HappyScribe’s subtitle editor or other tools</li>
+</ul>
+
+<h3>2. set up your environment</h3>
+<p>you’ll need:</p>
+<ul>
+  <li>a command-line tool that supports cURL or HTTP requests</li>
+  <li>your HappyScribe API key (you can get one on your dashboard under <strong>API settings</strong>)</li>
+  <li>the folder path for your SRT files</li>
+</ul>
+<p>tip: store your API key as an environment variable (e.g., <code>HAPPYSCRIBE_API_KEY</code>) to keep your scripts secure.</p>
+
+<h3>3. write the conversion script</h3>
+<p>below is a sample Bash script. it loops through all SRT files in a folder, sends them to the HappyScribe API, and finally downloads the converted VTT files.</p>
+<pre><code># set the source and target folders
+SRC_DIR="./srt_files"
+DEST_DIR="./vtt_files"
+
+# create destination folder if needed
+mkdir -p "$DEST_DIR"
+
+# loop through each .srt file
+for file in "$SRC_DIR"/*.srt; do
+  filename=$(basename -- "$file" .srt)
+  echo "processing $filename.srt …"
+
+  # upload and convert
+  response=$(curl -s -X POST "https://api.happyscribe.com/v1/convert" \
+    -H "Authorization: Bearer $HAPPYSCRIBE_API_KEY" \
+    -F "file=@$file" \
+    -F "source_format=SRT" \
+    -F "target_format=VTT")
+
+  # extract conversion ID
+  conversion_id=$(echo $response | jq -r '.id')
+
+  # wait for conversion to finish
+  status="pending"
+  while [ "$status" != "done" ]; do
+    sleep 2
+    check=$(curl -s -X GET "https://api.happyscribe.com/v1/convert/$conversion_id" \
+      -H "Authorization: Bearer $HAPPYSCRIBE_API_KEY")
+    status=$(echo $check | jq -r '.status')
+    echo "status: $status"
+  done
+
+  # download the VTT
+  download_url=$(echo $check | jq -r '.result_url')
+  curl -s "$download_url" -o "$DEST_DIR/$filename.vtt"
+  echo "saved $filename.vtt"
+done
+
+echo "all files converted!"</code></pre>
+
+<p>this script:</p>
+<ul>
+  <li>uploads each SRT to the HappyScribe convert endpoint</li>
+  <li>polls the API until conversion is complete</li>
+  <li>downloads the final VTT to your chosen folder</li>
+</ul>
+
+<h3>4. review and refine captions</h3>
+<p>once you have your VTT files, open them in HappyScribe’s subtitle editor to:</p>
+<ul>
+  <li>adjust time codes for perfect synch</li>
+  <li>add styling classes or position cues</li>
+  <li>insert speaker labels or chapter markers</li>
+</ul>
+<p>this hands-on review ensures your captions meet brand standards and learner expectations.</p>
+
+<h2>which HappyScribe features speed up your workflow?</h2>
+<p>HappyScribe goes beyond a simple file converter. here are three core tools to help you work faster and smarter:</p>
+
+<h3>subtitle editor</h3>
+<ul>
+  <li>visual timeline allows you to tweak start and end times by dragging blocks</li>
+  <li>split, merge, or delete caption lines with one click</li>
+  <li>add notes or comments for your review team</li>
+</ul>
+
+<h3>AI notetaker</h3>
+<ul>
+  <li>transforms meeting recordings into clean notes</li>
+  <li>highlights key points automatically</li>
+  <li>links back to exact timestamps in your transcript</li>
+</ul>
+
+<h3>full-featured API</h3>
+<ul>
+  <li>batch process hundreds of files programmatically</li>
+  <li>choose from multiple output formats: VTT, SRT, TXT, JSON</li>
+  <li>secure, fast, and backed by enterprise-grade SLAs</li>
+</ul>
+
+<h2>mini faq</h2>
+<div class="accordion" id="miniFaq">
+  <div class="accordion-item">
+    <h3 class="accordion-header" id="faqHeadingOne">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapseOne" aria-expanded="false" aria-controls="faqCollapseOne">
+        can i convert files in bulk?
+      </button>
+    </h3>
+    <div id="faqCollapseOne" class="accordion-collapse collapse" aria-labelledby="faqHeadingOne" data-bs-parent="#miniFaq">
+      <div class="accordion-body">
+        absolutely. the HappyScribe API supports batch processing. just point to your SRT folder and run your script. you’ll get all conversions without manual uploads.
+      </div>
+    </div>
+  </div>
+  <div class="accordion-item">
+    <h3 class="accordion-header" id="faqHeadingTwo">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapseTwo" aria-expanded="false" aria-controls="faqCollapseTwo">
+        do i need coding skills to use the API?
+      </button>
+    </h3>
+    <div id="faqCollapseTwo" class="accordion-collapse collapse" aria-labelledby="faqHeadingTwo" data-bs-parent="#miniFaq">
+      <div class="accordion-body">
+        you don’t have to be a developer expert, but basic scripting helps. if you prefer a graphical interface, you can also upload and convert files directly in the HappyScribe dashboard.
+      </div>
+    </div>
+  </div>
+  <div class="accordion-item">
+    <h3 class="accordion-header" id="faqHeadingThree">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapseThree" aria-expanded="false" aria-controls="faqCollapseThree">
+        what about styling captions?
+      </button>
+    </h3>
+    <div id="faqCollapseThree" class="accordion-collapse collapse" aria-labelledby="faqHeadingThree" data-bs-parent="#miniFaq">
+      <div class="accordion-body">
+        WebVTT supports styling cues. after conversion, open your .vtt in our subtitle editor and add <code>::cue { color: #FFF; background: #000; }</code> blocks to match your course theme.
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2>ready to streamline your caption workflow?</h2>
+<p>with HappyScribe, you’ll save hours of manual work and deliver high-quality captions that keep your learners focused. no more format hassles or compatibility headaches. get started today and see how easy it is to convert SRT to VTT at scale.</p>
+<p><a href="https://www.happyscribe.com" class="btn btn-primary">start your free trial today</a></p>
+        <p><a href="srt-to-vtt.html">&larr; Back to converter landing</a></p><h2>More Use Cases</h2><ul><li><a href="srt-to-vtt_use_1.html">Online course creator</a></li><li><a href="srt-to-vtt_use_2.html">Video marketing agency</a></li><li><a href="srt-to-vtt_use_3.html">Film post-production</a></li><li><a href="srt-to-vtt_use_5.html">Corporate trainer</a></li><li><a href="srt-to-vtt_use_6.html">Podcast producer</a></li><li><a href="srt-to-vtt_use_7.html">Event streaming provider</a></li><li><a href="srt-to-vtt_use_8.html">News broadcaster</a></li><li><a href="srt-to-vtt_use_9.html">Accessibility specialist</a></li><li><a href="srt-to-vtt_use_10.html">Software developer</a></li></ul>
+    </main>
+    <footer>
+      <div class="container small text-muted">
+         © HappyScribe · Generated by <strong>o4-mini-2025-04-16</strong>
+      </div>
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
