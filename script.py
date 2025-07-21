@@ -195,6 +195,10 @@ class SEOGenerator:
         # If we don't expect JSON, return HTML directly
         if not expect_json:
             logging.debug("Not expecting JSON, returning HTML directly")
+            # Validate that it looks like HTML content
+            if not cleaned.strip().startswith('<') or len(cleaned) < 100:
+                logging.warning("Content doesn't look like proper HTML: %s", repr(cleaned[:200]))
+                return f"<p>Error: Invalid content generated. Expected HTML but got: {cleaned[:100]}...</p>", [], [], []
             return cleaned, [], [], []
         
         # Try parsing JSON; fallback to Python literal eval if it fails
@@ -348,6 +352,8 @@ async def main() -> None:
         comp_tpl = Template(fp.read())
     with open(os.path.join(PROMPTS_DIR, "ideas_prompt.txt"), "r", encoding="utf-8") as fp:
         ideas_tpl = Template(fp.read())
+    with open(os.path.join(PROMPTS_DIR, "tech_ideas_prompt.txt"), "r", encoding="utf-8") as fp:
+        tech_ideas_tpl = Template(fp.read())
 
     async def _wrap(idx: int, row: pd.Series):
         kw_primary = row["Keyword 1"]
@@ -484,7 +490,7 @@ async def main() -> None:
 <body>
   <header class='topbar'>
      <div class='container topbar-inner'>
-        <a class='brand' href='/'><img src='settings/web_assets/header.png' class='hero-img' alt='Header'></a>
+        <a class='brand' href='/'><img src='https://monsiaz.github.io/demo_happyscribe_contents_gen/settings/web_assets/header.png' class='hero-img' alt='Header'></a>
      </div>
   </header>
 
@@ -546,7 +552,6 @@ async def main() -> None:
         if '"content":' in txt and '"' in txt:
             try:
                 # Try to parse as JSON and extract content
-                import json
                 parsed = json.loads(txt)
                 if isinstance(parsed, dict) and "content" in parsed:
                     content = parsed["content"]
@@ -622,6 +627,36 @@ async def main() -> None:
         slug = re.sub(r'[^a-z0-9]+', '-', base.lower()).strip('-')
         return slug[:60] or 'page'
 
+    # Helper: apply proper sentence case
+    def _sentence_case(txt: str) -> str:
+        """Apply sentence case: capitalize first letter and proper nouns/acronyms only."""
+        if not txt:
+            return txt
+        
+        # First, preserve known acronyms
+        acronyms = ['SRT', 'VTT', 'HTML', 'CSS', 'API', 'JSON', 'XML', 'HTTP', 'HTTPS', 'URL', 'SEO', 'AI', 'ML', 'CI', 'CD', 'DVD', 'TV', 'HD', 'MP4', 'AVI', 'MOV', 'WEBM', 'FFMPEG', 'UTF', 'ASCII', 'WEBVTT']
+        
+        # Split into words
+        words = txt.split()
+        result = []
+        
+        for i, word in enumerate(words):
+            # Remove punctuation for comparison
+            clean_word = re.sub(r'[^\w]', '', word.upper())
+            
+            if clean_word in acronyms:
+                # Preserve acronym case but keep original punctuation
+                result.append(word.upper() if clean_word == word.upper() else 
+                            re.sub(r'[a-zA-Z]+', clean_word, word))
+            elif i == 0:
+                # Capitalize first word
+                result.append(word.capitalize())
+            else:
+                # Lowercase other words
+                result.append(word.lower())
+        
+        return ' '.join(result)
+
     # ------------------------------------------------------------------
     # Generate blog, use-case, and landing pages for each result --------
     # ------------------------------------------------------------------
@@ -638,12 +673,12 @@ async def main() -> None:
 
         # Build filename lists for blogs and use-cases
         blog_links = [
-            (f"{slug}_blog_{i}.html", b.get("title", f"Blog {i}").capitalize(), b.get("meta", ""))
+            (f"{slug}_blog_{i}.html", _sentence_case(b.get("title", f"Blog {i}")), b.get("meta", ""))
             for i, b in enumerate(res.get("blog_ideas", []), 1)
         ]
         
         use_links = [
-            (f"{slug}_use_{i}.html", u.get("name", f"Use case {i}"), u.get("description", ""))
+            (f"{slug}_use_{i}.html", _sentence_case(u.get("name", f"Use case {i}")), u.get("description", ""))
             for i, u in enumerate(res.get("use_cases", []), 1)
         ]
 
@@ -725,17 +760,67 @@ async def main() -> None:
 
         # ---------------- Technical additions (3 blogs + 3 use cases) ------------
 
-        tech_blog_titles = [
-            f"Building a microservice to convert {f1.upper()} to {f2.upper()} with HappyScribe API",
-            f"Automating {f1.upper()} → {f2.upper()} subtitle conversion in CI/CD",
-            f"Scaling bulk {f1.upper()} to {f2.upper()} conversions in the cloud"
-        ]
-
-        tech_use_titles = [
-            "Streaming platform integration with HappyScribe API",
-            "Post-production batch captioning workflow",
-            "Multilingual subtitle pipeline for global releases"
-        ]
+        # Generate technical ideas dynamically
+        # Extract SERP context from the main result
+        serp_context = res.get("serp_context", {})
+        related_q = [q.get("snippet") or q.get("question") for q in serp_context.get("related_questions", [])][:5]
+        organic_snips = [o.get("snippet", "") for o in serp_context.get("organic_results", [])][:4]
+        
+        tech_ideas_prompt = tech_ideas_tpl.substitute(
+            FORMAT_1=f1.upper(),
+            FORMAT_2=f2.upper(),
+            API_SUMMARY=API_SUMMARY,
+            RELATED_Q="\n".join(f"- {q}" for q in related_q if q),
+            ORGANIC_SNIPPETS="\n".join(f"- {s}" for s in organic_snips if s)
+        )
+        
+        try:
+            logging.debug("Generating technical ideas for %s to %s", f1.upper(), f2.upper())
+            
+            # Use the existing _single_call method with proper JSON parsing
+            tech_response, tech_faq, tech_blogs, tech_uses = await generator._single_call(
+                SYSTEM_MESSAGE, 
+                tech_ideas_prompt, 
+                model_override=BASE_MODEL,
+                expect_json=True
+            )
+            
+            logging.debug("Tech response type: %s", type(tech_response))
+            logging.debug("Tech blogs from _single_call: %s", tech_blogs)
+            logging.debug("Tech uses from _single_call: %s", tech_uses)
+            
+            # The _single_call method expects standard format, but we need custom keys
+            # So let's parse the raw response ourselves
+            if isinstance(tech_response, str) and tech_response.strip().startswith('{'):
+                try:
+                    tech_data = json.loads(tech_response)
+                    tech_blogs = tech_data.get("tech_blog_ideas", [])
+                    tech_uses = tech_data.get("tech_use_cases", [])
+                except Exception as e:
+                    logging.warning("Failed to parse tech JSON from _single_call: %s", e)
+                    tech_blogs = []
+                    tech_uses = []
+            
+            # Extract titles from generated content
+            tech_blog_titles = [blog.get("title", f"Technical blog {i}") for i, blog in enumerate(tech_blogs, 1)]
+            tech_use_titles = [use.get("name", f"Technical use case {i}") for i, use in enumerate(tech_uses, 1)]
+            
+            logging.debug("Generated tech blog titles: %s", tech_blog_titles)
+            logging.debug("Generated tech use case titles: %s", tech_use_titles)
+            
+        except Exception as e:
+            logging.warning("Technical ideas generation failed: %s, using fallback", e)
+            # Fallback to hardcoded titles if generation fails
+            tech_blog_titles = [
+                f"Building a microservice to convert {f1.upper()} to {f2.upper()} with HappyScribe API",
+                f"Automating {f1.upper()} → {f2.upper()} subtitle conversion in CI/CD",
+                f"Scaling bulk {f1.upper()} to {f2.upper()} conversions in the cloud"
+            ]
+            tech_use_titles = [
+                "Streaming platform integration with HappyScribe API",
+                "Post-production batch captioning workflow",
+                "Multilingual subtitle pipeline for global releases"
+            ]
 
         tech_tasks: List[asyncio.Task] = []
 
@@ -744,7 +829,7 @@ async def main() -> None:
             prompt = tech_article_tpl.substitute(TITLE=title, API_SUMMARY=API_SUMMARY)
             tech_tasks.append(asyncio.create_task(
                 generator._single_call(SYSTEM_MESSAGE, prompt, expect_json=False)))
-            blog_links.append((fname, title, ""))
+            blog_links.append((fname, _sentence_case(title), ""))
 
         for u_idx, name in enumerate(tech_use_titles, 1):
             fname = f"{slug}_tech_use_{u_idx}.html"
@@ -759,7 +844,7 @@ async def main() -> None:
             )
             tech_tasks.append(asyncio.create_task(
                 generator._single_call(SYSTEM_MESSAGE, prompt, expect_json=False)))
-            use_links.append((fname, name, ""))
+            use_links.append((fname, _sentence_case(name), ""))
 
         # Wait for tech pages content
         tech_results = await asyncio.gather(*tech_tasks)

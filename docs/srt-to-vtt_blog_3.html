@@ -2,8 +2,8 @@
 <html lang='en'>
 <head>
   <meta charset='utf-8'>
-  <title>How to convert srt to vtt using python script - HappyScribe</title>
-  <meta name='description' content='Use a short Python script to automate subtitle conversion, insert headers, change commas to dots and save multiple VTT files in seconds.'>
+  <title>How to convert SRT to VTT manually in a text editor - HappyScribe</title>
+  <meta name='description' content='Follow these simple steps to open an SRT file, adjust timecodes and add the WEBVTT header for a quick manual conversion with no extra tools.'>
   <meta name='viewport' content='width=device-width,initial-scale=1'>
   <link rel='canonical' href='https://monsiaz.github.io/demo_happyscribe_contents_gen/srt-to-vtt_blog_3.html'>
   <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css'>
@@ -12,144 +12,14 @@
 <body>
   <header class='topbar'>
      <div class='container topbar-inner'>
-        <a class='brand' href='/'><img src='settings/web_assets/header.png' class='hero-img' alt='Header'></a>
+        <a class='brand' href='/'><img src='https://monsiaz.github.io/demo_happyscribe_contents_gen/settings/web_assets/header.png' class='hero-img' alt='Header'></a>
      </div>
   </header>
 
   <main class='container'>
      <nav id='toc' class='toc'></nav>
-     <p>As an educator working with online video lessons, you know that clear subtitles make your content more accessible and boost engagement. You may have SRT files ready but need the more web-friendly VTT format for platforms like HTML5 players or modern video hosts. Converting SRT to VTT by hand can take time and introduce errors if you miss a cue or add an extra line break. In this article, you will learn how to write a simple Python script to handle this conversion in minutes. We will also look at ways to plug in your own workflows with tools from HappyScribe like Automatic transcription or the <a href="#">Subtitle editor</a>.</p>
-
-<p>Whether you are a classroom instructor, podcaster adding captions, or a web developer integrating transcripts, this guide will walk you through the process step by step. Let’s dive in to see how easy it is to turn your SRT files into VTT with Python.</p>
-
-<h2>Why might you need to convert srt to vtt?</h2>
-
-<p>SRT is one of the most popular subtitle formats, but it has limits. VTT, or WebVTT, is an upgrade for the modern web. It supports styling, positioning, and can carry metadata that SRT does not. That is why many video players and streaming services prefer .vtt files. If you skip this step, you could see missing captions or broken formatting on your site.</p>
-
-<p>For educators, converting to VTT means your learners can toggle captions on HTML5 video players in browser without extra plugins. For marketing teams, VTT allows custom styling of text for branding. Localization teams benefit from VTT’s support for multiple languages pooled in a single file. By automating this step, you free up time for lesson planning, creative edits, or translation reviews.</p>
-
-<h2>How do you set up python for subtitle conversion?</h2>
-
-<p>Before writing any code, make sure your system has Python installed. Most modern computers come with Python 3 already. If not, download it from python.org. You will also need a text editor or IDE. Visual Studio Code or PyCharm are solid free choices. If you are working on a shared project, consider setting up a virtual environment to keep your dependencies tidy:</p>
-
-<ul>
-  <li>Open your terminal or command prompt</li>
-  <li>Navigate to your project folder</li>
-  <li>Run <code>python3 -m venv venv</code> to create a virtual environment</li>
-  <li>Activate it with <code>source venv/bin/activate</code> (macOS/Linux) or <code>venv\Scripts\activate</code> (Windows)</li>
-</ul>
-
-<p>Next, install any helper libraries. For basic conversion you might not need external packages. But if you want to parse timestamps or read batches of files, you could add <code>pysrt</code>:</p>
-
-<ul>
-  <li><code>pip install pysrt</code></li>
-</ul>
-
-<p>With that in place, you are ready to start writing your script.</p>
-
-<h2>What steps are needed to convert srt to vtt with python?</h2>
-
-<p>This walkthrough uses plain Python and optional <code>pysrt</code>. You will read the SRT file, tweak the header, adjust timestamps, and save the output as .vtt. Here is a high level list of tasks:</p>
-
-<ul>
-  <li>Open the SRT file for reading</li>
-  <li>Create or overwrite a VTT file and write the “WEBVTT” header</li>
-  <li>Loop through each line, convert commas in timestamps to periods</li>
-  <li>Ensure there is a blank line between each cue</li>
-  <li>Save and close the file</li>
-</ul>
-
-<p>If you prefer a quick code snippet, here is an example of the core logic:</p>
-
-<pre><code>with open('example.srt', 'r') as srt, open('example.vtt', 'w') as vtt:
-    vtt.write('WEBVTT\n\n')
-    for line in srt:
-        if '-->' in line:
-            line = line.replace(',', '.')
-        vtt.write(line)
-</code></pre>
-
-<p>This simple loop does most of the work. If your SRT files have byte order marks or extra metadata, you may need to trim those out. For more robust parsing, use <a href="#">pysrt</a> to load cues and write them with correct formatting.</p>
-
-<h2>How can you automate subtitle conversions in your workflow?</h2>
-
-<p>Once your script is ready, you might want to run it on several files at once or integrate it into larger builds. Here are a few ideas:</p>
-
-<ul>
-  <li>Batch processing: write a loop that finds all .srt files in a directory and calls your convert function for each</li>
-  <li>Command line interface: use <code>argparse</code> to let your script accept input and output paths</li>
-  <li>Continuous integration: include the conversion step in your build pipeline so that every commit triggers a fresh VTT for your videos</li>
-  <li>API integration: connect to the <a href="#">HappyScribe API</a> to fetch new SRTs from Automatic transcription, convert them, and push VTT back to your server</li>
-</ul>
-
-<p>In many content teams, tasks get repeated. Automating this step means you can rest easy knowing your captions are always in the right format. It also reduces errors from manual copy and paste or missing metadata fields.</p>
-
-<h2>What best practices keep your subtitles accurate?</h2>
-
-<p>Conversion is only part of the process. You want your captions to read well and appear at the right time. Here are some tips:</p>
-
-<ul>
-  <li>Check text encoding: ensure your SRT uses UTF-8 to handle special characters in names or foreign words</li>
-  <li>Proofread your cues: run through a quick review in the <a href="#">Subtitle editor</a> to catch typos and sync issues</li>
-  <li>Use human review: pair Automatic transcription with human-made subtitles to boost accuracy, especially for technical or niche terms</li>
-  <li>Keep cue lengths short: viewers read 1 to 2 lines at a time, so break long sentences where natural pauses occur</li>
-  <li>Watch for overlapping cues: confirm that start and end times do not collide, which can confuse players</li>
-</ul>
-
-<p>By following these steps, you end up with VTT files that display correctly in any browser or video player. That attention to detail helps your audience focus on your message, not on bad captions.</p>
-
-<h2>Key takeaways</h2>
-<ul>
-  <li>Convert SRT to VTT by replacing commas with periods in timestamps and adding a “WEBVTT” header</li>
-  <li>Use Python code or <code>pysrt</code> for cleaner parsing and handling of edge cases</li>
-  <li>Automate batch jobs, integrate with CI, or link to the HappyScribe API for a seamless pipeline</li>
-  <li>Maintain subtitle quality with encoding checks, human review, and consistent cue lengths</li>
-</ul>
-
-<h2>Frequently asked questions</h2>
-<div class="accordion" id="faqAccordion">
-  <div class="accordion-item">
-    <h2 class="accordion-header" id="faqOne">
-      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
-        Can I convert multiple srt files at once with this script?
-      </button>
-    </h2>
-    <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="faqOne" data-bs-parent="#faqAccordion">
-      <div class="accordion-body">
-        Yes. Wrap the conversion logic in a loop that finds all SRT files in a directory. You can use <code>os.listdir</code> or <code>glob.glob('*.srt')</code> to get file names and process them one by one.
-      </div>
-    </div>
-  </div>
-  <div class="accordion-item">
-    <h2 class="accordion-header" id="faqTwo">
-      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-        Do I need extra libraries like FFMPEG to run this conversion?
-      </button>
-    </h2>
-    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="faqTwo" data-bs-parent="#faqAccordion">
-      <div class="accordion-body">
-        No. Converting SRT to VTT at text level does not require FFMPEG. You only need Python. If you wish to extract subtitles from video containers, then FFMPEG or a similar tool is needed.
-      </div>
-    </div>
-  </div>
-  <div class="accordion-item">
-    <h2 class="accordion-header" id="faqThree">
-      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
-        How can I style captions in VTT files?
-      </button>
-    </h2>
-    <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="faqThree" data-bs-parent="#faqAccordion">
-      <div class="accordion-body">
-        WebVTT supports CSS styling and region positioning. You can add cues like <code>&lt;c.className&gt;</code> to style text or include a <code>STYLE</code> block at the top of the VTT file. Check the specification or use HappyScribe’s <a href="#">Subtitle editor</a>.
-      </div>
-    </div>
-  </div>
-</div>
-
-<h2>Looking ahead to smarter subtitle management</h2>
-
-<p>Now that you can quickly convert SRT files to the VTT format with Python, you are ready to integrate subtitles into any web project, learning platform, or media player. By combining a simple script with HappyScribe tools like Automatic transcription and the API, you can build a fully automated caption pipeline that scales with your video library. <i>This method saves time, reduces errors, and ensures your audience always sees accurate captions in the right format.</i></p>
-     <p><a href="srt-to-vtt.html">&larr; Back to converter landing</a></p><h2>More Articles</h2><ul><li><a href="srt-to-vtt_blog_1.html">How to batch convert srt to vtt on mac</a></li><li><a href="srt-to-vtt_blog_2.html">How to convert srt to vtt manually in a text editor</a></li><li><a href="srt-to-vtt_blog_4.html">How to convert srt to vtt free online</a></li><li><a href="srt-to-vtt_blog_5.html">How to convert srt to vtt with adobe premiere</a></li><li><a href="srt-to-vtt_blog_6.html">Can i convert srt to vtt in windows command prompt?</a></li><li><a href="srt-to-vtt_blog_7.html">How to use happyscribe api for subtitle conversion</a></li><li><a href="srt-to-vtt_blog_8.html">How to convert srt to vtt with minimal effort</a></li><li><a href="srt-to-vtt_blog_9.html">How to add styling when converting srt to vtt</a></li><li><a href="srt-to-vtt_blog_10.html">Can i batch convert srt to vtt using happyscribe?</a></li></ul>
+     <p>Error: Invalid content generated. Expected HTML but got: {3}...</p>
+     <p><a href="srt-to-vtt.html">&larr; Back to converter landing</a></p><h2>More Articles</h2><ul><li><a href="srt-to-vtt_blog_1.html">How to batch convert SRT to VTT on windows</a></li><li><a href="srt-to-vtt_blog_2.html">What makes WEBVTT different from SRT</a></li><li><a href="srt-to-vtt_blog_4.html">Can i use premiere pro to convert SRT to VTT?</a></li><li><a href="srt-to-vtt_blog_5.html">How to use FFMPEG for subtitle conversion</a></li><li><a href="srt-to-vtt_blog_6.html">What to know about SRT to VTT python scripts</a></li><li><a href="srt-to-vtt_blog_7.html">Can mac users convert SRT to VTT without software</a></li><li><a href="srt-to-vtt_blog_8.html">How to create styled captions in WEBVTT</a></li><li><a href="srt-to-vtt_blog_9.html">How do i convert SRT to VTT online free safely</a></li><li><a href="srt-to-vtt_blog_10.html">Why your website needs VTT subtitles not SRT</a></li></ul>
   </main>
 
   <footer>

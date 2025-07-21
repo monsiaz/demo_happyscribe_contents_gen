@@ -29,6 +29,8 @@ Requirements
 
 Return STRICT valid HTML (no wrapper tags). 
 
+CRITICAL: Your response must be complete HTML content starting with <h1> and containing actual article text. Do NOT return CSS, code snippets, regex patterns, or incomplete content. Generate a full, readable article with proper HTML structure. 
+
 Additional formatting rules (strict):
 - Headings: use <h2> tags only, Sentence case (capitalize first letter and proper nouns only). Do NOT use ALL CAPS.
 - Forbidden: Markdown syntax, en/em dashes (–, —), placeholders.

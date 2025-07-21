@@ -26,7 +26,9 @@ Requirements
 7. Use Sentence case for headings, with acronyms in uppercase. Do not use the em dash (—).
 8. Use basic HTML only and no generic headings like "Conclusion".
 
-Return STRICT valid HTML (no wrapper tags). 
+Return STRICT valid HTML (no wrapper tags).
+
+CRITICAL: Your response must be complete HTML content starting with <h1> and containing actual use case text. Do NOT return CSS, code snippets, regex patterns, or incomplete content. Generate a full, readable use case with proper HTML structure. 
 
 Additional formatting rules (strict):
 - Headings: use <h2> tags only, Sentence case – no ALL CAPS.

@@ -1,0 +1,56 @@
+You are a technical content strategist specializing in developer and DevOps audiences.
+
+Generate EXACTLY 3 technical blog articles and 3 technical use cases focused on API integration, automation, and scalability for ${FORMAT_1} to ${FORMAT_2} conversion.
+
+Context: HappyScribe API for subtitle/transcript conversion
+API Summary: ${API_SUMMARY}
+
+SERP context for inspiration:
+RELATED QUESTIONS:
+${RELATED_Q}
+ORGANIC SNIPPETS:
+${ORGANIC_SNIPPETS}
+
+Target audiences: Senior developers, DevOps engineers, technical architects, platform engineers.
+
+Generate NEW technical content inspired by the examples above and SERP context. 
+Do NOT copy the example titles/descriptions - create original, specific content for ${FORMAT_1} → ${FORMAT_2}.
+
+Example technical blog titles for inspiration (generate NEW ones, don't copy):
+• "Building microservices for SRT to VTT conversion with HappyScribe API"
+• "Automating subtitle format conversion in CI/CD pipelines" 
+• "Scaling enterprise video processing with containerized conversion services"
+
+Example technical use cases for inspiration (generate NEW ones, don't copy):
+• HTML5 video integration requiring VTT format for <track> elements
+• Web accessibility compliance (WCAG/RGAA) with enhanced VTT features
+• Video.js/Plyr/JWPlayer integration for modern web players
+• Multi-platform streaming requiring format standardization
+• Mobile app development with native HTML5 player support
+• Automated subtitle workflow for content management systems
+• Enterprise video platforms with API-driven conversion pipelines
+• Cloud-based media processing with containerized conversion services
+
+Requirements:
+- Titles must use Sentence case (capitalize first word + acronyms like API/CI/CD/${FORMAT_1}/${FORMAT_2})
+- Focus on: microservices, automation, scalability, enterprise workflows
+- Include relevant tech: Docker, Kubernetes, CI/CD, cloud platforms, APIs
+- Each title should be 8-15 words
+- Avoid generic titles; be specific to ${FORMAT_1}→${FORMAT_2} conversion
+- Use SERP context above to inspire relevant, search-optimized technical topics
+- Combine technical depth with real user needs from SERP data
+- Generate use cases that address specific technical challenges, not just business scenarios
+
+Return STRICT valid JSON:
+{
+  "tech_blog_ideas": [
+    {"title": "...", "meta": "..."},
+    {"title": "...", "meta": "..."},
+    {"title": "...", "meta": "..."}
+  ],
+  "tech_use_cases": [
+    {"name": "...", "description": "..."},
+    {"name": "...", "description": "..."},
+    {"name": "...", "description": "..."}
+  ]
+} 

@@ -18,7 +18,7 @@ Requirements
      "headers": ["criterion", "${F1}", "${F2}"],
      "rows": [ ["File header", "…", "…"], … ]
    }
-6. Headings (<h1>, <h2>, <h3>) and use-case names must use Sentence case, with acronyms like ${F1}/${F2}/FFMPEG uppercase. Each heading must be descriptive – DO NOT use bland titles like "Conclusion" or "Summary".
+6. Headings (<h1>, <h2>, <h3>) and use-case names must use Sentence case: capitalize ONLY the first word and proper nouns/acronyms like ${F1}/${F2}/FFMPEG/API/HTML. Each heading must be descriptive – DO NOT use bland titles like "Conclusion" or "Summary".
 7. Add exactly five FAQ pairs after the main body.
 8. Add exactly 10 blog idea objects (title + 120-150 char meta). Titles MUST follow Sentence case and prefer "How To" or question-based phrasing.
 9. Add exactly 10 professional use cases (name + 1-2 sentence description).
