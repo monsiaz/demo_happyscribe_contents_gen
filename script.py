@@ -10,6 +10,7 @@ from typing import Tuple, Optional, List, Dict
 import pandas as pd
 from serpapi import GoogleSearch
 from string import Template
+import random
 
 # ---------------------------------------------------------------------------
 # Secrets loader                                                             
@@ -393,7 +394,7 @@ async def main() -> None:
 <body>
   <header class='topbar'>
     <div class='container topbar-inner'>
-      <a class='brand' href='/'><img src='settings/web_assets/png-transparent-happy-scribe-logo-tech-companies.png' alt='HappyScribe logo'></a>
+      <a class='brand' href='/'><img src='settings/web_assets/header.png' class='hero-img' alt='Header'></a>
     </div>
   </header>
 
@@ -532,6 +533,16 @@ async def main() -> None:
             for i, u in enumerate(res.get("use_cases", []), 1)
         ]
 
+        stats_pool = [
+            '<p class="alt-bg">💡 83% des internautes regardent des vidéos sans le son — les sous-titres sont cruciaux.</p>',
+            '<p class="alt-bg">📊 92% des vidéos visionnées sur mobile le sont en mode muet.</p>',
+            '<p class="alt-bg">🔈 69% des utilisateurs quittent une vidéo si les sous-titres sont absents.</p>',
+            '<p class="alt-bg">🌍 80% des apprenants retiennent mieux grâce aux sous-titres.</p>',
+            '<p class="alt-bg">🕒 Les vidéos sous-titrées augmentent le temps de visionnage de 12%.</p>',
+        ]
+
+        stat_info = random.choice(stats_pool)
+
         # Lists for context to avoid redundancy
         all_blog_titles = [title for _, title, _ in blog_links]
         all_use_names   = [name for _, name, _ in use_links]
@@ -542,7 +553,8 @@ async def main() -> None:
                 KW_PRIMARY=kw_p,
                 KW_SECONDARY=kw_s,
                 ALL_BLOGS="\n".join(all_blog_titles),
-                ALL_USES="\n".join(all_use_names),)
+                ALL_USES="\n".join(all_use_names),
+                STAT_INFO=stat_info,)
             model_to_use = BASE_MODEL
             body_html, *_ = await generator._single_call(
                 SYSTEM_MESSAGE, prompt, model_override=model_to_use
@@ -566,7 +578,9 @@ async def main() -> None:
                 F1=f1.upper(),
                 F2=f2.upper(),
                 ALL_BLOGS="\n".join(all_blog_titles),
-                ALL_USES="\n".join(all_use_names),)
+                ALL_USES="\n".join(all_use_names),
+                STAT_INFO=stat_info,
+            )
             model_to_use = BASE_MODEL
             body_html, *_ = await generator._single_call(
                 SYSTEM_MESSAGE, prompt, model_override=model_to_use

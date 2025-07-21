@@ -21,7 +21,7 @@ Requirements
 2. Provide a clear, step-by-step workflow (tools or online platforms) that a professional audience can follow without requiring extensive coding. Mention HappyScribe features where relevant rather than showing full API scripts.
 3. Highlight at least three HappyScribe features that improve this workflow (subtitle editor, AI notetaker, API, etc.).
 4. Add a visually distinct **Key takeaways** block (<h3>Key takeaways</h3><ul>…) with 3 bullets just before the Mini FAQ.
-5. Add an info highlight box near the top with the statistic: <p class="alt-bg">💡 83% of viewers watch videos on mute — captions are essential.</p>
+5. Add an info highlight box near the top with the statistic: ${STAT_INFO}
 6. Add a 'Mini FAQ' section (<h3>) with 3 relevant question-answer pairs, formatted as a Bootstrap 5 accordion (answers visible by default).
 7. Use Sentence case for headings, with acronyms in uppercase. Do not use the em dash (—).
 8. Use basic HTML only and no generic headings like "Conclusion".

@@ -1,21 +1,7 @@
-Generate a detailed and visually engaging comparison table between two formats: ${FORMAT_1} and ${FORMAT_2}.
+Generate a detailed and visually engaging comparison between two subtitle formats: ${FORMAT_1} et ${FORMAT_2}.
 
-Requirements
-- Editorial Guidelines:
-- Tone: Friendly and enthusiastic.
-- Language: Use simple, direct US English. Avoid technical jargon in descriptions.
-- Words to AVOID: Multifaceted, therefore, elicit, enhance, thus, begets, utilize, imperative, caveat, transcreator, employ, consequently, intricate, implement, incites, harness, subsequently, elaborate, elevate.
+Output must be STRICT valid HTML (no wrapper tags).
 
-1. Use clear English, include technical details, real-life examples, and add relevant emojis to improve readability.
-2. Cover at least:
-   • File extension
-   • MIME type
-   • Syntax differences (timestamp format, header)
-   • Metadata and styling support
-   • Web and browser compatibility
-   • Subtitle positioning features
-   • Common use cases
-   • File size implications
-   • Real-life code samples (mini SRT & VTT snippets)
-3. Finish with a concise pros/cons section and a “Use this if…” decision table.
-4. Return STRICT valid HTML (no markdown fences) that can be dropped directly into a page. 
+1. Add an <h2>« 🔁 Différences entre ${FORMAT_1} et ${FORMAT_2} » puis une table (<table class="comp-table">) en français ; minimum 7 lignes dont : Extension, Compatibilité, Structure temporelle, Capacités, Encodage, En-tête obligatoire, Outils/Workflow.
+2. Sous la table, ajoute un <h2>« 📂 Guide d’utilisation : quel format choisir ? » puis un tableau HTML avec 3 colonnes : « Cas d’usage », « Recommandation », « Persona ». Fournis 10 lignes variées (web, diffusion TV, e-learning, réseaux sociaux, accessibilité, etc.). Ajoute un emoji pertinent dans la colonne Persona.
+3. Utilise uniquement des balises HTML basiques ; pas de markdown, pas d’em dash. 
