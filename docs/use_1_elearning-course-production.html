@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>eLearning course production - HappyScribe</title>
+    <meta name="description" content="Instructional designers create training videos and need to convert SRT to VTT for LMS compatibility and web access.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <link rel="canonical" href="https://monsiaz.github.io/demo_happyscribe_contents_gen/use_1_elearning-course-production.html">
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="https://www.happyscribe.com/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://www.happyscribe.com/favicon/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="https://www.happyscribe.com/favicon/apple-touch-icon.png">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="https://www.happyscribe.com/assets/hs.landing-42122b4ad66b2e1435c21ff4c12c2cadf6b5aa464214dc79f1ad1ebd2d99aa21.css">
+    <link rel="stylesheet" href="/settings/web_assets/style.css">
+</head>
+<body>
+    <header class='topbar'>
+        <div class='container topbar-inner'>
+            <a class='brand' href='/'><img src='/settings/web_assets/png-transparent-happy-scribe-logo-tech-companies.png' alt='HappyScribe logo'></a>
+            <nav class='main-nav'>
+                <a href='#'>Tools</a>
+                <a href='#'>Resources</a>
+                <a href='#'>Log in</a>
+                <a href='#' class='btn btn-secondary'>Start for Free</a>
+                <a href='#' class='btn btn-primary'>Get a demo</a>
+            </nav>
+        </div>
+    </header>
+    <main class='container'>
+        <h1>eLearning course production: convert SRT to VTT</h1>
+
+<p>In today’s fast-paced learning world, video is king. From bite-size tutorials to full-blown courses, video lessons drive engagement and help learners retain information. But mixing caption formats can bring headaches. You have a set of SRT files ready to go, and your learning management system (LMS) or web player only accepts VTT. What next?</p>
+
+<p>In this use case, we’ll dive into why converting SRT to VTT is a key step for eLearning course production. You’ll see how you can set up a streamlined workflow, leverage HappyScribe tools and API calls, and get your captions in the right format fast. Let’s get started.</p>
+
+<h2>why convert SRT to VTT for your eLearning courses?</h2>
+<p>Before we jump into steps, let’s look at why this conversion is so important for course creators, instructional designers, and training teams.</p>
+<ul>
+  <li><strong>Broad compatibility:</strong> Most modern web video players and LMS platforms support WebVTT natively. By converting your SRT captions into VTT, you make sure videos play smoothly across Chrome, Firefox, Safari, Edge, and mobile devices.</li>
+  <li><strong>Enhanced accessibility:</strong> VTT offers more styling options (color, position) and metadata cues. This helps visually impaired learners or those with hearing loss get a better experience.</li>
+  <li><strong>Interactive transcripts:</strong> WebVTT can be tied to interactive features like clickable chapters, search highlights, and keyword jumping. That makes your courses more engaging and easier to navigate.</li>
+  <li><strong>Compliance with standards:</strong> Many organizations must meet WCAG 2.1 and Section 508 guidelines. VTT is a widely accepted format for accessible web video.</li>
+  <li><strong>Future-proof format:</strong> WebVTT is a living standard with growing browser support and new features. Converting today means less work later.</li>
+</ul>
+
+<h2>what you need to get started</h2>
+<p>Here’s your checklist before you run any conversion workflow:</p>
+<ul>
+  <li>A HappyScribe account with access to the API (you’ll need an API key).</li>
+  <li>Your source SRT files gathered in one folder or storage bucket.</li>
+  <li>A basic development setup: Node.js, Python, or any language that can make HTTPS calls.</li>
+  <li>The HappyScribe Subtitle Editor (optional but handy for quality checks).</li>
+  <li>Your LMS or web player ready to accept VTT uploads.</li>
+</ul>
+
+<h2>how does the conversion workflow work?</h2>
+<p>Below is a step-by-step guide you can follow or adapt. We’ll show you both script-based and API-based examples. By the end, you’ll have a solid, repeatable flow for all your courses.</p>
+
+<h3>1. prepare your SRT files</h3>
+<ul>
+  <li>Verify that each SRT file matches its video. File names should follow a clear pattern, for example: <code>module1-intro.srt</code>, <code>module2-lesson1.srt</code>.</li>
+  <li>Check for timestamp errors, overlapping captions, and formatting issues with any basic text editor.</li>
+  <li>Store all SRT files in a dedicated folder or object storage for easy batch processing.</li>
+</ul>
+
+<h3>2. set up your HappyScribe API key</h3>
+<ul>
+  <li>Log in to your HappyScribe dashboard.</li>
+  <li>Navigate to <strong>Settings &gt; API</strong> and copy your secret API key.</li>
+  <li>Save the key as an environment variable (for example, <code>HAPPYSCRIBE_API_KEY</code>) in your development machine or CI pipeline.</li>
+</ul>
+
+<h3>3. write a conversion script</h3>
+<p>Here’s a simple Node.js example that shows how to convert an SRT file to VTT using the HappyScribe API. You can adapt it to Python or any other language you like.</p>
+<pre><code>const fs = require('fs');
+const axios = require('axios');
+
+const apiKey = process.env.HAPPYSCRIBE_API_KEY;
+const apiUrl = 'https://api.happyscribe.com/v1/convert';
+
+async function convertSrtToVtt(inputPath, outputPath) {
+  try {
+    const srtContent = fs.readFileSync(inputPath, 'utf8');
+
+    const response = await axios.post(apiUrl, {
+      source_format: 'srt',
+      target_format: 'vtt',
+      content: srtContent
+    }, {
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (response.data && response.data.result) {
+      fs.writeFileSync(outputPath, response.data.result, 'utf8');
+      console.log(`Converted: ${inputPath} → ${outputPath}`);
+    } else {
+      console.error('Conversion failed:', response.data);
+    }
+  } catch (error) {
+    console.error('Error during conversion:', error.message);
+  }
+}
+
+// Example usage
+convertSrtToVtt('module1-intro.srt', 'module1-intro.vtt');
+</code></pre>
+<p>This script:</p>
+<ul>
+  <li>Reads the SRT file from disk.</li>
+  <li>Sends it to the HappyScribe <code>/convert</code> endpoint.</li>
+  <li>Receives the VTT output and writes it to a new file.</li>
+</ul>
+
+<h3>4. handle batch processing</h3>
+<p>If you have dozens of SRT files, wrap the single-file function in a loop. For instance:</p>
+<pre><code>const inputFiles = fs.readdirSync('./srt-files')
+  .filter(file => file.endsWith('.srt'));
+
+async function processAll() {
+  for (const file of inputFiles) {
+    const inputPath = `./srt-files/${file}`;
+    const outputPath = `./vtt-files/${file.replace('.srt', '.vtt')}`;
+    await convertSrtToVtt(inputPath, outputPath);
+  }
+  console.log('All files converted.');
+}
+
+processAll();</code></pre>
+
+<h3>5. review and polish captions</h3>
+<p>Once you have the VTT files:</p>
+<ul>
+  <li>Open the HappyScribe Subtitle Editor. You’ll see a live preview of your video and captions.</li>
+  <li>Check for any timing shifts, line wraps, or missing text.</li>
+  <li>Make quick fixes with the built-in editor. Save your changes right inside the platform.</li>
+</ul>
+
+<h3>6. upload to your LMS or player</h3>
+<p>Your VTT files are now ready:</p>
+<ul>
+  <li>Drag and drop into your LMS caption section.</li>
+  <li>Or use your player’s API to link to the VTT file URL.</li>
+  <li>Test playback on multiple browsers and devices.</li>
+</ul>
+
+<h2>which HappyScribe features make this workflow shine?</h2>
+<p>Here are three features you don’t want to miss:</p>
+<ul>
+  <li><strong>Subtitle editor:</strong> A browser-based UI where you can preview your video alongside its captions. Edit text, adjust timings, split or merge lines, and style captions without any extra downloads.</li>
+  <li><strong>AI notetaker:</strong> Generate a full transcript of your video in minutes. Use it to spot errors or to create supporting course materials like handouts, quizzes, or slide decks.</li>
+  <li><strong>REST API:</strong> Automate the entire conversion process. One call turns SRT text into VTT text. No need to install software or manage encoding libraries.</li>
+  <li><strong>Batch upload and download:</strong> Save hours by processing entire folders at once. You only need to call one endpoint and track job IDs.</li>
+  <li><strong>Multi-language support:</strong> If you run courses in English, Spanish, French, or more, HappyScribe can auto-transcribe or translate captions into the language you need.</li>
+</ul>
+
+<h2>best practices for smooth caption conversions</h2>
+<p>To keep your workflow running without hiccups, keep these tips in mind:</p>
+<ul>
+  <li><strong>Stick to naming rules:</strong> Use consistent file names that match video IDs or lesson numbers.</li>
+  <li><strong>Version control:</strong> Store your SRT and VTT files in a Git repo or cloud storage with clear version tags.</li>
+  <li><strong>Quality checks:</strong> Build a quick QA step to watch key segments, making sure no text is cut off.</li>
+  <li><strong>Accessibility focus:</strong> Add speaker labels in captions (for example, <em>[Instructor]</em> and <em>[Student]</em>) to help learners follow along.</li>
+  <li><strong>Automated tests:</strong> If you have a staging LMS site, run a script that checks each video page for a loaded VTT track tag.</li>
+  <li><strong>Error alerts:</strong> In your batch script, log any API errors or failed file reads, then send a Slack or email notification.</li>
+</ul>
+
+<h3>mini FAQ</h3>
+<div class="accordion" id="miniFaq">
+  <div class="accordion-item">
+    <h3 class="accordion-header" id="headingOne">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+        What is the difference between SRT and VTT?
+      </button>
+    </h3>
+    <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#miniFaq">
+      <div class="accordion-body">
+        SRT is a simple subtitle format that offers text and timestamps. VTT is a web standard that builds on SRT with styling, positioning, and metadata cues for interactive features.
+      </div>
+    </div>
+  </div>
+  <div class="accordion-item">
+    <h3 class="accordion-header" id="headingTwo">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+        Can I batch convert dozens of files at once?
+      </button>
+    </h3>
+    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#miniFaq">
+      <div class="accordion-body">
+        Yes. Use a loop in your conversion script to send each file to the HappyScribe API. You can also zip multiple files and use the bulk upload endpoint for faster processing.
+      </div>
+    </div>
+  </div>
+  <div class="accordion-item">
+    <h3 class="accordion-header" id="headingThree">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+        Do I need to recheck captions after conversion?
+      </button>
+    </h3>
+    <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#miniFaq">
+      <div class="accordion-body">
+        We suggest a quick review in the Subtitle Editor. Most of the time, conversion is precise, but minor timing or line-break adjustments can improve readability.
+      </div>
+    </div>
+  </div>
+</div>
+
+<p>Ready to simplify your eLearning course production? Get started with HappyScribe today and turn your SRT captions into WebVTT in minutes. <a href="https://www.happyscribe.com" target="_blank" rel="noopener">Sign up for free</a> or explore our API docs to start your first conversion.</p>
+        <p><a href="convert-srt-to-vtt.html">&larr; Back to converter landing</a></p><h2>More Use Cases</h2><ul><li><a href="use_2_corporate-training-modules.html">Corporate training modules</a></li><li><a href="use_3_marketing-video-localization.html">Marketing video localization</a></li><li><a href="use_4_streaming-platform-caption-delivery.html">Streaming platform caption delivery</a></li><li><a href="use_5_video-podcast-accessibility.html">Video podcast accessibility</a></li><li><a href="use_6_webinar-recording-distribution.html">Webinar recording distribution</a></li><li><a href="use_7_online-conference-archives.html">Online conference archives</a></li><li><a href="use_8_social-media-short-clips.html">Social media short clips</a></li><li><a href="use_9_documentary-subtitling-workflow.html">Documentary subtitling workflow</a></li><li><a href="use_10_film-festival-subtitle-prep.html">Film festival subtitle prep</a></li></ul>
+    </main>
+    <footer><div class='container'><p>&copy; HappyScribe</p></div></footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

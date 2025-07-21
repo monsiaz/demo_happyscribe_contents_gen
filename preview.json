@@ -12,24 +12,24 @@
         "Convert srt to vtt online free",
         "Convert SRT to VTT Adobe",
         "Batch convert SRT to VTT",
-        "Convert SRT to VTT Notepad",
+        "Convert srt-to vtt python",
         "Convert SRT to VTT Premiere",
-        "Convert srt to vtt Python"
+        "Convert srt to vtt mac"
       ],
       "related_questions": [
         {
           "snippet": "Using the GoTranscript subtitle converter, your SRT to VTT conversion will be hassle-free. The tool is free and straightforward to use, and you can use it to convert your subtitle files at your convenience, be it on a Windows machine, a mobile phone, or a MacBook.",
-          "more_results_link": "https://www.google.com/search?sca_esv=ed31745f76a805c8&gbv=1&ei=RRV5aLPIFK3Cp84PwbbMeQ&q=Can+I+convert+SRT+to+VTT?&sa=X&ved=2ahUKEwjz_sSmmcSOAxUt4ckDHUEbMw8Qzmd6BAgBEAc"
+          "more_results_link": "https://www.google.com/search?sca_esv=ea0b69d59ed7fea9&gbv=1&ei=Vwl-aNLPIpK1qtsP54_L8Ag&q=Can+I+convert+SRT+to+VTT?&sa=X&ved=2ahUKEwiS17HQ0s2OAxWSmmoFHefHEo4Qzmd6BAgBEAc"
         },
         {
-          "snippet": "SRT and VTT are the two most common subtitle formats. While they both sync text with video, VTT offers additional styling and metadata features, making it ideal for web-based content.",
-          "more_results_link": "https://www.google.com/search?sca_esv=ed31745f76a805c8&gbv=1&ei=RRV5aLPIFK3Cp84PwbbMeQ&q=Is+the+VTT+file+the+same+as+SRT?&sa=X&ved=2ahUKEwjz_sSmmcSOAxUt4ckDHUEbMw8Qzmd6BAgBEA4"
+          "snippet": "SRT files are plain text files, which means they do not contain any metadata. VTT files do contain metadata, as well as information about formatting the captions. For instance, with VTT files, the user can adjust the color, font and placement of their captions.",
+          "more_results_link": "https://www.google.com/search?sca_esv=ea0b69d59ed7fea9&gbv=1&ei=Vwl-aNLPIpK1qtsP54_L8Ag&q=Are+SRT+and+VTT+files+the+same?&sa=X&ved=2ahUKEwiS17HQ0s2OAxWSmmoFHefHEo4Qzmd6BAgBEA4"
         },
         {
-          "more_results_link": "https://www.google.com/search?sca_esv=ed31745f76a805c8&gbv=1&ei=RRV5aLPIFK3Cp84PwbbMeQ&q=How+to+create+a+VTT+subtitle+file?&sa=X&ved=2ahUKEwjz_sSmmcSOAxUt4ckDHUEbMw8Qzmd6BAgBEBc"
+          "more_results_link": "https://www.google.com/search?sca_esv=ea0b69d59ed7fea9&gbv=1&ei=Vwl-aNLPIpK1qtsP54_L8Ag&q=How+to+create+a+VTT+subtitle+file?&sa=X&ved=2ahUKEwiS17HQ0s2OAxWSmmoFHefHEo4Qzmd6BAgBEBc"
         },
         {
-          "more_results_link": "https://www.google.com/search?sca_esv=ed31745f76a805c8&gbv=1&ei=RRV5aLPIFK3Cp84PwbbMeQ&q=How+to+import+SRT+to+avid?&sa=X&ved=2ahUKEwjz_sSmmcSOAxUt4ckDHUEbMw8Qzmd6BAgBEB8"
+          "more_results_link": "https://www.google.com/search?sca_esv=ea0b69d59ed7fea9&gbv=1&ei=Vwl-aNLPIpK1qtsP54_L8Ag&q=How+to+import+SRT+to+avid?&sa=X&ved=2ahUKEwiS17HQ0s2OAxWSmmoFHefHEo4Qzmd6BAgBEB8"
         }
       ],
       "ai_overview": null,
@@ -64,19 +64,19 @@
         },
         {
           "position": 4,
-          "title": "Conver SRT to VTT - Adobe Product Community - 15030836",
-          "link": "https://community.adobe.com/t5/premiere-pro-ideas/conver-srt-to-vtt/idi-p/15030836",
-          "displayed_link": "community.adobe.com › Premiere Pro › Ideas",
-          "snippet": "There are a number of converters online and otherwise that will do the simple task of converting srt to vtt.",
-          "date": "Dec 10, 2024"
-        },
-        {
-          "position": 5,
           "title": "Don't Pay to Convert SRT to WebVTT. - YouTube",
           "link": "https://www.youtube.com/watch?v=2kJkGwRbxQM",
           "displayed_link": "www.youtube.com › watch",
           "snippet": "Learn how to convert SRT to WebVTT for free! No need to pay for conversion tools. We'll show you how to do it easily in this video tutorial.",
           "date": "Mar 13, 2023"
+        },
+        {
+          "position": 5,
+          "title": "Conver SRT to VTT - Adobe Product Community - 15030836",
+          "link": "https://community.adobe.com/t5/premiere-pro-ideas/conver-srt-to-vtt/idi-p/15030836",
+          "displayed_link": "community.adobe.com › Premiere Pro › Ideas",
+          "snippet": "There are a number of converters online and otherwise that will do the simple task of converting srt to vtt.",
+          "date": "Dec 10, 2024"
         },
         {
           "position": 6,
@@ -131,113 +131,113 @@
         }
       ]
     },
-    "content": "<h1>Convert srt to vtt for web based captions</h1>\n<h2>What srt and vtt formats mean and where to use them</h2>\n<p><strong>SRT</strong> (SubRip Text) is a plain text subtitle format with numeric indexes and timecodes using commas for milliseconds. It is widely used in desktop video players and offline editing tools. <strong>VTT</strong> (WebVTT) is the W3C standard for HTML5 captions, it uses a <em>WEBVTT</em> header and periods for millisecond separation. In this guide we walk through how to convert srt to vtt using multiple tools.</p>\n<h2>Command line conversion with FFMPEG on Windows Linux Mac</h2>\n<p>FFMPEG is a cross platform tool that handles subtitle conversion natively. To convert a file run:</p>\n<p><strong>ffmpeg -i input.srt output.vtt</strong></p>\n<p>This reads SRT timecodes and writes a compliant WebVTT file. You can also batch convert srt to vtt with a simple shell loop.</p>\n<h3>Batch conversion using ffmpeg script</h3>\n<ul>\n  <li>Place all .srt files in a folder</li>\n  <li>Run <strong>for f in *.srt; do ffmpeg -i \"$f\" \"${f%.srt}.vtt\"; done</strong></li>\n</ul>\n<h2>Manual conversion in Notepad or text editor</h2>\n<p>Open the .srt file in Notepad or any text editor, change the first line to <em>WEBVTT</em>, replace commas in timecodes with periods, then save the file with a .vtt extension. This method lets you convert srt to vtt manually without installing external tools.</p>\n<h2>Automated conversion with Python scripts</h2>\n<p>Use Python and the <strong>webvtt-py</strong> library for programmatic conversion. Example steps:</p>\n<ul>\n  <li>Install the library: <strong>pip install webvtt-py</strong></li>\n  <li>Write a script:\n    <br><em>import webvtt\nwebvtt.from_srt('input.srt').save('output.vtt')</em>\n  </li>\n</ul>\n<p>This snippet shows how to convert srt to vtt programmatically in just a few lines of code.</p>\n<h2>Batch and online tools integration with HappyScribe API</h2>\n<p>HappyScribe offers an <strong>API</strong> and a <strong>Caption generator</strong> that accepts SRT files via Automatic transcription or Human-made subtitles endpoints, then returns VTT. You can integrate this into your content pipeline and convert large volumes without manual steps.</p>\n<h2>Incorporating subtitles in Premiere and Adobe workflows</h2>\n<p>Adobe Premiere Pro can import SRT files and export WebVTT. Combine Premiere editing with the HappyScribe <strong>Subtitle editor</strong> plugin to fine tune captions, then export VTT for HTML5 delivery.</p>\n<h2>Benefits of converting srt to vtt for streaming and accessibility</h2>\n<p>VTT supports styling cues, text formatting, and metadata for accessible web content. Browsers implement WebVTT natively in the HTML5 <em>&lt;track&gt;</em> element. Converting SRT to VTT ensures compliance with web standards and enhances user experience on streaming platforms.</p>",
+    "content": "<h1>convert srt to vtt: simple guide for developers and content pros</h1>\n<p>This page will show you how to convert srt to vtt and why you may need to switch from SRT to VTT for modern web video. You will find step by step tips for command line, Python scripts, Adobe Premiere, and free online tools. If you want a quick reference, skip to the tool you prefer and follow the exact steps.</p>\n\n<h2>What are SRT and VTT and where are they used?</h2>\n<p><strong>SRT</strong> stands for SubRip Text. It is a plain text file that holds subtitle lines with start and end timecodes separated by commas. SRT is widely supported in desktop players, video editors, and TV broadcasting tools.</p>\n<p><strong>VTT</strong> or WebVTT is a format built specifically for the web. It starts with a header line WEBVTT, uses periods for milliseconds, and supports CSS styling cues. Browsers like Chrome, Firefox, and Safari can load VTT files directly in the HTML5 video tag.</p>\n\n<h2>Why convert srt to vtt for web playback?</h2>\n<ul>\n  <li>HTML5 video tags require VTT captions for native browser support</li>\n  <li>Improved accessibility compliance for online platforms and WCAG guidelines</li>\n  <li>More styling options using CSS classes and cue settings in VTT</li>\n  <li>Better integration with JavaScript APIs for interactive captions</li>\n</ul>\n<p>By switching to VTT you ensure captions load quickly in web apps. This simple change can improve user experience on mobile devices and smart TVs.</p>\n\n<h2>How can you convert SRT to VTT using FFmpeg?</h2>\n<p>FFMPEG is a popular open source command line tool. It can read SRT files and output VTT with a single command. No extra scripting or manual edits are needed.</p>\n<ul>\n  <li>Install FFmpeg on Mac or Windows via your package manager</li>\n  <li>Open a terminal or cmd prompt</li>\n  <li>Run: <strong>ffmpeg -i input.srt output.vtt</strong></li>\n</ul>\n<p>FFMPEG adds the WEBVTT header automatically and adjusts the timecode separator. Use this method when you need a quick local conversion without internet access.</p>\n\n<h2>How can you convert SRT to VTT with a manual text edit?</h2>\n<p>If you have only one file and no coding tools, you can convert manually. Open your .srt file in a text editor, add WEBVTT as the first line, and replace commas with periods in the timecodes. Then save as .vtt. This free manual method works offline and does not require any software installation.</p>\n\n<h2>How can you convert SRT to VTT with Python?</h2>\n<p>When you need custom logic or want to batch process files in code, Python is a great choice. The webvtt-py library makes it simple to load an SRT file and save it as VTT.</p>\n<ul>\n  <li>Install with <em>pip install webvtt-py</em></li>\n  <li>Use this script in your project</li>\n  <li><strong>import webvtt<br>webvtt.from_srt('input.srt').save('output.vtt')</strong></li>\n</ul>\n<p>This snippet can be integrated into a larger pipeline or run on a server for automated subtitle processing.</p>\n\n<h2>How can you convert SRT to VTT free online?</h2>\n<p>HappyScribe Caption generator offers a free online tool. You just upload an SRT file and click to convert. It also provides an instant preview in the Subtitle editor so you can check timing and styling before download.</p>\n<p>If you need transcription alongside the format change, our Automatic transcription service can generate an SRT first and then create VTT in one flow.</p>\n\n<h2>How can you batch convert srt to vtt using an API?</h2>\n<p>With the HappyScribe API you can automate srt to vtt conversion at scale. Send file URLs or base64 data in a single request. The API will return download links for your VTT files when they are ready.</p>\n<ul>\n  <li>Register for an API key on HappyScribe</li>\n  <li>Post multiple files in one job with JSON payload</li>\n  <li>Receive webhooks or poll status endpoints for completion</li>\n</ul>\n<p>This approach is ideal for video platforms, media companies, or teams that manage large volumes of caption files.</p>\n\n<h2>Where can you convert srt to vtt on Mac or Windows in video editors?</h2>\n<p>Adobe Premiere Pro and After Effects both support caption formats. To convert:</p>\n<ul>\n  <li>Import your SRT into the timeline</li>\n  <li>Go to File &gt; Export &gt; Captions</li>\n  <li>Choose WebVTT as the export format</li>\n</ul>\n<p>This workflow keeps your edit markers and caption styling intact. It works on Mac or Windows and is especially useful for post production teams.</p>\n\n<h2>Where can you get human-made VTT files for pro quality?</h2>\n<p>For the highest accuracy and style consistency, try HappyScribe Human-made subtitles. You send your video or SRT file and our expert teams create a VTT file with precise timing, proper speaker tags, and tested readability. Use the Subtitle editor to make final tweaks if needed.</p>\n\n<p>Ready to convert your files? Start with HappyScribe Automatic transcription, our WebVTT API, or the Caption generator. Get fast, reliable, accurate srt to vtt conversion today.</p>",
     "faq": [
       {
-        "question": "How do I convert an SRT file to VTT using ffmpeg?",
-        "answer": "Run ffmpeg -i input.srt output.vtt in your terminal. This reads the SRT timecodes and outputs a valid WebVTT file with the appropriate header."
+        "question": "What is the main difference between SRT and VTT?",
+        "answer": "SRT is a simple subtitle format with comma timecodes and no header. VTT starts with a WEBVTT header, uses periods for milliseconds, and supports CSS styling."
       },
       {
-        "question": "Can I manually convert SRT to VTT without software?",
-        "answer": "Yes, open the SRT in a text editor, change the first line to WEBVTT, replace commas in timecodes with periods, then save with a .vtt extension."
+        "question": "How can I convert srt to vtt free on my local machine?",
+        "answer": "You can use FFmpeg with the command ffmpeg -i input.srt output.vtt or edit the file manually by adding WEBVTT as the first line and replacing commas with periods."
       },
       {
-        "question": "Is there a Python library for srt to vtt conversion?",
-        "answer": "The webvtt-py library supports SRT to VTT conversion: install via pip, then use webvtt.from_srt('input.srt').save('output.vtt') in your script."
+        "question": "Can I batch convert SRT to VTT files automatically?",
+        "answer": "Yes, you can use a bash or PowerShell loop with FFmpeg, a Python script using webvtt-py, or the HappyScribe API to convert multiple files at once."
       },
       {
-        "question": "How can I batch convert multiple SRT files to VTT?",
-        "answer": "Use a shell loop with ffmpeg: for f in *.srt; do ffmpeg -i \"$f\" \"${f%.srt}.vtt\"; done. This processes all files in one command."
+        "question": "How do I fix the missing WEBVTT header error in my VTT file?",
+        "answer": "Open the file in a text editor, add WEBVTT as the first line, save the file with a .vtt extension, and ensure timecodes use periods for milliseconds."
       },
       {
-        "question": "Does HappyScribe support srt to vtt conversion via API?",
-        "answer": "Yes, HappyScribe’s API accepts SRT uploads through Automatic transcription or Human-made subtitles endpoints and returns VTT files programmatically."
+        "question": "Does VTT support styling and positioning of captions?",
+        "answer": "Yes, WebVTT offers cue settings and CSS class support for styling, positioning, and custom formatting of captions in HTML5 players."
       }
     ],
     "blog_ideas": [
       {
-        "title": "How to convert SRT to VTT free using online tools",
-        "meta": "Discover step by step how to convert SRT to VTT free using popular online tools, ensuring accurate timing and clean file headers without installing software."
+        "title": "How to optimize captions for web video",
+        "meta": "Learn how to prepare captions for online players, meet accessibility guidelines, and enhance viewer engagement with simple conversion and styling tips."
       },
       {
-        "title": "Batch convert SRT to VTT with Python scripts",
-        "meta": "Learn how to batch convert SRT to VTT with Python scripts, using libraries like webvtt-py to automate subtitle conversion for multiple files effortlessly."
+        "title": "How to batch convert SRT files with Python",
+        "meta": "Discover a step by step guide to automate srt file conversion using Python scripts and the webvtt-py library for seamless subtitle workflows."
       },
       {
-        "title": "Editing VTT styling after SRT conversion in Subtitle editor",
-        "meta": "Explore how to edit VTT styling after SRT conversion in HappyScribe Subtitle editor, adding cues and CSS like formatting to match your brand guidelines."
+        "title": "How to use FFmpeg for subtitle conversion",
+        "meta": "Explore how to convert subtitle formats using FFmpeg commands, handle multiple files at once, and speed up your video production process."
       },
       {
-        "title": "Integrating SRT to VTT conversion in Adobe Premiere workflows",
-        "meta": "Guide to integrating SRT to VTT conversion in Adobe Premiere workflows, preparing web ready captions without leaving your video editing timeline."
+        "title": "How to add styling to WebVTT captions",
+        "meta": "Find out how to use CSS classes and cue settings in VTT files to create visually engaging and accessible subtitles for your web videos."
       },
       {
-        "title": "Manual SRT to VTT conversion using Notepad for quick fixes",
-        "meta": "Step by step manual SRT to VTT conversion using a text editor, adjusting headers and timing codes to produce a compliant WebVTT file without extra software."
+        "title": "How to automate subtitle workflows with API",
+        "meta": "See how to integrate HappyScribe API to automate transcription and format conversion, manage webhooks, and streamline your caption pipeline."
       },
       {
-        "title": "How to convert SRT to VTT online free with HappyScribe API",
-        "meta": "Understand how to convert SRT to VTT online free using the HappyScribe API, automating subtitle transformation with secure endpoints and fast response times."
+        "title": "How to import SRT files in Premiere Pro",
+        "meta": "Learn the exact steps to import SRT into Adobe Premiere Pro, edit timing, and export WebVTT for online distribution on Mac and Windows."
       },
       {
-        "title": "Node.js script for srt to vtt batch processing on server",
-        "meta": "Deploy a Node.js script for srt to vtt batch processing on your server, using file system modules and ffmpeg child processes to handle bulk conversions."
+        "title": "How to convert captions on Mac without software",
+        "meta": "Get tips on converting SRT to VTT manually or with built in Mac tools, avoiding extra software installs while maintaining timing accuracy."
       },
       {
-        "title": "Comparing SRT and VTT for live streaming caption workflows",
-        "meta": "Compare SRT and VTT for live streaming caption workflows, evaluating format support latency and styling capabilities for real time audience engagement."
+        "title": "How to fix common subtitle timing errors",
+        "meta": "Discover quick solutions to correct timecode mistakes in your SRT or VTT files so your subtitles sync perfectly with any video."
       },
       {
-        "title": "Automated subtitle conversion using HappyScribe Caption generator",
-        "meta": "Discover automated subtitle conversion using HappyScribe Caption generator, streamlining conversion from SRT to VTT with precise speech recognition and editing tools."
+        "title": "How to integrate subtitles in live streaming",
+        "meta": "Learn best practices for live captioning, using real time transcription services, WebVTT streaming support, and low latency delivery."
       },
       {
-        "title": "Troubleshooting common issues when converting SRT to VTT",
-        "meta": "Identify and troubleshoot common issues when converting SRT to VTT, from timing errors to header mis configuration ensuring valid WebVTT outputs every time."
+        "title": "How to translate subtitles with human-made accuracy",
+        "meta": "Explore workflows that combine automatic transcription, human review, and translation to produce accurate multilingual SRT and VTT captions."
       }
     ],
     "use_cases": [
       {
-        "name": "Web developer caption integration",
-        "description": "Integrate VTT subtitles into HTML5 video players on websites, ensuring full compliance with browser standards and improving accessibility for end users."
+        "name": "eLearning course production",
+        "description": "Instructional designers create training videos and need to convert SRT to VTT for LMS compatibility and web access."
       },
       {
-        "name": "Online course creator localization",
-        "description": "Automatically convert transcripts into VTT to add multilingual captions, leveraging HappyScribe Automatic transcription and translation services for broader audience engagement."
+        "name": "Corporate training modules",
+        "description": "HR teams deliver compliance training online with WebVTT captions to ensure accessibility for all employees."
       },
       {
-        "name": "Live streaming platform subtitles",
-        "description": "Batch convert SRT chat transcripts to VTT for real time caption display, using API endpoints to streamline continuous subtitle delivery in live events."
+        "name": "Marketing video localization",
+        "description": "Brand teams convert SRT to VTT, add translations, and style captions to engage international audiences on social media."
       },
       {
-        "name": "Video production post processing",
-        "description": "During post production editors convert srt to vtt to prepare final captions for web distribution, using FFMPEG or Subtitle editor to maintain timing accuracy."
+        "name": "Streaming platform caption delivery",
+        "description": "Media platforms batch process user uploads, converting SRT to VTT via API for consistent playback in browsers."
       },
       {
-        "name": "E learning content formatting",
-        "description": "Format educational videos by converting SRT scripts into VTT to enable chapter markers and interactive cues, enhancing learner navigation and retention."
+        "name": "Video podcast accessibility",
+        "description": "Podcast producers add VTT captions to their recordings to improve SEO and make episodes accessible to the hearing impaired."
       },
       {
-        "name": "Broadcast caption compliance",
-        "description": "Ensure regulatory compliance by converting SRT broadcast captions into WebVTT, adding styling and metadata required for OTT streaming services."
+        "name": "Webinar recording distribution",
+        "description": "Event organizers convert session transcripts from SRT to VTT for on-demand playback in HTML5 video players."
       },
       {
-        "name": "Mobile app accessibility feature",
-        "description": "Embed VTT subtitles in mobile video players to support accessibility features, capitalizing on HappyScribe API for real time subtitle generation."
+        "name": "Online conference archives",
+        "description": "Conference teams provide VTT captions for archived talks, making content searchable and accessible across devices."
       },
       {
-        "name": "Marketing video optimization",
-        "description": "Optimize marketing assets by converting captions into VTT, adding interactive styling for social media placements and increasing viewer engagement."
+        "name": "Social media short clips",
+        "description": "Content creators repurpose clips for Instagram and TikTok, adding VTT captions for viewers who watch on mute."
       },
       {
-        "name": "Corporate training distribution",
-        "description": "Convert training module transcripts from SRT to VTT to facilitate multilingual caption support, integrating Human-made subtitles for high accuracy."
+        "name": "Documentary subtitling workflow",
+        "description": "Filmmakers collaborate with editors to convert and fine tune subtitles from SRT to VTT for web and broadcast."
       },
       {
-        "name": "OTT platform subtitle management",
-        "description": "Use API driven batch processes to convert SRT to VTT at scale, managing subtitle libraries and ensuring consistent formatting across multiple series and episodes."
+        "name": "Film festival subtitle prep",
+        "description": "Festival coordinators standardize caption formats by converting submissions to VTT, ensuring smooth screening on digital platforms."
       }
     ],
-    "comparison": "<div>\n  <h2>🎬 Subtitle Format Comparison: SRT vs VTT</h2>\n  <table style=\"border-collapse: collapse; width:100%; font-family: Arial, sans-serif;\">\n    <thead>\n      <tr style=\"background-color: #f2f2f2;\">\n        <th style=\"border: 1px solid #ddd; padding: 8px; text-align:left;\">Feature</th>\n        <th style=\"border: 1px solid #ddd; padding: 8px; text-align:left;\">SRT</th>\n        <th style=\"border: 1px solid #ddd; padding: 8px; text-align:left;\">VTT</th>\n      </tr>\n    </thead>\n    <tbody>\n      <tr>\n        <td style=\"border: 1px solid #ddd; padding: 8px;\">File Extension</td>\n        <td style=\"border: 1px solid #ddd; padding: 8px;\">.srt 📄</td>\n        <td style=\"border: 1px solid #ddd; padding: 8px;\">.vtt 📜</td>\n      </tr>\n      <tr>\n        <td style=\"border: 1px solid #ddd; padding: 8px;\">MIME Type</td>\n        <td style=\"border: 1px solid #ddd; padding: 8px;\">text/plain; charset=utf-8</td>\n        <td style=\"border: 1px solid #ddd; padding: 8px;\">text/vtt</td>\n      </tr>\n      <tr>\n        <td style=\"border: 1px solid #ddd; padding: 8px;\">Syntax Differences</td>\n        <td style=\"border: 1px solid #ddd; padding: 8px;\">\n          • Index numbers<br>\n          • Timestamps: hh:mm:ss,ms → hh:mm:ss,ms<br>\n          • No header<br>\n        </td>\n        <td style=\"border: 1px solid #ddd; padding: 8px;\">\n          • “WEBVTT” header<br>\n          • Timestamps: hh:mm:ss.mmm → hh:mm:ss.mmm<br>\n          • Optional region & note blocks<br>\n        </td>\n      </tr>\n      <tr>\n        <td style=\"border: 1px solid #ddd; padding: 8px;\">Metadata & Styling</td>\n        <td style=\"border: 1px solid #ddd; padding: 8px;\">\n          • Minimal (no colors/positions)<br>\n          • Hacks via HTML tags (unsupported)<br>\n        </td>\n        <td style=\"border: 1px solid #ddd; padding: 8px;\">\n          • CSS-like cues: <code>align, position, size, line</code><br>\n          • Classes & voice tags<br>\n        </td>\n      </tr>\n      <tr>\n        <td style=\"border: 1px solid #ddd; padding: 8px;\">Web & Browser Compatibility</td>\n        <td style=\"border: 1px solid #ddd; padding: 8px;\">\n          • Requires JS/conversion<br>\n          • No native &lt;track&gt; support<br>\n        </td>\n        <td style=\"border: 1px solid #ddd; padding: 8px;\">\n          • Native HTML5 &lt;track&gt;<br>\n          • Supported by Chrome, Firefox, Safari, Edge 👍\n        </td>\n      </tr>\n      <tr>\n        <td style=\"border: 1px solid #ddd; padding: 8px;\">Subtitle Positioning</td>\n        <td style=\"border: 1px solid #ddd; padding: 8px;\">\n          • Fixed bottom<br>\n          • No line/position control<br>\n        </td>\n        <td style=\"border: 1px solid #ddd; padding: 8px;\">\n          • <code>line, position, align</code><br>\n          • Multiple regions (e.g., speaker names)\n        </td>\n      </tr>\n      <tr>\n        <td style=\"border: 1px solid #ddd; padding: 8px;\">Common Use Cases</td>\n        <td style=\"border: 1px solid #ddd; padding: 8px;\">\n          • DVDs, Blu-ray, offline players<br>\n          • YouTube auto-generated edits\n        </td>\n        <td style=\"border: 1px solid #ddd; padding: 8px;\">\n          • Web streaming (HLS, DASH)<br>\n          • Interactive transcripts & captions\n        </td>\n      </tr>\n      <tr>\n        <td style=\"border: 1px solid #ddd; padding: 8px;\">File Size Implications</td>\n        <td style=\"border: 1px solid #ddd; padding: 8px;\">\n          • Slightly smaller<br>\n          • Plain timestamps only\n        </td>\n        <td style=\"border: 1px solid #ddd; padding: 8px;\">\n          • Slightly larger<br>\n          • Extra header & styling directives\n        </td>\n      </tr>\n      <tr>\n        <td style=\"border: 1px solid #ddd; padding: 8px;\">Real-life Code Samples</td>\n        <td style=\"border: 1px solid #ddd; padding: 8px;\">\n          <pre style=\"margin:0; background:#f9f9f9; padding:6px;\"><code>1\n00:00:01,000 --> 00:00:03,000\nHello, world! 🌍\n\n2\n00:00:04,500 --> 00:00:06,000\nThis is SRT.</code></pre>\n        </td>\n        <td style=\"border: 1px solid #ddd; padding: 8px;\">\n          <pre style=\"margin:0; background:#f9f9f9; padding:6px;\"><code>WEBVTT\n\n00:00:01.000 --> 00:00:03.000 align:start\nHello, world! 🌍\n\n00:00:04.500 --> 00:00:06.000 line:90%\nThis is VTT.</code></pre>\n        </td>\n      </tr>\n    </tbody>\n  </table>\n\n  <h3>✅ Pros & ❌ Cons</h3>\n  <ul>\n    <li><strong>SRT Pros:</strong> Simple, tiny, universal.</li>\n    <li><strong>SRT Cons:</strong> No styling, poor web integration.</li>\n    <li><strong>VTT Pros:</strong> Rich styling, HTML5 support, positioning.</li>\n    <li><strong>VTT Cons:</strong> Slightly larger, extra header required.</li>\n  </ul>\n\n  <h3>📊 Use This If…</h3>\n  <table style=\"border-collapse: collapse; width:100%; font-family: Arial, sans-serif;\">\n    <thead>\n      <tr style=\"background-color: #f9f9f9;\">\n        <th style=\"border: 1px solid #ddd; padding: 8px; text-align:left;\">Format</th>\n        <th style=\"border: 1px solid #ddd; padding: 8px; text-align:left;\">Use This If…</th>\n      </tr>\n    </thead>\n    <tbody>\n      <tr>\n        <td style=\"border: 1px solid #ddd; padding: 8px;\">SRT</td>\n        <td style=\"border: 1px solid #ddd; padding: 8px;\">You need maximum compatibility in offline players or you must keep file sizes ultra-small.</td>\n      </tr>\n      <tr>\n        <td style=\"border: 1px solid #ddd; padding: 8px;\">VTT</td>\n        <td style=\"border: 1px solid #ddd; padding: 8px;\">You’re publishing on the web with HTML5 &lt;video&gt; and want styling, positioning, or interactive transcripts.</td>\n      </tr>\n    </tbody>\n  </table>\n</div>"
+    "comparison": "<div class=\"subtitle-comparison\">\n  <h2>Quick Look: SRT vs VTT</h2>\n  <table border=\"1\" cellpadding=\"8\" cellspacing=\"0\">\n    <thead>\n      <tr>\n        <th>Feature</th>\n        <th>SRT</th>\n        <th>VTT</th>\n      </tr>\n    </thead>\n    <tbody>\n      <tr>\n        <td>File Extension 🎬</td>\n        <td>.srt</td>\n        <td>.vtt</td>\n      </tr>\n      <tr>\n        <td>MIME Type 🌐</td>\n        <td>text/srt</td>\n        <td>text/vtt</td>\n      </tr>\n      <tr>\n        <td>Timestamp Format ⏱️</td>\n        <td>\n          HH:MM:SS,mmm<br>\n          e.g. 00:01:15,500\n        </td>\n        <td>\n          HH:MM:SS.mmm or MM:SS.mmm<br>\n          e.g. 00:01:15.500\n        </td>\n      </tr>\n      <tr>\n        <td>Header Style 📑</td>\n        <td>No header; starts with cue number</td>\n        <td>Must start with <code>WEBVTT</code> on line 1</td>\n      </tr>\n      <tr>\n        <td>Metadata & Styling 🖌️</td>\n        <td>Basic text only<br>No styling support</td>\n        <td>Supports notes, classes, regions, settings</td>\n      </tr>\n      <tr>\n        <td>Browser & Web Support 🌎</td>\n        <td>Needs conversion or JS player<br>Supported by many desktop players</td>\n        <td>Native in HTML5 <code>&lt;track&gt;</code> tag</td>\n      </tr>\n      <tr>\n        <td>Positioning 📍</td>\n        <td>No built-in positioning<br>Depends on player defaults</td>\n        <td>Can set <code>line</code>, <code>position</code>, <code>align</code></td>\n      </tr>\n      <tr>\n        <td>Common Use Cases 📽️</td>\n        <td>Local videos<br>Legacy players</td>\n        <td>Web video<br>Live captions</td>\n      </tr>\n      <tr>\n        <td>File Size 🚀</td>\n        <td>Small; text only<br>~3 KB for a 2-min clip</td>\n        <td>Similar; slightly larger if styling<br>~4–5 KB for same clip</td>\n      </tr>\n      <tr>\n        <td>Code Sample 📝</td>\n        <td>\n          <pre>&lt;!-- intro.srt --&gt;\n1\n00:00:05,000 --> 00:00:10,000\nHello there!\n\n2\n00:00:12,000 --> 00:00:15,000\nWelcome to our video.</pre>\n        </td>\n        <td>\n          <pre>&lt;!-- intro.vtt --&gt;\nWEBVTT\n\n1\n00:00:05.000 --> 00:00:10.000\nHello there!\n\n2\n00:00:12.000 --> 00:00:15.000 line:90% position:50%\nWelcome to our video.</pre>\n        </td>\n      </tr>\n    </tbody>\n  </table>\n\n  <h3>Pros &amp; Cons</h3>\n  <div class=\"pros-cons\">\n    <h4>SRT</h4>\n    <ul>\n      <li>👍 Very simple to edit</li>\n      <li>👍 Broad support in old players</li>\n      <li>👎 No styling or position control</li>\n    </ul>\n    <h4>VTT</h4>\n    <ul>\n      <li>👍 Built-in styles &amp; positioning</li>\n      <li>👍 Native in modern browsers</li>\n      <li>👎 Slightly stricter header rules</li>\n      <li>👎 Less support in old players</li>\n    </ul>\n  </div>\n\n  <h3>Use this if…</h3>\n  <table border=\"1\" cellpadding=\"8\" cellspacing=\"0\">\n    <thead>\n      <tr>\n        <th>Format</th>\n        <th>Best for</th>\n      </tr>\n    </thead>\n    <tbody>\n      <tr>\n        <td>SRT</td>\n        <td>You need basic captions for offline or legacy players.</td>\n      </tr>\n      <tr>\n        <td>VTT</td>\n        <td>You work on web video or need styling and precise placement.</td>\n      </tr>\n    </tbody>\n  </table>\n</div>"
   }
 ]

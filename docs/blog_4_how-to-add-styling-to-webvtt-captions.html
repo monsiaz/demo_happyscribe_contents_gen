@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>How to add styling to WebVTT captions - HappyScribe</title>
+    <meta name="description" content="Find out how to use CSS classes and cue settings in VTT files to create visually engaging and accessible subtitles for your web videos.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <link rel="canonical" href="https://monsiaz.github.io/demo_happyscribe_contents_gen/blog_4_how-to-add-styling-to-webvtt-captions.html">
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="https://www.happyscribe.com/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://www.happyscribe.com/favicon/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="https://www.happyscribe.com/favicon/apple-touch-icon.png">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="https://www.happyscribe.com/assets/hs.landing-42122b4ad66b2e1435c21ff4c12c2cadf6b5aa464214dc79f1ad1ebd2d99aa21.css">
+    <link rel="stylesheet" href="/settings/web_assets/style.css">
+</head>
+<body>
+    <header class='topbar'>
+        <div class='container topbar-inner'>
+            <a class='brand' href='/'><img src='/settings/web_assets/png-transparent-happy-scribe-logo-tech-companies.png' alt='HappyScribe logo'></a>
+            <nav class='main-nav'>
+                <a href='#'>Tools</a>
+                <a href='#'>Resources</a>
+                <a href='#'>Log in</a>
+                <a href='#' class='btn btn-secondary'>Start for Free</a>
+                <a href='#' class='btn btn-primary'>Get a demo</a>
+            </nav>
+        </div>
+    </header>
+    <main class='container'>
+        <h1>How to add styling to WebVTT captions</h1>
+<p>Welcome! Today you’ll learn how to add styling to WebVTT captions for a cleaner, more on-brand look. We’ll cover everything from basic conversion tips—like how to convert srt to vtt—to advanced cue styling and integration with HappyScribe tools. By the end, you’ll have all the steps you need to make your subtitles pop on any video player.</p>
+
+<h2>What is WebVTT and why style captions?</h2>
+<p>Web Video Text Tracks (WebVTT) is the standard caption format for HTML5 video. It is a text file that pairs time codes with caption text. By default, most players render captions in their standard style. Adding custom styling helps you:</p>
+<ul>
+  <li>Match your brand colors and fonts</li>
+  <li>Improve readability across devices</li>
+  <li>Highlight key dialogue or speaker names</li>
+  <li>Control positioning for crowded video scenes</li>
+</ul>
+<p>Best-practice tip: Keep your style definitions compact. Unnecessary CSS rules can slow down caption rendering on some players.</p>
+
+<h2>How do I convert SRT to VTT?</h2>
+<p>If you already have an SRT file, converting it to VTT is the first step. Here are three simple options:</p>
+
+<h3>1. Use FFMPEG for quick conversion</h3>
+<pre><code>ffmpeg -i subtitles.srt subtitles.vtt</code></pre>
+<ul>
+  <li>Pros: One-line command, fast</li>
+  <li>Pitfall: Older versions of FFMPEG may not handle special characters correctly</li>
+</ul>
+
+<h3>2. Try the webvtt-py library</h3>
+<pre><code>pip install webvtt-py
+webvtt convert subtitles.srt --output subtitles.vtt</code></pre>
+<ul>
+  <li>Pros: Works on any system with Python</li>
+  <li>Tip: Use <code>--speaker-break</code> to mark speaker changes</li>
+</ul>
+
+<h3>3. Leverage the HappyScribe API</h3>
+<p>If you prefer an automated flow, HappyScribe’s API can convert your SRT to VTT at scale. Here’s a sample call:</p>
+<pre><code>curl -X POST "https://api.happyscribe.com/v1/convert" \
+-H "Authorization: Bearer YOUR_API_KEY" \
+-H "Content-Type: application/json" \
+-d '{
+  "source": "srt",
+  "target": "vtt",
+  "file_url": "https://example.com/subtitles.srt"
+}'</code></pre>
+<ul>
+  <li>Pros: Bulk processing, status updates</li>
+  <li>Tip: Check your API dashboard for conversion logs</li>
+</ul>
+<p>See our <a href="#">Subtitle editor documentation</a> for more examples.</p>
+
+<h2>What basic style options does WebVTT support?</h2>
+<p>WebVTT lets you add a style block at the top of your file. This block uses CSS-like rules for cue classes.</p>
+<pre><code>WEBVTT
+
+STYLE
+::cue {
+  color: white;
+  background-color: rgba(0, 0, 0, 0.7);
+  font-size: 1.2em;
+}
+
+::cue(.speaker1) {
+  color: #FF5722;
+}
+
+::cue(.speaker2) {
+  color: #03A9F4;
+}</code></pre>
+<ul>
+  <li>color: Text color in standard CSS hex or keyword</li>
+  <li>background-color: Use rgba for transparency</li>
+  <li>font-size: Relative units like em or rem adapt across screens</li>
+</ul>
+<p>Pro tip: Group similar cues by adding custom class names in the cue settings section. This keeps your style rules DRY and easy to update.</p>
+
+<h2>How can I control cue position and alignment?</h2>
+<p>Beyond style, you can fine-tune where each caption appears:</p>
+<pre><code>00:00:05.000 --> 00:00:10.000 align:start line:90% position:10%
+This text appears near the bottom left.
+
+00:00:15.000 --> 00:00:20.000 align:center line:80% position:50%
+Centered at the bottom.</code></pre>
+<ul>
+  <li>align: start, center, end</li>
+  <li>line: Percent or number of lines from top or bottom</li>
+  <li>position: Horizontal placement from left edge</li>
+</ul>
+<p>Pitfall: Some players ignore advanced cues. Always test on Chrome, Firefox, and Safari. For wide coverage, rely on core CSS styling in the <code>STYLE</code> block.</p>
+
+<h2>What are common best practices when styling WebVTT?</h2>
+<ul>
+  <li>Keep contrast high: White text on dark background or vice versa</li>
+  <li>Use relative units for font size: <code>1.2em</code> scales with user settings</li>
+  <li>Limit the number of custom classes: Too many selectors can cause slow parsing</li>
+  <li>Test on mobile: Small screens need larger text and more padding</li>
+</ul>
+<p>For a guided process, try HappyScribe’s <a href="#">Automatic transcription</a> followed by our <a href="#">Subtitle editor</a>. You can download the final VTT with styling in one click.</p>
+
+<h2>How do I integrate styled VTT with HappyScribe API?</h2>
+<p>After you’ve converted your file, you might want to host or serve it via API calls. Here is a basic integration flow:</p>
+<pre><code>// 1. Convert SRT to VTT
+POST https://api.happyscribe.com/v1/convert
+
+// 2. Add styling block locally or in storage
+// 3. Upload styled VTT back to HappyScribe for hosting
+
+POST https://api.happyscribe.com/v1/subtitles
+Headers: Authorization Bearer YOUR_API_KEY
+Body: { "file": styled_subtitles.vtt, "video_id": "12345" }</code></pre>
+<ul>
+  <li>Tip: Store your VTT files in S3 and link them via API calls</li>
+  <li>Tip: Use webhooks to get notifications when subtitles are processed</li>
+</ul>
+<p>This flow works with Human-made subtitles or our fully <a href="#">Automatic transcription</a> option.</p>
+
+<h2>Ready to make your captions stand out?</h2>
+<p>By following these steps, you have the tools to convert srt to vtt, add brand-aligned styling, and integrate with HappyScribe services. Whether you need quick auto-generated subtitles or fine-tuned human-made captions, we’ve got you covered.</p>
+<p><strong>Take the next step:</strong> Sign up for a free trial today and see how easy it is to create, style, and publish captions with HappyScribe.</p>
+
+<h2>Frequently Asked Questions</h2>
+<div class="accordion" id="faq">
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="headingOne">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+        How do I convert srt to vtt using HappyScribe?
+      </button>
+    </h2>
+    <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#faq">
+      <div class="accordion-body">
+        Use our API endpoint /v1/convert with source set to "srt" and target to "vtt". You can upload your file or pass a URL. The response returns a VTT file link.
+      </div>
+    </div>
+  </div>
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="headingTwo">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+        Can I change caption font size and color?
+      </button>
+    </h2>
+    <div id="collapseTwo" class="accordion-collapse collapse" aria-labelledby="headingTwo" data-bs-parent="#faq">
+      <div class="accordion-body">
+        Yes. Add a STYLE block at the top of your VTT file and use CSS rules like <code>color</code>, <code>background-color</code>, and <code>font-size</code>.
+      </div>
+    </div>
+  </div>
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="headingThree">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+        What players support WebVTT styling?
+      </button>
+    </h2>
+    <div id="collapseThree" class="accordion-collapse collapse" aria-labelledby="headingThree" data-bs-parent="#faq">
+      <div class="accordion-body">
+        Modern browsers like Chrome, Firefox, and Safari support most WebVTT style features. For full coverage, test on desktop and mobile.
+      </div>
+    </div>
+  </div>
+  <div class="accordion-item">
+    <h2 class="accordion-header" id="headingFour">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseFour" aria-expanded="false" aria-controls="collapseFour">
+        How can I automate subtitle uploads?
+      </button>
+    </h2>
+    <div id="collapseFour" class="accordion-collapse collapse" aria-labelledby="headingFour" data-bs-parent="#faq">
+      <div class="accordion-body">
+        Use HappyScribe’s API to upload VTT files and link them to your video using the /v1/subtitles endpoint. You can script this in your CI/CD pipeline.
+      </div>
+    </div>
+  </div>
+</div>
+        <p><a href="convert-srt-to-vtt.html">&larr; Back to converter landing</a></p><h2>More Articles</h2><ul><li><a href="blog_1_how-to-optimize-captions-for-web-video.html">How to optimize captions for web video</a></li><li><a href="blog_2_how-to-batch-convert-srt-files-with-python.html">How to batch convert SRT files with Python</a></li><li><a href="blog_3_how-to-use-ffmpeg-for-subtitle-conversion.html">How to use FFmpeg for subtitle conversion</a></li><li><a href="blog_5_how-to-automate-subtitle-workflows-with-api.html">How to automate subtitle workflows with API</a></li><li><a href="blog_6_how-to-import-srt-files-in-premiere-pro.html">How to import SRT files in Premiere Pro</a></li><li><a href="blog_7_how-to-convert-captions-on-mac-without-software.html">How to convert captions on Mac without software</a></li><li><a href="blog_8_how-to-fix-common-subtitle-timing-errors.html">How to fix common subtitle timing errors</a></li><li><a href="blog_9_how-to-integrate-subtitles-in-live-streaming.html">How to integrate subtitles in live streaming</a></li><li><a href="blog_10_how-to-translate-subtitles-with-human-made-accuracy.html">How to translate subtitles with human-made accuracy</a></li></ul>
+    </main>
+    <footer><div class='container'><p>&copy; HappyScribe</p></div></footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

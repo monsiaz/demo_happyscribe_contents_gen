@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Documentary subtitling workflow - HappyScribe</title>
+    <meta name="description" content="Filmmakers collaborate with editors to convert and fine tune subtitles from SRT to VTT for web and broadcast.">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <link rel="canonical" href="https://monsiaz.github.io/demo_happyscribe_contents_gen/use_9_documentary-subtitling-workflow.html">
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="https://www.happyscribe.com/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://www.happyscribe.com/favicon/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="https://www.happyscribe.com/favicon/apple-touch-icon.png">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="https://www.happyscribe.com/assets/hs.landing-42122b4ad66b2e1435c21ff4c12c2cadf6b5aa464214dc79f1ad1ebd2d99aa21.css">
+    <link rel="stylesheet" href="/settings/web_assets/style.css">
+</head>
+<body>
+    <header class='topbar'>
+        <div class='container topbar-inner'>
+            <a class='brand' href='/'><img src='/settings/web_assets/png-transparent-happy-scribe-logo-tech-companies.png' alt='HappyScribe logo'></a>
+            <nav class='main-nav'>
+                <a href='#'>Tools</a>
+                <a href='#'>Resources</a>
+                <a href='#'>Log in</a>
+                <a href='#' class='btn btn-secondary'>Start for Free</a>
+                <a href='#' class='btn btn-primary'>Get a demo</a>
+            </nav>
+        </div>
+    </header>
+    <main class='container'>
+        <h1>Documentary subtitling workflow</h1>
+<p>Imagine you are working on a feature length documentary that explores untold stories from remote regions of the world. You have clear footage and in-depth interviews, but your audience spans multiple devices and platforms. You probably already have transcripts or captions in SRT format, yet your web team needs VTT for HTML5 players, interactive transcripts, and accessibility compliance. Manually converting each SRT file is slow, error prone, and draws time away from your creative process. In this use case, you’ll see how HappyScribe can convert your SRT files to VTT automatically, let you fine tune the timing, and keep your team in sync. We’ll share a complete workflow that covers account setup, file upload, API calls, code snippets, and tips for best results. By the end, you’ll be ready to modernize your subtitle process and ship your documentary faster.</p>
+
+<h2>What is SRT to VTT conversion for documentaries?</h2>
+<p>SRT, or SubRip Text, is one of the most common subtitle file formats. It stores caption text with start and end times in a plain text file. WebVTT, or VTT, is a more modern subtitle format designed for use in web browsers and HTML5 video. It supports styling, positioning, metadata, and chapter markers. Converting SRT to VTT means you keep your existing captions but wrap them in the right format for web delivery.</p>
+<p>When you convert captions, you want to:</p>
+<ul>
+  <li>Keep the original timing accurate</li>
+  <li>Preserve speaker labels and line breaks</li>
+  <li>Add or remove cue settings for styling</li>
+  <li>Include metadata like chapter titles or region info</li>
+</ul>
+<p>HappyScribe handles all of these details. You upload an SRT, pick VTT, and get a file that works in any modern browser or streaming service. It also loads right into our subtitle editor for quick edits before you finalize the file.</p>
+
+<h2>Why is this conversion so important for your production?</h2>
+<p>Adding subtitles to your documentary does more than help viewers follow along. It can make or break your distribution plan. Here are a few reasons directors and editors choose to convert to VTT early in their pipeline:</p>
+<ul>
+  <li><strong>Wider platform support</strong>  Many online video platforms require VTT. If you only have SRT, you may run into upload errors or unexpected behavior on certain browsers.</li>
+  <li><strong>Enhanced accessibility</strong>  VTT files meet Web Content Accessibility Guidelines (WCAG). They let viewers control caption style, use screen readers, and stay engaged even in noisy environments.</li>
+  <li><strong>Synchronized transcripts</strong>  Web players can show interactive transcripts side by side with video. Viewers can click on a line of text and jump to that exact moment.</li>
+  <li><strong>SEO and discoverability</strong>  Search engines can parse VTT files to index the text of your documentary. That means your quotes and topics can show up in search results.</li>
+  <li><strong>Streamlined revisions</strong>  If you edit your film, VTT files can be updated without starting from scratch. You keep one master file that stays in sync with your final cut.</li>
+</ul>
+<p>By converting SRT to VTT early, you reduce last minute headaches and keep your release schedule on track.</p>
+
+<h2>How do you set up your workflow?</h2>
+<p>This section walks you through every step of the conversion process. Whether you prefer our web app or our API, you’ll be ready to move from raw SRT to polished VTT in minutes.</p>
+
+<h3>Step 1: sign up and get your API key</h3>
+<p>First, create a free HappyScribe account at <a href="https://www.happyscribe.com">happyscribe.com</a>. Choose a plan that fits your team. Once you’re in, go to your dashboard and copy your API key. Keep it secure, as you will need it for every request.</p>
+
+<h3>Step 2: choose your tool</h3>
+<p>Depending on your preference, you can:</p>
+<ul>
+  <li><strong>Use the web interface</strong> for quick uploads and manual edits.</li>
+  <li><strong>Install our command line tool</strong> to run conversions from your terminal.</li>
+  <li><strong>Integrate our API</strong> into your build or CMS for full automation.</li>
+</ul>
+<p>Here are the install commands:</p>
+<pre><code># Node.js CLI
+npm install -g happyscribe-cli
+
+# Python SDK
+pip install happyscribe</code></pre>
+
+<h3>Step 3: upload your SRT file</h3>
+<p>In the web app, click “New subtitle” and pick your SRT file. Select “Convert to VTT” from the dropdown, pick your language, and hit upload. If you prefer code, here is a cURL example:</p>
+<pre><code>curl -X POST https://api.happyscribe.com/v1/subtitles \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -F "file=@/path/to/documentary.srt" \
+  -F "source_language=en" \
+  -F "target_format=vtt"</code></pre>
+<p>You will get a JSON response with a <code>subtitle_id</code>. Use that ID to track the job status and download the file later.</p>
+
+<h3>Step 4: monitor conversion progress</h3>
+<p>After you upload, HappyScribe converts your captions. You can poll the API for status:</p>
+<pre><code>curl https://api.happyscribe.com/v1/subtitles/SUBTITLE_ID \
+  -H "Authorization: Bearer YOUR_API_KEY"</code></pre>
+<p>Once the <code>status</code> field changes to <code>done</code>, your file is ready. In our CLI, you can use:</p>
+<pre><code>happyscribe subtitles fetch SUBTITLE_ID --format vtt --output path/to/output.vtt</code></pre>
+
+<h3>Step 5: edit in our subtitle editor</h3>
+<p>Open the VTT file in our web editor. You will see your video on one side and the text on the other. You can:</p>
+<ul>
+  <li>Drag caption segments to adjust start and end times</li>
+  <li>Split a long line into two shorter ones</li>
+  <li>Add or remove speaker labels</li>
+  <li>Style the captions with custom colors and positioning</li>
+  <li>Preview the final result in real time</li>
+</ul>
+<p>Saving your edits pushes them back to the server. The updated VTT file is ready for download or for your next automation step.</p>
+
+<h3>Step 6: download and deploy</h3>
+<p>When you are happy with the results, you can download the VTT file manually or with the API:</p>
+<pre><code>curl https://api.happyscribe.com/v1/subtitles/SUBTITLE_ID/download \
+  -H "Authorization: Bearer YOUR_API_KEY" \
+  -o final_subtitles.vtt</code></pre>
+<p>Upload it to your CDN, link it in your video player, or include it in your streaming package. Your documentary is now web ready.</p>
+
+<h2>How do you automate bulk conversions?</h2>
+<p>For series or batches of interview clips, you can run a script that converts every SRT file in a folder. Here is a Node.js example with error handling and logging:</p>
+<pre><code>const Happyscribe = require('happyscribe');
+const fs = require('fs');
+const path = require('path');
+
+async function convertFolder(inputDir, outputDir) {
+  const api = new Happyscribe({ apiKey: process.env.HAPPYSCRIBE_KEY });
+
+  try {
+    const files = fs.readdirSync(inputDir).filter(f =&gt; f.endsWith('.srt'));
+    for (const file of files) {
+      const fullPath = path.join(inputDir, file);
+      console.log(`Uploading ${file}...`);
+
+      const upload = await api.subtitles.upload({
+        file: fs.createReadStream(fullPath),
+        source_language: 'en',
+        target_format: 'vtt'
+      });
+
+      let status = 'queued';
+      while (status !== 'done') {
+        const res = await api.subtitles.get(upload.id);
+        status = res.status;
+        console.log(`Status for ${file}: ${status}`);
+        if (status === 'failed') {
+          throw new Error(`Conversion failed for ${file}`);
+        }
+        await new Promise(r => setTimeout(r, 2000));
+      }
+
+      const vttData = await api.subtitles.download(upload.id);
+      const outName = file.replace('.srt', '.vtt');
+      fs.writeFileSync(path.join(outputDir, outName), vttData);
+      console.log(`Saved ${outName}`);
+    }
+  } catch (err) {
+    console.error('Batch conversion error', err);
+  }
+}
+
+convertFolder('./srt-files', './vtt-files');</code></pre>
+<p>This script:</p>
+<ul>
+  <li>Reads all SRT files in a folder</li>
+  <li>Uploads each file to HappyScribe for conversion</li>
+  <li>Polls the API until each job is done or has failed</li>
+  <li>Downloads the VTT output and writes it to a new folder</li>
+  <li>Logs progress and errors for easy debugging</li>
+</ul>
+
+<h2>What best practices should you follow?</h2>
+<p>To keep your subtitle workflow running smoothly across multiple documentaries or episodes, here are some tips:</p>
+<ul>
+  <li><strong>Use consistent file names</strong>  Name your SRT and VTT files with the same base name so they stay paired. For example, <code>episode1.srt</code> and <code>episode1.vtt</code>.</li>
+  <li><strong>Keep a version history</strong>  Use Git or another version control system to track changes to your caption files. Tag releases with the final subtitle sets.</li>
+  <li><strong>Validate your files</strong>  Run your VTT files through a validator before publishing. This catches missing cues or syntax errors.</li>
+  <li><strong>Check in context</strong>  Test your subtitles in the actual player and device your viewers will use. Sometimes line breaks or font sizes need a tweak.</li>
+  <li><strong>Share style guidelines</strong>  Keep a short document that defines font size, color, and position rules. Share it with editors and translators to keep the look uniform.</li>
+  <li><strong>Automate checks</strong>  Create a simple script that runs on your build server to check file format, run a validator, and send alerts if errors crop up.</li>
+</ul>
+
+<h2>Success story: how one team saved hours</h2>
+<p>A small production company was working on a political drama documentary. They had 12 interviews with three to four hour raw recordings each. Their editor spent two days manually creating SRT files, then had to convert to VTT by hand and test in the browser. After switching to HappyScribe, they set up the script we showed above, cut their subtitle prep time to under one hour, and freed the editor to focus on narrative structure. They also used our AI notetaker to mark key quotes, speeding up their script development. By the end of the project, they had a single automated pipeline that they reused on every new film.</p>
+
+<h2>What else can you add with the HappyScribe API?</h2>
+<p>Our API can do more than format conversion. Here are a few ideas you can integrate into your documentary workflow:</p>
+<ul>
+  <li><strong>Automatic transcript generation</strong>  Generate transcripts directly from audio or video. No need for an existing SRT file.</li>
+  <li><strong>Speaker identification</strong>  Label your interview subjects automatically. This helps your editor track who is speaking in each segment.</li>
+  <li><strong>Translation</strong>  Convert your captions to multiple languages in one call. Great for international film festivals.</li>
+  <li><strong>Custom glossaries</strong>  Define specific terms that are common in your project. Keep names, places, and technical words consistent.</li>
+  <li><strong>Webhook notifications</strong>  Set a callback URL so your system is notified when a conversion is complete. No more manual checking.</li>
+</ul>
+
+<h2>What HappyScribe features smooth out this process?</h2>
+<p>Here are five standout tools you can use today:</p>
+<ul>
+  <li><strong>Subtitle editor</strong>
+    <p>Step into our web app to make quick fixes. Sync your captions to the video, adjust text, and apply styling rules. It works on desktop and tablet, so your editor can tweak on the go.</p>
+  </li>
+  <li><strong>AI notetaker</strong>
+    <p>The AI notetaker listens to long interviews and creates time stamped notes. You can use those notes to mark key quotes or outline chapters in your documentary.</p>
+  </li>
+  <li><strong>API and webhooks</strong>
+    <p>Build a system that manages conversions automatically. When you upload an audio clip, the API starts a transcription job, and you get notified at key stages. Finish tasks without leaving your terminal.</p>
+  </li>
+  <li><strong>Team collaboration</strong>
+    <p>Invite writers, producers, and localization partners to work on the same file. Add comments, track changes, and lock sections that are complete.</p>
+  </li>
+  <li><strong>Style presets</strong>
+    <p>Define caption colors, fonts, and positions once, and apply them to every file you convert. Keep your brand guidelines consistent across projects.</p>
+  </li>
+</ul>
+
+<h3>Mini FAQ</h3>
+<div class="accordion" id="miniFaq">
+  <div class="accordion-item">
+    <h3 class="accordion-header" id="faq1">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="false" aria-controls="collapseOne">
+        Can I convert SRT files in batches?
+      </button>
+    </h3>
+    <div id="collapseOne" class="accordion-collapse collapse" data-bs-parent="#miniFaq">
+      <div class="accordion-body">
+        Yes. You can use our CLI or SDK to loop through multiple SRT files. Our batch script example shows how to convert an entire folder in one go.
+      </div>
+    </div>
+  </div>
+  <div class="accordion-item">
+    <h3 class="accordion-header" id="faq2">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
+        How do I handle subtitle revisions?
+      </button>
+    </h3>
+    <div id="collapseTwo" class="accordion-collapse collapse" data-bs-parent="#miniFaq">
+      <div class="accordion-body">
+        Open your VTT file in our subtitle editor. Every edit is saved back to the server. You can download a fresh VTT or use the API to fetch the latest version programmatically.
+      </div>
+    </div>
+  </div>
+  <div class="accordion-item">
+    <h3 class="accordion-header" id="faq3">
+      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseThree" aria-expanded="false" aria-controls="collapseThree">
+        Can I integrate subtitle conversion into my CMS?
+      </button>
+    </h3>
+    <div id="collapseThree" class="accordion-collapse collapse" data-bs-parent="#miniFaq">
+      <div class="accordion-body">
+        Absolutely. Use our API endpoints to upload and download captions. Set up a webhook so your CMS knows when a VTT is ready. Link it to your publishing workflow.
+      </div>
+    </div>
+  </div>
+</div>
+
+<h2>Ready to streamline your documentary subtitles?</h2>
+<p>Sign up for HappyScribe and get your API key in seconds. Start converting SRT to VTT right away, free of charge. Let our tools save you hours of manual work so you can spend more time crafting your story.</p>
+<p><a class="btn btn-primary" href="https://www.happyscribe.com" target="_blank" rel="noopener">Start your free trial now</a></p>
+        <p><a href="convert-srt-to-vtt.html">&larr; Back to converter landing</a></p><h2>More Use Cases</h2><ul><li><a href="use_1_elearning-course-production.html">eLearning course production</a></li><li><a href="use_2_corporate-training-modules.html">Corporate training modules</a></li><li><a href="use_3_marketing-video-localization.html">Marketing video localization</a></li><li><a href="use_4_streaming-platform-caption-delivery.html">Streaming platform caption delivery</a></li><li><a href="use_5_video-podcast-accessibility.html">Video podcast accessibility</a></li><li><a href="use_6_webinar-recording-distribution.html">Webinar recording distribution</a></li><li><a href="use_7_online-conference-archives.html">Online conference archives</a></li><li><a href="use_8_social-media-short-clips.html">Social media short clips</a></li><li><a href="use_10_film-festival-subtitle-prep.html">Film festival subtitle prep</a></li></ul>
+    </main>
+    <footer><div class='container'><p>&copy; HappyScribe</p></div></footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
