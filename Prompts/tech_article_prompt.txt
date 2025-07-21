@@ -1,0 +1,19 @@
+Generate a 1 600-word technical blog article in English.
+
+Title: "${TITLE}"
+Audience: Senior developers and DevOps engineers.
+Primary keyword: "HappyScribe API"
+
+Context
+${API_SUMMARY}
+
+Requirements
+1. Begin with a crisp business pain paragraph, then overview the technical solution.
+2. Provide at least four sections (<h2> only) each followed by practical code (curl, Python, or pseudo-code) in <pre><code> blocks. Use Sentence case headings that end with a question mark.
+3. Insert a <h2>Key takeaways</h2> block with exactly 3 bullet points (<ul><li>).
+4. No Markdown, no em-dash, no placeholders.
+5. Use <strong> to highlight important terms; limit to 8 occurrences.
+6. Split paragraphs (≤7 lines) and leave a blank line between them.
+7. Final <h2> acts as conclusion without the word "conclusion"; end article with an italic one-sentence summary.
+
+Return STRICT valid HTML only. 

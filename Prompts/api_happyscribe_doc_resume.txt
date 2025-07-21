@@ -1,0 +1,235 @@
+### HappyScribe Product API – Extended English Overview
+
+This guide expands on the previous French digest, giving you a fuller—but still concise—picture of what you can do with the **HappyScribe Product API v1** and how to do it safely, efficiently, and at scale. Everything below fits well inside the 4 000‑word ceiling, so feel free to paste it into your wiki or share it with teammates.
+
+---
+
+## 1. Purpose and Core Capabilities
+
+The Product API lets any backend or low‑code tool turn raw audio/video into finished deliverables:
+
+1. **Upload / ingest** media (direct URL or presigned S3).
+2. **Transcribe** automatically or through human experts.
+3. **Export** the transcript/subtitles in one of 12+ formats.
+4. **Translate** transcripts (machine or human) and track multi‑step orders.
+
+Because HappyScribe version‑locks breaking changes (`/api/v1` today), integrations seldom need urgent refactors. Legacy versions remain available for an extended period.
+
+---
+
+## 2. Authentication and Throttling
+
+* **Header**: `Authorization: Bearer <YOUR_API_KEY>`.
+
+  * Obtain your key from the **Account** page; rotate if leaked.
+* **Rate limit** (per user, POST /transcriptions): *200 requests per hour* by default.
+
+  * On overflow, you receive `HTTP 429` plus `{"retry_in_seconds": <n>}`.
+  * Sales can raise limits.
+
+Common error codes: `400, 401, 403, 404, 405, 406, 410, 418, 422, 429, 500, 503`.
+
+---
+
+## 3. Supported Languages
+
+* 120+ BCP‑47 codes, ranging from `af-ZA` to `zu-ZA`.
+* Column *human ✅* in the official table marks languages eligible for **pro** (human) service.
+* No auto‑detect: always send `language` when you create a transcription.
+* Variants (e.g. `en-GB`, `en-US`) matter for quality and price.
+
+---
+
+## 4. Uploading Media
+
+### 4.1 Skip upload (public URL)
+
+If your file already sits on a reachable server, pass its HTTPS link directly as `tmp_url` when you create a transcription.
+
+### 4.2 Use HappyScribe’s S3 bucket
+
+1. **GET `/uploads/new?filename=my.mov`** → returns `"signedUrl": "https://...s3.amazonaws.com/...signature..."`.
+2. **PUT** your file to that URL (standard AWS‑S3 single PUT).
+3. Re‑use that same URL as `tmp_url` later.
+4. You may delete the original source once state ≥ `ingesting`.
+
+---
+
+## 5. Transcription Endpoints
+
+### 5.1 Create
+
+```http
+POST /transcriptions
+{
+  "transcription": {
+    "name": "2025-07-UX‑Interview",
+    "language": "en-GB",
+    "tmp_url": "https://example.com/file.mp3",
+    "is_subtitle": false,
+    "service": "auto",        // or "pro" or "alignment"
+    "organization_id": "413",
+    "folder_id": "521",
+    "tags": ["UX", "Sprint‑34"]
+  }
+}
+```
+
+* Response includes `id`, `state`, and `_links.editorUrl`.
+* `service` variants:
+
+  * `auto` — fast, machine generated.
+  * `pro` — humans transcribe; SLA \~24 h (language dependent).
+  * `alignment` — align an existing document (`document_url`) with the audio.
+
+### 5.2 Polling & States
+
+`GET /transcriptions/{id}` until `state` equals:
+
+| State            | Meaning                                                                 |
+| ---------------- | ----------------------------------------------------------------------- |
+| `automatic_done` | Finished; ready to export.                                              |
+| `failed`         | Processing error (`failureReason` explains).                            |
+| Intermediate     | `initial`, `ingesting`, `automatic_transcribing`, `aligning`, `locked`. |
+
+Exponential back‑off (e.g. 5 s → 10 s → 20 s) prevents hammering.
+
+### 5.3 List / Delete
+
+* **GET `/transcriptions?page=N&folder_id=…&tags=tag1,tag2`** – newest first.
+* **DELETE `/transcriptions/{id}?permanent=true`** – hard delete; omit to send to Trash bin.
+
+---
+
+## 6. Exporting Content
+
+Send one or many transcription IDs to create an export:
+
+```http
+POST /exports
+{
+  "export": {
+    "format": "docx",                   // see list below
+    "show_timestamps": true,
+    "timestamps_frequency": "30s",
+    "show_speakers": true,
+    "transcription_ids": ["abc123"]
+  }
+}
+```
+
+Formats: `txt`, `docx`, `pdf`, `srt`, `vtt`, `stl`, `avid`, `html`, `premiere`, `maxqda`, `json`, `fcp`.
+
+Poll **GET /exports/{id}**; when `state` becomes `ready`, download from `download_link`. Each file usually finishes in \~10 s.
+
+---
+
+## 7. Translation: Two Generations
+
+### 7.1 Legacy Tasks (`/task/transcription_translation`)
+
+Kept for backward compatibility. You post source transcription ID + single `target_language`, poll `state`, then grab `translatedTranscriptionId`. Will be sunset later.
+
+### 7.2 Modern Orders (`/orders/translation`)
+
+Allows batch targets and human service.
+
+```http
+POST /orders/translation
+{
+  "order": {
+    "source_transcription_id": "abc123",
+    "target_languages": ["es", "de"],
+    "service": "auto",    // or "pro"
+    "confirm": true       // false creates draft
+  }
+}
+```
+
+* The response is a full **Order object** (`id`, `state`, `operations[]`, `details`, `inputs`, `outputsCount`).
+* Poll **GET /orders/{id}** until `state` is `fulfilled` (machine = seconds; human ≈ 3 days).
+* If you unset `confirm`, finalize later via **POST /orders/{id}/confirm** once the quote is accepted and wallet funded.
+
+---
+
+## 8. Costs & Wallets
+
+* Machine transcriptions auto‑price into `costInCents` (in `GET /transcriptions/{id}`).
+* Orders provide granular cost breakdown in `details.items[]` (per minute, add‑ons, minimum charge).
+* Wallet top‑ups are reflected in `needsMoneyWalletTopup` & `currentUserIsPayer`.
+* Add‑ons: *rush*, *verbatim*, *SDH captions*, *light human*, selectable at order‑time for a surcharge.
+
+---
+
+## 9. Implementation Tips
+
+| Stage                    | Good Practices                                                                                                                        |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- |
+| **Uploading**            | Compress long WAVs to MP3/MP4 to cut costs & upload time (lossless ≠ required for speech models).                                     |
+| **Polling**              | Stop once `automatic_done` or `failed`; include jitter in retry sleeps to avoid thundering‑herd after outages.                        |
+| **Exports**              | Fire multiple `/exports` concurrently (one per wanted format) — they run in parallel and are cheap.                                   |
+| **Tags / Folders**       | Treat them as arbitrary metadata buckets: episode id, client id, status flags.                                                        |
+| **Error handling**       | On `429`, parse `retry_in_seconds` precisely; on `5xx`, retry with capped exponential back‑off.                                       |
+| **Security**             | Signed URLs expire; do **not** reuse them for other files. Regenerate if the initial PUT fails.                                       |
+| **Language consistency** | Keep the same locale code (`fr-CA` vs `fr-FR`) through transcription → translation → export to avoid mismatched spell‑checks in docx. |
+
+---
+
+## 10. “Hello World” Minimal Flow (cURL)
+
+```bash
+# 1) Get signed upload URL
+curl -H "Authorization: Bearer $API_KEY" \
+  "https://www.happyscribe.com/api/v1/uploads/new?filename=demo.mp3" \
+  | jq -r .signedUrl >signed.txt
+
+# 2) Upload file
+curl -X PUT -T demo.mp3 "$(cat signed.txt)"
+
+# 3) Create transcription
+TRANS_ID=$(curl -X POST -H "Authorization: Bearer $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "{\"transcription\":{\"name\":\"Demo\",\"language\":\"en-US\",\"tmp_url\":\"$(cat signed.txt)\",\"organization_id\":\"413\"}}" \
+  https://www.happyscribe.com/api/v1/transcriptions | jq -r .id)
+
+# 4) Poll status (simplified loop)
+while true; do
+  STATE=$(curl -s -H "Authorization: Bearer $API_KEY" \
+    https://www.happyscribe.com/api/v1/transcriptions/$TRANS_ID | jq -r .state)
+  [ "$STATE" = "automatic_done" ] && break
+  echo "Waiting ($STATE)…"; sleep 10
+done
+
+# 5) Export to VTT
+EXP_ID=$(curl -X POST -H "Authorization: Bearer $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d "{\"export\":{\"format\":\"vtt\",\"transcription_ids\":[\"$TRANS_ID\"]}}" \
+  https://www.happyscribe.com/api/v1/exports | jq -r .id)
+
+# 6) Download once ready
+while true; do
+  EXP=$(curl -s -H "Authorization: Bearer $API_KEY" https://www.happyscribe.com/api/v1/exports/$EXP_ID)
+  [[ $(echo "$EXP" | jq -r .state) = "ready" ]] && \
+    curl -L "$(echo "$EXP" | jq -r .download_link)" -o demo.vtt && break
+  sleep 5
+done
+```
+
+---
+
+## 11. Quick Reference Cheat‑Sheet
+
+* **Base URL**         `https://www.happyscribe.com/api/v1`
+* **Auth header**      `Authorization: Bearer …`
+* **Key endpoints**    `/uploads/new`, `/transcriptions`, `/exports`, `/orders/translation`
+* **Main states**      `automatic_done`, `ready`, `fulfilled`
+* **Formats**          `txt`, `docx`, `pdf`, `srt`, `vtt`, `stl`, `avid`, `html`, `premiere`, `maxqda`, `json`, `fcp`
+* **Limits**           200 POST /transcriptions per hour (extendable)
+* **Languages**        >120 BCP‑47 codes (see docs)
+* **Human service**    Set `"service":"pro"` (ETA ≈ 1 day for STT, 3 days for translation)
+
+---
+
+### Final Thoughts
+
+HappyScribe’s API keeps the contract simple—plain JSON over HTTPS—yet covers a broad workflow: ingest, transcript, subtitle, translate, export. By combining machine speed with optional human quality, it scales from hack‑night prototypes to media‑house pipelines. Stick to the sequence above, retry judiciously, tag everything, and you’ll have a rock‑solid speech‑to‑text backend in under an afternoon.

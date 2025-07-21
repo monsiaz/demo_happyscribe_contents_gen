@@ -1,0 +1,20 @@
+Generate a 2 000-word technical use-case page in English.
+
+Use case title: "${USE_NAME}"
+Conversion context: "${F1} to ${F2}"
+
+Context for engineers
+${API_SUMMARY}
+
+Requirements
+1. Open with a persona-agnostic business scenario, then describe why this workflow matters.
+2. Provide a numbered step-by-step (<ol><li>) implementation using the HappyScribe API; include code snippets (curl or Python) in <pre><code>.
+3. Highlight 3 HappyScribe features that simplify the workflow (<strong>).
+4. Insert the statistic box you often use: ${STAT_INFO}
+5. Add <h2>Key takeaways</h2> (3 bullets) before a Mini FAQ.
+6. Mini FAQ (<h3>) with 3 accordion items (answers visible).
+7. Headings: <h2> only, Sentence case, no word "conclusion".
+8. No Markdown, no em-dash; split paragraphs ≤7 lines with blank lines.
+9. End with italic single-sentence wrap-up.
+
+Return STRICT valid HTML only. 

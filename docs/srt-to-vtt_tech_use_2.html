@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+  <meta charset='utf-8'>
+  <title>Post-production batch captioning workflow - HappyScribe</title>
+  <meta name='description' content='AI-generated page about subtitle conversion.'>
+  <meta name='viewport' content='width=device-width,initial-scale=1'>
+  <link rel='canonical' href='https://monsiaz.github.io/demo_happyscribe_contents_gen/srt-to-vtt_tech_use_2.html'>
+  <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css'>
+  <link rel='stylesheet' href='settings/web_assets/style.css'>
+</head>
+<body>
+  <header class='topbar'>
+     <div class='container topbar-inner'>
+        <a class='brand' href='/'><img src='settings/web_assets/header.png' class='hero-img' alt='Header'></a>
+     </div>
+  </header>
+
+  <main class='container'>
+     <nav id='toc' class='toc'></nav>
+     <div class="use-case-page">
+  <h2>Post-production batch captioning workflow</h2>
+  <p>At a digital media agency, production teams regularly receive hundreds of raw SRT subtitle files from editors. They need to convert these files into WebVTT format for modern streaming platforms.</p>
+  <p>This process is time sensitive; delays in caption conversion can push back content publication schedules. By automating the batch conversion of SRT to VTT, teams reduce manual error and maintain consistent formatting across episodes and series.</p>
+  <p>WebVTT is required by most HTML5 video players. It supports cues, styling, and timestamps that enhance accessibility and user engagement. Converting legacy SRT files to VTT ensures compatibility with browser APIs and caption rendering engines.</p>
+  <p>In this workflow you will learn how to take a folder of SRT files and transform them into VTT captions using the HappyScribe Product API v1. This method scales to thousands of files, integrates with CI/CD pipelines, and provides detailed error reporting.</p>
+
+  <h2>Implementation steps</h2>
+  <ol>
+    <li>
+      <p>Prepare your SRT files. Ensure each file is UTF-8 encoded without a Byte Order Mark. Validate formatting elements such as cue timings and sequence numbers to avoid alignment errors later.</p>
+      <p>Request a presigned URL for secure file upload. This <strong>presigned URL upload</strong> feature lets you bypass building your own file server. It expires automatically, improving security and reducing storage complexity.</p>
+      <pre><code>curl -H "Authorization: Bearer $API_KEY" \
+  "https://www.happyscribe.com/api/v1/uploads/new?filename=episode1.srt" \
+  | jq -r .signedUrl > upload_url.txt
+
+curl -X PUT -T episode1.srt "$(cat upload_url.txt)"
+</code></pre>
+    </li>
+    <li>
+      <p>Invoke the <code>alignment</code> endpoint to convert your SRT file into an internal transcript without audio processing. This step reuses the existing cues, skipping transcription cost and time.</p>
+      <p>Set <code>service</code> to <code>"alignment"</code>. Provide the presigned URL returned in the previous step as <code>tmp_url</code>. You can also set <code>name</code> for traceability and <code>source_language</code> to control locale-sensitive formatting.</p>
+      <pre><code>curl -X POST -H "Authorization: Bearer $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "transcription": {
+      "name": "Ep1-SRT-to-VTT",
+      "source_language": "en-US",
+      "tmp_url": "$(cat upload_url.txt)",
+      "service": "alignment"
+    }
+  }' \
+  https://www.happyscribe.com/api/v1/transcriptions
+</code></pre>
+      <p>Optionally, integrate this in Python for CI/CD pipelines. This approach ensures repeatable and version-controlled execution.</p>
+      <pre><code>import requests
+
+url = "https://www.happyscribe.com/api/v1/transcriptions"
+headers = {
+  "Authorization": f"Bearer {API_KEY}",
+  "Content-Type": "application/json"
+}
+payload = {
+  "transcription": {
+    "name": "Ep1-SRT-to-VTT",
+    "source_language": "en-US",
+    "tmp_url": open("upload_url.txt").read().strip(),
+    "service": "alignment"
+  }
+}
+response = requests.post(url, json=payload, headers=headers)
+print(response.json()["id"])
+</code></pre>
+    </li>
+    <li>
+      <p>Poll the transcription endpoint to track alignment status. Use exponential backoff with jitter to handle rate limits gracefully. Stop polling once the state is <code>automatic_done</code> or <code>failed</code>.</p>
+      <pre><code>TRANS_ID="your_transcription_id"
+while true; do
+  RESPONSE=$(curl -s -H "Authorization: Bearer $API_KEY" \
+    https://www.happyscribe.com/api/v1/transcriptions/$TRANS_ID)
+  STATE=$(echo "$RESPONSE" | jq -r .state)
+  if [ "$STATE" = "automatic_done" ] || [ "$STATE" = "failed" ]; then
+    echo "Final state: $STATE"
+    break
+  fi
+  echo "Current state: $STATE - retrying in 10s"
+  sleep 10
+done
+</code></pre>
+      <p>Handle errors by examining the <code>failureReason</code> field in the response. Common errors include invalid SRT syntax or expired presigned URLs.</p>
+    </li>
+    <li>
+      <p>Once alignment completes, export the transcription as VTT. You can trigger this operation along with other formats in parallel, leveraging the API’s <strong>parallel exports</strong> capability. This saves time when you need SRT, VTT, and other deliverables.</p>
+      <pre><code>EXP_ID=$(curl -X POST -H "Authorization: Bearer $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "export": {
+      "format": "vtt",
+      "transcription_ids": ["'"$TRANS_ID"'"],
+      "show_speakers": false
+    }
+  }' \
+  https://www.happyscribe.com/api/v1/exports | jq -r .id)
+
+while true; do
+  STATUS=$(curl -s -H "Authorization: Bearer $API_KEY" \
+    https://www.happyscribe.com/api/v1/exports/$EXP_ID | jq -r .state)
+  if [ "$STATUS" = "ready" ]; then
+    URL=$(curl -s -H "Authorization: Bearer $API_KEY" \
+      https://www.happyscribe.com/api/v1/exports/$EXP_ID | jq -r .download_link)
+    curl -L "$URL" -o episode1.vtt
+    echo "Download complete: episode1.vtt"
+    break
+  fi
+  echo "Export state: $STATUS - checking again"
+  sleep 5
+done
+</code></pre>
+      <p>After download, integrate the VTT file into your content management system or CDN configuration.</p>
+    </li>
+  </ol>
+
+  <h2>Key features</h2>
+  <ul>
+    <li><strong>Presigned URL uploads</strong> eliminate the need to host subtitle files on your servers. HappyScribe generates a time-limited URL that you can use to PUT files directly into S3, ensuring security and reducing your infrastructure overhead.</li>
+    <li><strong>Alignment service</strong> bypasses audio transcription by accepting existing SRT documents. This reduces compute costs and accelerates conversion since HappyScribe only needs to reformat cues rather than process speech-to-text.</li>
+    <li><strong>Parallel exports</strong> make it possible to request multiple output formats, such as VTT and SRT, in a single API call. Exports run concurrently on HappyScribe’s servers, delivering files in seconds even for large batches.</li>
+  </ul>
+
+  <p class="alt-bg">💡 83% des internautes regardent des vidéos sans le son - les sous-titres sont cruciaux.</p>
+
+  <h2>Key takeaways</h2>
+  <ul>
+    <li>Use the <code>alignment</code> endpoint to convert existing SRT files into VTT quickly and cost effectively.</li>
+    <li>Presigned URL uploads secure your file transfer and eliminate hosting complexity.</li>
+    <li>Export multiple formats in parallel to speed up large-scale caption distribution.</li>
+  </ul>
+
+  <h3>Mini FAQ</h3>
+  <div class="accordion">
+    <div class="accordion-item">
+      <button aria-expanded="true">Can I convert files without storing them on my server?</button>
+      <div class="accordion-content">
+        <p>Yes. By using presigned URL uploads, you never need to store SRT files on your own server. HappyScribe handles hosting and expiration, simplifying file management and enhancing security.</p>
+      </div>
+    </div>
+    <div class="accordion-item">
+      <button aria-expanded="true">Is the alignment output identical to a fresh transcript?</button>
+      <div class="accordion-content">
+        <p>The alignment service preserves original timestamps and cue text exactly. It reformats your SRT into internal HappyScribe JSON, then exports it to VTT. This results in a VTT file that matches your SRT cues one-to-one.</p>
+      </div>
+    </div>
+    <div class="accordion-item">
+      <button aria-expanded="true">How do I handle rate limits during batch processing?</button>
+      <div class="accordion-content">
+        <p>The HappyScribe API uses a default rate limit of 200 POST /transcriptions per hour. When you exceed this, you receive a 429 response with a retry_in_seconds field. Implement exponential backoff and request a limit increase for high-volume pipelines.</p>
+      </div>
+    </div>
+  </div>
+
+  <p><em>With a few API calls, you can automate SRT to VTT conversion at scale, freeing your team to focus on content creation instead of format management.</em></p>
+</div>
+     
+  </main>
+
+  <footer>
+     <div class='container small text-muted'>© HappyScribe · Generated by <strong>o4-mini-2025-04-16</strong></div>
+  </footer>
+
+  <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js'></script>
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+     const toc = document.getElementById('toc');
+     if (!toc) return;
+     const h2s = Array.from(document.querySelectorAll('main.container h2'));
+     if (!h2s.length) { toc.remove(); return; }
+     const ul = document.createElement('ul');
+     h2s.forEach(h => {
+        const id = h.textContent.trim().toLowerCase().replace(/[^a-z0-9]+/g,'-');
+        h.id = id;
+        const li = document.createElement('li');
+        li.innerHTML = "<a href='#"+id+"'>"+h.textContent+"</a>";
+        ul.appendChild(li);
+     });
+     toc.innerHTML = '<h2>Table of contents</h2>';
+     toc.appendChild(ul);
+  });
+  </script>
+</body>
+</html>

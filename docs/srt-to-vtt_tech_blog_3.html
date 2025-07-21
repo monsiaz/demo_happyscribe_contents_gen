@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang='en'>
+<head>
+  <meta charset='utf-8'>
+  <title>Scaling bulk SRT to VTT conversions in the cloud - HappyScribe</title>
+  <meta name='description' content='AI-generated page about subtitle conversion.'>
+  <meta name='viewport' content='width=device-width,initial-scale=1'>
+  <link rel='canonical' href='https://monsiaz.github.io/demo_happyscribe_contents_gen/srt-to-vtt_tech_blog_3.html'>
+  <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css'>
+  <link rel='stylesheet' href='settings/web_assets/style.css'>
+</head>
+<body>
+  <header class='topbar'>
+     <div class='container topbar-inner'>
+        <a class='brand' href='/'><img src='settings/web_assets/header.png' class='hero-img' alt='Header'></a>
+     </div>
+  </header>
+
+  <main class='container'>
+     <nav id='toc' class='toc'></nav>
+     <h1>Scaling bulk SRT to VTT conversions in the cloud</h1>
+
+<p>Enterprises that manage large video catalogs often struggle with delivering subtitles in modern web formats. Converting existing subtitle files at scale is tedious without automated pipelines. Teams face manual steps, high error rates, and mounting operational overhead when using traditional CLI tools or ad hoc scripts.</p>
+
+<p>This article presents a high‐throughput, cloud‐native approach using the <strong>HappyScribe API</strong>. We show you how to ingest thousands of SRT files, monitor processing, handle failures gracefully, and export to VTT. All examples use standard REST calls and simple shell or Python snippets that you can integrate into CI/CD workflows or serverless functions.</p>
+
+<h2>Why convert SRT to VTT in bulk?</h2>
+
+<p>Web players like Video.js and HTML5 require the WebVTT format. Many content creators still supply legacy SRT files. Migrating dozens or hundreds of episodes manually is error prone. You need a repeatable, resilient pipeline that can run unattended.</p>
+
+<p>Converting one file with a desktop tool is fine. Converting thousands demands automation. You want parallel operations, back‐off on retries, centralized logging, and predictable cost tracking. Offloading heavy lifting to a cloud service reduces your maintenance burden.</p>
+
+<h2>How do you authenticate and ingest SRT files?</h2>
+
+<p>The first step is to securely upload or reference your SRT files. You can either point to public URLs or use signed URLs on Amazon S3. Both methods work seamlessly with the <strong>authentication</strong> model of the API.</p>
+
+<pre><code># Obtain your API key from account settings
+API_KEY=your_api_key_here
+
+# Example: get a signed URL to upload to S3
+curl -s -H "Authorization: Bearer $API_KEY" \
+  "https://www.happyscribe.com/api/v1/uploads/new?filename=episode01.srt" \
+  | jq -r .signedUrl > upload_url.txt
+
+# Upload SRT file to the signed URL
+curl -X PUT -T episodes/episode01.srt "$(cat upload_url.txt)"
+</code></pre>
+
+<p>Alternatively, if your files are already hosted on a CDN, simply pass the public link as `tmp_url`. Once your SRT is accessible, create a transcription entry. This stage ingests your file in preparation for conversion.</p>
+
+<pre><code># Create a transcription record for conversion
+curl -X POST -H "Authorization: Bearer $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "transcription": {
+      "name": "Episode 01",
+      "language": "en-US",
+      "tmp_url": "'"$(cat upload_url.txt)"'",
+      "is_subtitle": true,
+      "service": "auto"
+    }
+  }' \
+  https://www.happyscribe.com/api/v1/transcriptions
+</code></pre>
+
+<p>This returns an `id` and initial `state`. You can now pivot to monitoring.</p>
+
+<h2>How do you poll and handle API states?</h2>
+
+<p>After creating a record, the API returns states such as `initial`, `ingesting`, and `automatic_transcribing`. When the pipeline finishes, it reaches `automatic_done`. You must implement a <strong>polling</strong> loop with exponential back‐off and jitter to avoid thundering herds.</p>
+
+<pre><code>import time
+import requests
+
+API_KEY = "your_api_key_here"
+TRANS_ID = "transcription_id_here"
+BASE_URL = "https://www.happyscribe.com/api/v1"
+
+def wait_for_completion():
+    backoff = 5
+    while True:
+        resp = requests.get(
+            f"{BASE_URL}/transcriptions/{TRANS_ID}",
+            headers={"Authorization": f"Bearer {API_KEY}"}
+        )
+        data = resp.json()
+        state = data["state"]
+        if state in ("automatic_done", "failed"):
+            return data
+        time.sleep(backoff)
+        backoff = min(backoff * 2, 60)
+
+result = wait_for_completion()
+if result["state"] == "failed":
+    raise RuntimeError("Transcription failed: " + result.get("failureReason", "unknown"))
+</code></pre>
+
+<p>Implement robust <strong>error handling</strong> by capturing HTTP 429 with `retry_in_seconds` and 5xx errors. Respect the suggested delay on rate limit, and use capped exponential retries on server errors. This pattern ensures stability under load.</p>
+
+<h2>How do you export and retrieve VTT files at scale?</h2>
+
+<p>Once your transcription reaches `automatic_done`, you trigger an <strong>exports</strong> job. You can batch multiple IDs in one call or launch parallel jobs if you need different formats. Here we focus on bulk VTT conversion.</p>
+
+<pre><code># Trigger a VTT export for one or more transcription IDs
+TRANS_IDS='["id1","id2","id3"]'
+EXP_ID=$(curl -s -X POST -H "Authorization: Bearer $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "export": {
+      "format": "vtt",
+      "transcription_ids": '"$TRANS_IDS"'
+    }
+  }' \
+  https://www.happyscribe.com/api/v1/exports | jq -r .id)
+
+# Poll until export is ready
+while true; do
+  STATUS=$(curl -s -H "Authorization: Bearer $API_KEY" \
+    "https://www.happyscribe.com/api/v1/exports/$EXP_ID" | jq -r .state)
+  if [ "$STATUS" = "ready" ]; then
+    DOWNLOAD_URL=$(curl -s -H "Authorization: Bearer $API_KEY" \
+      "https://www.happyscribe.com/api/v1/exports/$EXP_ID" | jq -r .download_link)
+    curl -o bulk.vtt "$DOWNLOAD_URL"
+    break
+  fi
+  sleep 5
+done
+</code></pre>
+
+<p>If you need to process hundreds of files, use a job queue or serverless function per batch of N IDs. Monitor failures centrally and retry only failed items to reduce wasted compute.</p>
+
+<h2>Key takeaways</h2>
+<ul>
+  <li>The <strong>HappyScribe API</strong> streamlines batch subtitle conversion from <strong>SRT</strong> to <strong>VTT</strong> with minimal code.</li>
+  <li>Implement secure upload, durable <strong>authentication</strong>, and resilient <strong>polling</strong> loops to handle rate limits and transient errors.</li>
+  <li>Parallelize <strong>exports</strong> and capture per‐job status for predictable performance at scale.</li>
+</ul>
+
+<h2>Next steps?</h2>
+
+<p><em>Deploy this pipeline as a serverless job or container task and integrate with your CI/CD system to automate subtitle conversions with confidence.</em></p>
+     
+  </main>
+
+  <footer>
+     <div class='container small text-muted'>© HappyScribe · Generated by <strong>o4-mini-2025-04-16</strong></div>
+  </footer>
+
+  <script src='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js'></script>
+  <script>
+  document.addEventListener('DOMContentLoaded', () => {
+     const toc = document.getElementById('toc');
+     if (!toc) return;
+     const h2s = Array.from(document.querySelectorAll('main.container h2'));
+     if (!h2s.length) { toc.remove(); return; }
+     const ul = document.createElement('ul');
+     h2s.forEach(h => {
+        const id = h.textContent.trim().toLowerCase().replace(/[^a-z0-9]+/g,'-');
+        h.id = id;
+        const li = document.createElement('li');
+        li.innerHTML = "<a href='#"+id+"'>"+h.textContent+"</a>";
+        ul.appendChild(li);
+     });
+     toc.innerHTML = '<h2>Table of contents</h2>';
+     toc.appendChild(ul);
+  });
+  </script>
+</body>
+</html>
