@@ -284,6 +284,9 @@ async def main() -> None:
         )
 
         content, faq, blogs, uses = await generator._single_call(SYSTEM_MESSAGE, prompt)  # type: ignore
+        # Debug: log blog ideas and use cases returned by the model
+        logging.debug("Row %d returned blog_ideas (%d): %s", idx, len(blogs), blogs)
+        logging.debug("Row %d returned use_cases (%d): %s", idx, len(uses), uses)
         comp_prompt = comp_tpl.substitute(FORMAT_1=row["format_1"].upper(), FORMAT_2=row["format_2"].upper())
         comp_html, *_ = await generator._single_call(SYSTEM_MESSAGE, comp_prompt)  # type: ignore
         return idx, content, faq, blogs, uses, serp_context, comp_html
@@ -322,33 +325,57 @@ async def main() -> None:
 
     async def _write_page(path: str, title: str, body_html: str, extra_nav: str = "", meta_desc: str = ""):
         """Write an HTML page with optional navigation/footer."""
-        skel = (
-            "<!DOCTYPE html><html><head><meta charset='utf-8'>"
-            "<meta name='viewport' content='width=device-width,initial-scale=1'>"
-            f"<title>{title}</title>"
-            "<link href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css' rel='stylesheet'>"
-            "<link rel='stylesheet' href='settings/web_assets/style.css'>"
-            "</head><body>"
-            "<header class='topbar'><div class='container topbar-inner'>"
-            "<a class='brand' href='https://www.happyscribe.com'><img src='settings/web_assets/logo.png' alt='HappyScribe logo'></a>"
-            "<nav class='main-nav'>"
-            "<a href='#'>Tools</a>"
-            "<a href='#'>Resources</a>"
-            "<a href='#'>Pricing</a>"
-            "<a href='#' class='btn-primary'>Start for Free</a>"
-            "</nav></div></header>"
-            "<main class='container'>"
-            f"{body_html}"
-            f"{extra_nav}"
-            "</main>"
-            "<footer><div class='container'><p>&copy; HappyScribe</p></div></footer>"
-            "</body></html>"
-        )
+        
+        page_slug = os.path.basename(path)
+        canonical_url = f"https://monsiaz.github.io/demo_happyscribe_contents_gen/{page_slug}"
+
+        skel = f"""
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>{title} - HappyScribe</title>
+    <meta name="description" content="{meta_desc or 'AI-generated content for subtitle and transcript file conversion.'}">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <link rel="canonical" href="{canonical_url}">
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/png" sizes="32x32" href="https://www.happyscribe.com/favicon/favicon-32x32.png">
+    <link rel="icon" type="image/png" sizes="16x16" href="https://www.happyscribe.com/favicon/favicon-16x16.png">
+    <link rel="apple-touch-icon" href="https://www.happyscribe.com/favicon/apple-touch-icon.png">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="https://www.happyscribe.com/assets/hs.landing-42122b4ad66b2e1435c21ff4c12c2cadf6b5aa464214dc79f1ad1ebd2d99aa21.css">
+    <link rel="stylesheet" href="/settings/web_assets/style.css">
+</head>
+<body>
+    <header class='topbar'>
+        <div class='container topbar-inner'>
+            <a class='brand' href='/'><img src='/settings/web_assets/png-transparent-happy-scribe-logo-tech-companies.png' alt='HappyScribe logo'></a>
+            <nav class='main-nav'>
+                <a href='#'>Tools</a>
+                <a href='#'>Resources</a>
+                <a href='#'>Log in</a>
+                <a href='#' class='btn btn-secondary'>Start for Free</a>
+                <a href='#' class='btn btn-primary'>Get a demo</a>
+            </nav>
+        </div>
+    </header>
+    <main class='container'>
+        {body_html}
+        {extra_nav}
+    </main>
+    <footer><div class='container'><p>&copy; HappyScribe</p></div></footer>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+"""
         with open(path, "w", encoding="utf-8") as fp:
-            fp.write(skel)
+            fp.write(skel.strip())
 
     # Utility: extract pure HTML from a raw JSON-ish string returned by the model
-    _html_re = re.compile(r'"content"\s*:\s*"(.*?)"', re.DOTALL)
+    _html_re = re.compile(r'"content"\\s*:\\s*"(.*?)"', re.DOTALL)
     def _ensure_html(raw: str) -> str:
         """Return HTML string: if `raw` is full JSON markdown block, pull the content field."""
         txt = raw.strip()
@@ -368,6 +395,41 @@ async def main() -> None:
                 pass
             return html_escaped
         return raw  # fallback
+
+    def _build_faq_accordion(faq_list: List[Dict[str, str]], prefix: str) -> str:
+        if not faq_list:
+            return ""
+        
+        items_html = []
+        for i, item in enumerate(faq_list):
+            question = item.get("question", "")
+            answer = item.get("answer", "")
+            if not question or not answer:
+                continue
+
+            item_html = f"""
+            <div class="accordion-item">
+                <h3 class="accordion-header">
+                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#{prefix}-{i}">
+                        {question}
+                    </button>
+                </h3>
+                <div id="{prefix}-{i}" class="accordion-collapse collapse">
+                    <div class="accordion-body">{answer}</div>
+                </div>
+            </div>
+            """
+            items_html.append(item_html)
+
+        if not items_html:
+            return ""
+
+        return f"""
+        <h2>Frequently Asked Questions</h2>
+        <div class="accordion" id="faqAccordion-{prefix}">
+            {''.join(items_html)}
+        </div>
+        """
 
     # Convenience: slugify helper
     def _slugify(txt: str) -> str:
@@ -423,6 +485,7 @@ async def main() -> None:
         comp_html = _ensure_html(row.get("comparison", ""))
 
         if content_html:
+            faq_html = _build_faq_accordion(row.get("faq", []), slug)
             nav_html = ""
             if blog_links:
                 nav_html += "<h2>Related Articles</h2><ul>" + "".join(
@@ -433,13 +496,13 @@ async def main() -> None:
                     f'<li><a href="{fname}">{name}</a></li>' for fname, name, _ in use_links
                 ) + "</ul>"
 
-            landing_html = content_html + comp_html + nav_html
+            landing_html = content_html + comp_html + faq_html + nav_html
             # Always overwrite to ensure links are up to date
             await _write_page(landing_path, kw_p, landing_html)
 
     # Generate an index.html listing all generated pages
     pages = sorted([f for f in os.listdir(demo_dir) if f.endswith('.html')])
-    list_items = ''.join(f'<li><a href="{p}">{p.replace(".html"," ").replace('-',' ').title()}</a></li>' for p in pages)
+    list_items = ''.join(f'<li><a href="{p}">{p.replace(".html", " ").replace("-", " ").title()}</a></li>' for p in pages)
     index_content = (
         '<!DOCTYPE html><html><head><meta charset="utf-8">'
         '<meta name="viewport" content="width=device-width,initial-scale=1">'
