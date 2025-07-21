@@ -9,15 +9,14 @@ Requirements
 - Tone: Friendly, enthusiastic, and conversational, yet professional. Position HappyScribe as a thought leader. Speak directly to the reader (e.g., "you'll learn," "we'll dive into").
 - Language: Use simple, direct US English. Avoid technical jargon where possible.
 - Words to AVOID: Multifaceted, therefore, elicit, enhance, thus, begets, utilize, imperative, caveat, transcreator, employ, consequently, intricate, implement, incites, harness, subsequently, elaborate, elevate.
-- Structure: Start the introduction by clearly stating the article's purpose. Use questions in sub-headers (<h2>, <h3>) to guide the reader. Use bullet points and lists to improve readability. End with a clear call to action.
+- Structure: Start the introduction by clearly stating the article's purpose. Use questions in sub-headers (<h2>, <h3>) to guide the reader. Use bullet points and lists to improve readability.
 
 1. Begin with an engaging introduction that clearly states the article's purpose.
 2. Provide at least four practical sections (use <h2>, <h3>) that focus on real-world scenarios, tips, and best practices for users (content creators, marketers, educators, accessibility leads). Avoid heavy code snippets; prefer plain-English walkthroughs, checklists, and actionable advice.
 3. Intersperse best-practice tips and pitfalls to avoid. Include short illustrative examples only if they add value (no long code blocks).
 4. Integrate HappyScribe product mentions naturally (Automatic transcription, Human-made subtitles, API, Subtitle editor, etc.). Include at least three internal links using <a href="#">placeholder</a>.
 5. Headings must use Sentence case; acronyms like FFMPEG, SRT, VTT must be uppercase. No bland headings like "Conclusion".
-6. End with a strong call-to-action to try HappyScribe tools.
-7. Use basic HTML only (no markdown) and do not use the em dash (—).
-8. At the end of the article, add a 'Frequently Asked Questions' section (<h2>) with 3-5 relevant questions, formatted as a Bootstrap 5 accordion.
+6. Use basic HTML only (no markdown) and do not use the em dash (—).
+7. At the end of the article, add a 'Frequently Asked Questions' section (<h2>) with 3-5 relevant questions, formatted as a Bootstrap 5 accordion.
 
 Return STRICT valid HTML (no wrapper tags). 

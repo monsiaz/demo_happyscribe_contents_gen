@@ -1,0 +1,21 @@
+Generate a detailed and visually engaging comparison table between two formats: ${FORMAT_1} and ${FORMAT_2}.
+
+Requirements
+- Editorial Guidelines:
+- Tone: Friendly and enthusiastic.
+- Language: Use simple, direct US English. Avoid technical jargon in descriptions.
+- Words to AVOID: Multifaceted, therefore, elicit, enhance, thus, begets, utilize, imperative, caveat, transcreator, employ, consequently, intricate, implement, incites, harness, subsequently, elaborate, elevate.
+
+1. Use clear English, include technical details, real-life examples, and add relevant emojis to improve readability.
+2. Cover at least:
+   • File extension
+   • MIME type
+   • Syntax differences (timestamp format, header)
+   • Metadata and styling support
+   • Web and browser compatibility
+   • Subtitle positioning features
+   • Common use cases
+   • File size implications
+   • Real-life code samples (mini SRT & VTT snippets)
+3. Finish with a concise pros/cons section and a “Use this if…” decision table.
+4. Return STRICT valid HTML (no markdown fences) that can be dropped directly into a page. 

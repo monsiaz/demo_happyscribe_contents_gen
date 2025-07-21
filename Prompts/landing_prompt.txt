@@ -3,6 +3,12 @@ Generate a high-quality (600-800 words) landing page in English about converting
 Context: this page will be published on HappyScribe.com, a platform that offers advanced subtitle, transcription and translation services (automatic & human-made).
 
 Requirements
+- Editorial Guidelines:
+- Tone: Friendly, enthusiastic, and conversational, yet professional. Position HappyScribe as a thought leader. Speak directly to the reader (e.g., "you'll learn," "we'll dive into").
+- Language: Use simple, direct US English. Avoid technical jargon where possible.
+- Words to AVOID: Multifaceted, therefore, elicit, enhance, thus, begets, utilize, imperative, caveat, transcreator, employ, consequently, intricate, implement, incites, harness, subsequently, elaborate, elevate.
+- Structure: Start the introduction by clearly stating the page's purpose. Use questions in sub-headers (<h2>, <h3>) to guide the reader. Use bullet points and lists to improve readability.
+
 1. Begin with a concise, technically accurate explanation of what ${F1} and ${F2} formats are and where each is used.
 2. Tone: professional, authoritative yet accessible (targeting developers, video pros, content creators). Provide concrete, technically detailed explanations and actionable steps (e.g., command-line, ffmpeg, Python snippets). Avoid fluff and marketing clichés.
 3. Structure the body using BASIC HTML ONLY (<h1>, <h2>, <h3>, <p>, <ul>, <li>, <strong>, <em>). Do NOT use markdown and do NOT wrap in <html>/<body> tags.
@@ -12,9 +18,9 @@ Requirements
      "headers": ["criterion", "${F1}", "${F2}"],
      "rows": [ ["File header", "…", "…"], … ]
    }
-6. Headings (<h1>, <h2>, <h3>) and use-case names must follow sentence case, acronyms like ${F1}/${F2}/FFMPEG uppercase. Each heading must be descriptive – DO NOT use bland titles like "Conclusion" or "Summary".
+6. Headings (<h1>, <h2>, <h3>) and use-case names must use Sentence case, with acronyms like ${F1}/${F2}/FFMPEG uppercase. Each heading must be descriptive – DO NOT use bland titles like "Conclusion" or "Summary".
 7. Add exactly five FAQ pairs after the main body.
-8. Add exactly 10 blog idea objects (title + 120-150 char meta). Titles MUST follow sentence case and keep acronyms uppercase.
+8. Add exactly 10 blog idea objects (title + 120-150 char meta). Titles MUST follow Sentence case and prefer "How To" or question-based phrasing.
 9. Add exactly 10 professional use cases (name + 1-2 sentence description).
 10. Naturally reference relevant HappyScribe products & services where appropriate (e.g., Automatic transcription, Human-made subtitles, API, Caption generator, Subtitle editor, etc.).
 11. Do NOT use the em dash character (—); prefer commas or colons.

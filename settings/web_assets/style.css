@@ -114,9 +114,36 @@ h1, h2, h3 {
   font-weight: 700;
   line-height: 1.3;
 }
-h1 { font-size: 3rem; margin-bottom: 1rem; }
-h2 { font-size: 2.25rem; margin-top: 3rem; border-bottom: none; padding-bottom: 0; }
-h3 { font-size: 1.5rem; margin-top: 2rem; }
+h1 {
+  font-size: 3.2rem;
+  margin: 0 0 1.2rem;
+  line-height: 1.2;
+}
+h2 {
+  font-size: 2.4rem;
+  margin: 3rem 0 1rem;
+  line-height: 1.3;
+  position: relative;
+}
+h2::after {
+  content: "";
+  display: block;
+  width: 60px;
+  height: 4px;
+  background: #0052ff;
+  margin-top: 0.5rem;
+  border-radius: 2px;
+}
+h3 {
+  font-size: 1.85rem;
+  margin: 2rem 0 0.75rem;
+  line-height: 1.4;
+}
+h4 {
+  font-size: 1.35rem;
+  margin-top: 1.5rem;
+  font-weight: 600;
+}
 
 /* Distinct block wrapper */
 .block-section {
@@ -127,6 +154,19 @@ h3 { font-size: 1.5rem; margin-top: 2rem; }
   margin-top: 3rem;
   box-shadow: 0 2px 6px rgba(0,0,0,.03);
 }
+
+/* Table of contents */
+.toc {
+  background: #fff;
+  border: 1px solid #eaeaea;
+  border-radius: 8px;
+  padding: 1rem 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,.03);
+}
+.toc ul { list-style: none; padding-left: 0; }
+.toc li { margin: 0.3rem 0; }
+.toc a { text-decoration: none; color: #0052ff; }
 
 /* Custom Accordion Styles to match new design */
 .accordion {
@@ -208,8 +248,8 @@ footer {
 }
 .section-divider {
   border: 0;
-  height: 1px;
-  background: #eaeaea;
+  height: 2px;
+  background: linear-gradient(to right, #ffd94c 0%, #ffd94c 25%, transparent 25%);
   margin: 4rem 0;
 }
 
@@ -245,4 +285,18 @@ footer {
 }
 .accordion-item + .accordion-item {
   margin-top: 0.75rem;
+} 
+
+/* Hide top navigation bar links (no CTAs) */
+.main-nav { display: none !important; } 
+
+/* Paragraphs & lists */
+p { margin: 0 0 1rem; line-height: 1.7; }
+ul, ol { margin-bottom: 1.25rem; }
+
+/* Alternating background helper */
+.alt-bg {
+  background: #f7f9ff;
+  padding: 2rem;
+  border-radius: 12px;
 } 

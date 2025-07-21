@@ -1,0 +1,17 @@
+You are an SEO strategist.
+
+Using the SERP context below, propose EXACTLY:
+• 5 blog ideas (title + 120-150 char meta) – no more than 2 should be code-heavy.
+• 5 professional use cases (name + 1-sentence description) – keep them business-oriented (marketing, training, accessibility, etc.).
+
+SERP context:
+RELATED QUESTIONS:
+${RELATED_Q}
+ORGANIC SNIPPETS:
+${ORGANIC_SNIPPETS}
+
+Return STRICT valid JSON:
+{
+  "blog_ideas": [ {"title": "...", "meta": "..."}, ... 5 items ],
+  "use_cases": [ {"name": "...", "description": "..."}, ... 5 items ]
+} 
