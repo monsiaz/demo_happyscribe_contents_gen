@@ -1,4 +1,4 @@
-Generate a 1 600-word technical blog article in English.
+Generate a 3000-word technical blog article in English.
 
 Title: "${TITLE}"
 Audience: Senior developers and DevOps engineers.

@@ -18,162 +18,105 @@
 
   <main class='container'>
      <nav id='toc' class='toc'></nav>
-     <html>
-<body>
-<h1>Building a microservice to convert SRT to VTT with HappyScribe API</h1>
-
-<p>
-Many media teams struggle with maintaining consistent subtitle formats as content swaps between platforms. Converting between SRT and VTT by hand is error prone and adds latency to release cycles. An automated backend that handles this transformation at scale can reduce manual effort and speed up publication.
-</p>
-
-<p>
-This article walks you through creating a focused microservice that leverages the <strong>HappyScribe API</strong> to ingest an SRT file, orchestrate processing, and produce a VTT file ready for web delivery. We will cover authentication, file upload, polling, transformation, and download in practical steps.
-</p>
-
-<h2>Why build a dedicated microservice?</h2>
-
-<p>
-Embedding subtitle conversion logic directly into a monolith can create brittle dependencies and complicate scaling. A separate service isolates the workflow and makes it easier to manage retries and rate limits. It also simplifies monitoring and allows independent deployment.
-</p>
-
-<p>
-By decoupling this feature into a microservice, you can scale subtitle conversion separately from the rest of the application and handle spikes in demand. It also lets you enforce security boundaries and centralize error handling around the subtitle workflow.
-</p>
-
-<pre><code class="language-python">
-from flask import Flask, request, jsonify
-import requests
-import os
-
-app = Flask(__name__)
-API_KEY = os.getenv('HSS_API_KEY')
-BASE_URL = 'https://www.happyscribe.com/api/v1'
-
-@app.route('/convert', methods=['POST'])
-def convert_subtitles():
-    file_url = request.json.get('file_url')
-    if not file_url:
-        return jsonify({'error': 'file_url is required'}), 400
-    # Steps will follow: upload, transcribe, export
-    return jsonify({'status': 'queued'}), 202
-
-if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
-</code></pre>
-
-<h2>What authentication and throttling apply?</h2>
-
-<p>
-Every request to the <strong>HappyScribe API</strong> must include an Authorization header using the <strong>Bearer</strong> scheme. This key is tied to your account and defines rate limits. By default you can make 200 POST /transcriptions requests per hour.
-</p>
-
-<p>
-On hitting a rate limit, the API returns HTTP 429 with a JSON body containing retry_in_seconds. Your service should catch this, parse the value, and delay retries to avoid hammering the API. Use exponential backoff for 5xx errors as well.
-</p>
-
-<pre><code class="language-shell">
-curl -X POST "https://www.happyscribe.com/api/v1/transcriptions" \
-  -H "Authorization: Bearer $HSS_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
+     {
+    "Authorization": f"Bearer {api_key}",
+    "Content-Type": "application/json"
+}
+payload = {
     "transcription": {
-      "name": "subtitle-srt-to-vtt",
-      "language": "en-US",
-      "tmp_url": "https://cdn.example.com/file.srt",
-      "is_subtitle": true,
-      "service": "auto"
+        "tmp_url": "https://cdn.example.com/audio.mp3",
+        "document_url": "https://cdn.example.com/subtitles.srt",
+        "language": "en-US",
+        "service": "alignment",
+        "is_subtitle": True
     }
-  }'
+}
+response = requests.post(
+    "https://www.happyscribe.com/api/v1/transcriptions",
+    json=payload,
+    headers=headers
+)
+task_id = response.json().get("id")
+print("Alignment task created:", task_id)
 </code></pre>
 
-<h2>How to upload media and create transcription?</h2>
+<h2>How to poll for alignment status?</h2>
 
-<p>
-If your SRT file is not public, you can use the uploads endpoint to get a signed URL. Then you perform a PUT to send the file. Finally you call POST /transcriptions and include that signed URL as tmp_url. The API will ingest your subtitle and prepare it for export.
-</p>
+<pre><code># Bash script showing exponential backoff polling
 
-<pre><code class="language-shell">
-# 1. Request a signed URL for upload
-SIGNED_URL=$(curl -s -H "Authorization: Bearer $HSS_API_KEY" \
-  "https://www.happyscribe.com/api/v1/uploads/new?filename=captions.srt" \
-  | jq -r .signedUrl)
+TASK_ID="your_task_id"
+API_KEY="YOUR_API_KEY"
+STATE=""
+RETRY=5
 
-# 2. Upload the file to S3
-curl -X PUT -T captions.srt "$SIGNED_URL"
-
-# 3. Create transcription from the uploaded SRT
-TRANS_ID=$(curl -s -X POST -H "Authorization: Bearer $HSS_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "transcription": {
-      "name": "convert-srt",
-      "language": "en-US",
-      "tmp_url": "'"$SIGNED_URL"'",
-      "is_subtitle": true,
-      "service": "auto"
-    }
-  }' https://www.happyscribe.com/api/v1/transcriptions \
-  | jq -r .id)
-</code></pre>
-
-<h2>How to convert SRT to VTT and download?</h2>
-
-<p>
-Once your transcription reaches the <strong>automatic_done</strong> state, you call POST /exports with format set to <strong>vtt</strong>. You can export multiple transcription IDs in one request. Poll the export resource until it is ready, then download the VTT file from download_link.
-</p>
-
-<pre><code class="language-shell">
-# 4. Poll until transcription is done
-while true; do
-  STATE=$(curl -s -H "Authorization: Bearer $HSS_API_KEY" \
-    https://www.happyscribe.com/api/v1/transcriptions/$TRANS_ID \
-    | jq -r .state)
-  if [ "$STATE" = "automatic_done" ]; then
-    break
+while [ "$STATE" != "automatic_done" ] && [ "$STATE" != "failed" ]; do
+  RESP=$(curl -s -H "Authorization: Bearer $API_KEY" \
+    "https://www.happyscribe.com/api/v1/transcriptions/$TASK_ID")
+  STATE=$(echo "$RESP" | jq -r .state)
+  if [ "$STATE" = "failed" ]; then
+    echo "Alignment failed"; exit 1
   fi
-  echo "Waiting for transcription ($STATE)..."
-  sleep 5
+  echo "Current state: $STATE"
+  sleep $RETRY
+  RETRY=$(( RETRY * 2 ))
+  if [ $RETRY -gt 60 ]; then
+    RETRY=60
+  fi
 done
 
-# 5. Request VTT export
-EXP_ID=$(curl -s -X POST -H "Authorization: Bearer $HSS_API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "export": {
-      "format": "vtt",
-      "transcription_ids": ["'"$TRANS_ID"'"]
-    }
-  }' https://www.happyscribe.com/api/v1/exports \
-  | jq -r .id)
-
-# 6. Poll until export is ready and download
-while true; do
-  EXP=$(curl -s -H "Authorization: Bearer $HSS_API_KEY" \
-    https://www.happyscribe.com/api/v1/exports/$EXP_ID)
-  if [ "$(echo "$EXP" | jq -r .state)" = "ready" ]; then
-    curl -L "$(echo "$EXP" | jq -r .download_link)" -o output.vtt
-    break
-  fi
-  sleep 5
-done
+echo "Alignment completed"
 </code></pre>
 
-<h2>Key takeaways</h2>
-<ul>
-  <li>Use a separate microservice to isolate subtitle conversion and scale independently.</li>
-  <li>Handle <strong>authentication</strong> and rate limits gracefully with exponential backoff.</li>
-  <li>Leverage the HappyScribe API to automate <strong>export</strong> of <strong>srt</strong> to <strong>vtt</strong> at scale.</li>
-</ul>
+<h2>How to export the subtitle as VTT?</h2>
 
-<h2>Where to go next?</h2>
+<pre><code># Node.js example for export request and download
 
-<p>
-You can extend this base service by adding human review for edge cases, integrating with S3 event triggers, or batching requests for high throughput. Monitoring metrics around latency and failure rates will help maintain reliability.
-</p>
+const fetch = require("node-fetch");
+const fs = require("fs");
 
-<p><em>With this pattern in place you can support any subtitle format conversion reliably and at scale.</em></p>
-</body>
-</html>
+const apiKey = "YOUR_API_KEY";
+const taskId = "your_task_id";
+
+async function exportVtt() {
+  const exportResp = await fetch(
+    "https://www.happyscribe.com/api/v1/exports",
+    {
+      method: "POST",
+      headers: {
+        "Authorization": `Bearer ${apiKey}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        export: {
+          format: "vtt",
+          transcription_ids: [taskId]
+        }
+      })
+    }
+  );
+  const expData = await exportResp.json();
+  const expId = expData.id;
+
+  // Poll until ready
+  let state = "";
+  while (state !== "ready") {
+    const status = await fetch(
+      `https://www.happyscribe.com/api/v1/exports/${expId}`,
+      { headers: { "Authorization": `Bearer ${apiKey}` } }
+    );
+    const statData = await status.json();
+    state = statData.state;
+    if (state === "ready") {
+      const dlLink = statData.download_link;
+      const file = await fetch(dlLink);
+      const buffer = await file.buffer();
+      fs.writeFileSync("output.vtt", buffer);
+      console.log("File saved as output.vtt");
+      break;
+    }
+    await new Promise(r => setTimeout(r, 5000));
+  }
+}
      
   </main>
 

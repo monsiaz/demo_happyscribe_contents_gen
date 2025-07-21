@@ -132,6 +132,8 @@ class SEOGenerator:
     def __init__(self, api_key: Optional[str] = None, serpapi_api_key: Optional[str] = None, concurrency: int = 3):
         if api_key is None:
             api_key = OPENAI_API_KEY or HARDCODED_API_KEY
+        if not api_key:
+            raise ValueError("OpenAI API key is required. Set OPENAI_API_KEY or add to settings/keys.txt")
         self.client = AsyncOpenAI(api_key=api_key)
         self.serpapi_api_key = serpapi_api_key
         self.semaphore = asyncio.Semaphore(concurrency)
@@ -141,46 +143,115 @@ class SEOGenerator:
         system_message: str,
         user_prompt: str,
         model_override: Optional[str] = None,
+        expect_json: bool = True,
     ) -> Tuple[str, List[Dict[str, str]], List[Dict[str, str]], List[Dict[str, str]]]:
 
         model_id = model_override or OPENAI_MODEL
         async with self.semaphore:
-            response = await self.client.chat.completions.create(
-                model=model_id,
-                messages=[
-                    {"role": "system", "content": system_message},
-                    {"role": "user",   "content": user_prompt},
-                ],
-            )
-            answer = response.choices[0].message.content
+            max_retries = 3
+            for attempt in range(max_retries):
+                try:
+                    response = await self.client.chat.completions.create(
+                        model=model_id,
+                        messages=[
+                            {"role": "system", "content": system_message},
+                            {"role": "user",   "content": user_prompt},
+                        ],
+                        timeout=60.0,
+                    )
+                    answer = response.choices[0].message.content
+                    break
+                except Exception as e:
+                    if attempt == max_retries - 1:
+                        logging.error("API call failed after %d attempts: %s", max_retries, e)
+                        raise
+                    logging.warning("API call attempt %d failed: %s. Retrying...", attempt + 1, e)
+                    await asyncio.sleep(2 ** attempt)  # Exponential backoff
 
         # Remove ```json fences if present
         import re, textwrap
 
         def _strip(txt: str) -> str:
+            # Try to find JSON in ```json or ``` blocks
             m = re.search(r"```(?:json)?\s*(\{.*?\})```", txt, re.DOTALL)
-            return textwrap.dedent(m.group(1)).strip() if m else txt.strip()
+            if m:
+                return textwrap.dedent(m.group(1)).strip()
+            
+            # Try to find JSON without fences (starts with { and ends with })
+            json_match = re.search(r'(\{.*\})', txt, re.DOTALL)
+            if json_match:
+                return json_match.group(1).strip()
+                
+            return txt.strip()
 
         cleaned = _strip(answer)
         parsed = None
+        
+        # Debug logging
+        logging.debug("Raw answer length: %d", len(answer))
+        logging.debug("Cleaned response preview: %s", repr(cleaned[:300]))
+        logging.debug("Expecting JSON: %s", expect_json)
+        
+        # If we don't expect JSON, return HTML directly
+        if not expect_json:
+            logging.debug("Not expecting JSON, returning HTML directly")
+            return cleaned, [], [], []
+        
         # Try parsing JSON; fallback to Python literal eval if it fails
         try:
             parsed = json.loads(cleaned)
-        except Exception:
+            logging.debug("Successfully parsed JSON response")
+        except Exception as e:
+            logging.debug("JSON parsing failed: %s", e)
             try:
                 import ast
                 parsed = ast.literal_eval(cleaned)
-            except Exception:
+                logging.debug("Successfully parsed with ast.literal_eval")
+                # Ensure parsed is a dict, not a set or other type
+                if not isinstance(parsed, dict):
+                    logging.warning("ast.literal_eval returned %s instead of dict", type(parsed))
+                    parsed = None
+            except Exception as e2:
+                logging.debug("ast.literal_eval also failed: %s", e2)
                 parsed = None
 
-        if parsed:
-            return (
-                parsed.get("content", ""),
-                parsed.get("faq", []),
-                parsed.get("blog_ideas", []),
-                parsed.get("use_cases", []),
-            )
-        # fallback
+        if parsed and isinstance(parsed, dict):
+            content = parsed.get("content", "")
+            faq = parsed.get("faq", [])
+            blogs = parsed.get("blog_ideas", [])
+            uses = parsed.get("use_cases", [])
+            
+            # Validation basique
+            if not content or len(content) < 100:
+                logging.warning("Content seems too short: %d chars", len(content))
+            if not isinstance(faq, list) or len(faq) < 3:
+                logging.warning("FAQ list seems incomplete: %d items", len(faq) if isinstance(faq, list) else 0)
+            if not isinstance(blogs, list) or len(blogs) < 5:
+                logging.warning("Blog ideas seem incomplete: %d items", len(blogs) if isinstance(blogs, list) else 0)
+                
+            return (content, faq, blogs, uses)
+        
+        # fallback - if no JSON, treat the raw response as HTML content
+        logging.warning("Failed to parse JSON response, treating as raw HTML content")
+        logging.debug("Cleaned content preview for fallback: %s", repr(cleaned[:500]))
+        
+        # If the response looks like raw HTML, use it directly
+        if cleaned.strip().startswith('<') and '<h' in cleaned:
+            logging.debug("Detected HTML content, using directly")
+            return cleaned, [], [], []
+            
+        # If it looks like JSON but failed to parse, try to extract manually
+        if '{' in cleaned and '"content"' in cleaned:
+            logging.warning("Attempting manual JSON extraction")
+            content_match = re.search(r'"content":\s*"([^"]*(?:\\.[^"]*)*)"', cleaned, re.DOTALL)
+            if content_match:
+                content = content_match.group(1)
+                content = content.replace('\\n', '\n').replace('\\"', '"').replace('\\/', '/')
+                logging.debug("Manually extracted content: %d chars", len(content))
+                return content, [], [], []
+        
+        # Last resort: return the cleaned text as-is
+        logging.warning("Using cleaned response as-is: %d chars", len(cleaned))
         return cleaned, [], [], []
 
 ###############################################################################
@@ -296,6 +367,10 @@ async def main() -> None:
 
         # Landing content -> always generated with BASE_MODEL
         content, faq, blogs, uses = await generator._single_call(SYSTEM_MESSAGE, prompt, model_override=BASE_MODEL)  # type: ignore
+        
+        # Debug: log what we got
+        logging.debug("Landing content type: %s", type(content))
+        logging.debug("Landing content preview (first 200 chars): %s", repr(content[:200]))
 
         # ------- second pass for enriched ideas (3 each) ---------------------
         related_q = [q.get("snippet") or q.get("question") for q in serp_context.get("related_questions", [])][:5]
@@ -312,6 +387,7 @@ async def main() -> None:
                 SYSTEM_MESSAGE,
                 ideas_prompt,
                 model_override=BASE_MODEL,  # single model
+                expect_json=True,
             )
             # merge while avoiding duplicates
             def _merge(src, extra, key):
@@ -327,7 +403,7 @@ async def main() -> None:
         logging.debug("Row %d returned blog_ideas (%d): %s", idx, len(blogs), blogs)
         logging.debug("Row %d returned use_cases (%d): %s", idx, len(uses), uses)
         comp_prompt = comp_tpl.substitute(FORMAT_1=row["format_1"].upper(), FORMAT_2=row["format_2"].upper())
-        comp_html, *_ = await generator._single_call(SYSTEM_MESSAGE, comp_prompt)  # type: ignore
+        comp_html, *_ = await generator._single_call(SYSTEM_MESSAGE, comp_prompt, expect_json=False)  # type: ignore
         return idx, content, faq, blogs, uses, serp_context, comp_html
 
     tasks = [asyncio.create_task(_wrap(idx, row)) for idx, row in df.iterrows()]
@@ -455,17 +531,43 @@ async def main() -> None:
     def _ensure_html(raw: str) -> str:
         """Return HTML string even if wrapped in JSON or markdown fences."""
         txt = raw.strip()
+        
         # Remove leading Response dumps
         if txt.startswith("Response("):
             first_tag = txt.find("<")
             if first_tag != -1:
                 txt = txt[first_tag:]
+        
         # If already HTML with headings
         if txt.startswith('<') and '<h' in txt:
             return txt
+            
+        # Handle JSON wrapped content
+        if '"content":' in txt and '"' in txt:
+            try:
+                # Try to parse as JSON and extract content
+                import json
+                parsed = json.loads(txt)
+                if isinstance(parsed, dict) and "content" in parsed:
+                    content = parsed["content"]
+                    # Unescape if needed
+                    content = content.replace('\\n', '\n').replace('\\"', '"').replace('\\/', '/')
+                    return content
+            except Exception as e:
+                logging.debug("JSON extraction in _ensure_html failed: %s", e)
+                # Try to extract content manually with regex
+                content_match = re.search(r'"content":\s*"([^"]*(?:\\.[^"]*)*)"', txt, re.DOTALL)
+                if content_match:
+                    content = content_match.group(1)
+                    # Unescape
+                    content = content.replace('\\n', '\n').replace('\\"', '"').replace('\\/', '/')
+                    return content
+        
         # Remove ``` fences
         if txt.startswith('```'):
             txt = txt.lstrip('`').split('```', 1)[-1]
+            
+        # Try regex extraction
         m = _html_re.search(txt)
         if m:
             html_escaped = m.group(1)
@@ -474,6 +576,7 @@ async def main() -> None:
             except Exception:
                 pass
             return html_escaped
+            
         return raw
 
     # CTA stripping helper removed – prompts no longer generate marketing calls
@@ -545,11 +648,11 @@ async def main() -> None:
         ]
 
         stats_pool = [
-            '<p class="alt-bg">💡 83% des internautes regardent des vidéos sans le son — les sous-titres sont cruciaux.</p>',
-            '<p class="alt-bg">📊 92% des vidéos visionnées sur mobile le sont en mode muet.</p>',
-            '<p class="alt-bg">🔈 69% des utilisateurs quittent une vidéo si les sous-titres sont absents.</p>',
-            '<p class="alt-bg">🌍 80% des apprenants retiennent mieux grâce aux sous-titres.</p>',
-            '<p class="alt-bg">🕒 Les vidéos sous-titrées augmentent le temps de visionnage de 12%.</p>',
+            '<p class="alt-bg">💡 83% of internet users watch videos without sound — subtitles are crucial.</p>',
+            '<p class="alt-bg">📊 92% of videos viewed on mobile are watched in silent mode.</p>',
+            '<p class="alt-bg">🔈 69% of users leave a video if subtitles are missing.</p>',
+            '<p class="alt-bg">🌍 80% of learners retain information better with subtitles.</p>',
+            '<p class="alt-bg">🕒 Subtitled videos increase viewing time by 12%.</p>',
         ]
 
         stat_info = random.choice(stats_pool)
@@ -568,7 +671,7 @@ async def main() -> None:
                 STAT_INFO=stat_info,)
             model_to_use = BASE_MODEL
             body_html, *_ = await generator._single_call(
-                SYSTEM_MESSAGE, prompt, model_override=model_to_use
+                SYSTEM_MESSAGE, prompt, model_override=model_to_use, expect_json=False
             )
             nav_back = f'<p><a href="{landing_fname}">&larr; Back to converter landing</a></p>'
             extra_links = "<h2>More Articles</h2><ul>" + "".join(
@@ -594,7 +697,7 @@ async def main() -> None:
             )
             model_to_use = BASE_MODEL
             body_html, *_ = await generator._single_call(
-                SYSTEM_MESSAGE, prompt, model_override=model_to_use
+                SYSTEM_MESSAGE, prompt, model_override=model_to_use, expect_json=False
             )
             nav_back = f'<p><a href="{landing_fname}">&larr; Back to converter landing</a></p>'
             extra_links = "<h2>More Use Cases</h2><ul>" + "".join(
@@ -640,7 +743,7 @@ async def main() -> None:
             fname = f"{slug}_tech_blog_{t_idx}.html"
             prompt = tech_article_tpl.substitute(TITLE=title, API_SUMMARY=API_SUMMARY)
             tech_tasks.append(asyncio.create_task(
-                generator._single_call(SYSTEM_MESSAGE, prompt)))
+                generator._single_call(SYSTEM_MESSAGE, prompt, expect_json=False)))
             blog_links.append((fname, title, ""))
 
         for u_idx, name in enumerate(tech_use_titles, 1):
@@ -655,7 +758,7 @@ async def main() -> None:
                 ALL_USES="\n".join(all_use_names),
             )
             tech_tasks.append(asyncio.create_task(
-                generator._single_call(SYSTEM_MESSAGE, prompt)))
+                generator._single_call(SYSTEM_MESSAGE, prompt, expect_json=False)))
             use_links.append((fname, name, ""))
 
         # Wait for tech pages content

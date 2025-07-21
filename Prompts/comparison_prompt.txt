@@ -1,7 +1,27 @@
-Generate a detailed and visually engaging comparison between two subtitle formats: ${FORMAT_1} et ${FORMAT_2}.
+Generate a detailed and visually engaging comparison between two subtitle formats: ${FORMAT_1} and ${FORMAT_2}.
 
-Output must be STRICT valid HTML (no wrapper tags).
+Output must be STRICT valid HTML (no wrapper tags). All content must be in English.
 
-1. Add an <h2>« 🔁 Différences entre ${FORMAT_1} et ${FORMAT_2} » puis une table (<table class="comp-table">) en français ; minimum 7 lignes dont : Extension, Compatibilité, Structure temporelle, Capacités, Encodage, En-tête obligatoire, Outils/Workflow.
-2. Sous la table, ajoute un <h2>« 📂 Guide d’utilisation : quel format choisir ? » puis un tableau HTML avec 3 colonnes : « Cas d’usage », « Recommandation », « Persona ». Fournis 10 lignes variées (web, diffusion TV, e-learning, réseaux sociaux, accessibilité, etc.). Ajoute un emoji pertinent dans la colonne Persona.
-3. Utilise uniquement des balises HTML basiques ; pas de markdown, pas d’em dash. 
+1. Add an <h2>"🔁 ${FORMAT_1} vs ${FORMAT_2} comparison"</h2> followed by a table with class="comp-table":
+   <table class="comp-table">
+     <thead>
+       <tr><th>Criterion</th><th>${FORMAT_1}</th><th>${FORMAT_2}</th></tr>
+     </thead>
+     <tbody>
+       [Minimum 7 rows including: Extension, Compatibility, Time format, Capabilities, Encoding, Required header, Tools/Workflow]
+     </tbody>
+   </table>
+
+2. Below the table, add an <h2>"📂 Usage guide: which format to choose?"</h2> followed by an HTML table with class="comp-table":
+   <table class="comp-table">
+     <thead>
+       <tr><th>Use case</th><th>Recommendation</th><th>Persona</th></tr>
+     </thead>
+     <tbody>
+       [Provide exactly 10 varied rows covering: web development, TV broadcast, e-learning, social media, accessibility, streaming, mobile apps, corporate training, video conferencing, podcasting]
+     </tbody>
+   </table>
+   
+3. In the Persona column, add a relevant emoji followed by the persona title (e.g., "💻 Web developer").
+4. Use only basic HTML tags; no markdown, no em dash.
+5. All text must be in English - no French content. 

@@ -1,4 +1,4 @@
-Generate a comprehensive (~1500 words) technical blog article.
+Generate a comprehensive (~1900 words) technical blog article.
 
 Topic title: "${TITLE}"
 Primary keyword: "${KW_PRIMARY}"

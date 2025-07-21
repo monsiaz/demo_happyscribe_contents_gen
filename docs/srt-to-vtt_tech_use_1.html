@@ -18,153 +18,65 @@
 
   <main class='container'>
      <nav id='toc' class='toc'></nav>
-     <!DOCTYPE html>
-<html>
-<head>
-  <meta charset="UTF-8">
-  <title>Streaming platform integration with HappyScribe API</title>
-  <style>
-    .alt-bg { background-color: #f0f8ff; padding: 10px; border-radius: 4px; }
-    .accordion { margin-top: 20px; }
-    .accordion-item { margin-bottom: 10px; }
-    .accordion-item h3 { margin: 0 0 5px 0; }
-  </style>
-</head>
-<body>
-
-<h2>Streaming platform integration with HappyScribe API</h2>
-
-<p>
-A modern streaming service needs to support captions in multiple formats to ensure compatibility across web players, mobile apps and smart TVs. A common challenge is converting existing subtitles in SubRip Text (SRT) format into Web Video Text Track (VTT) without manual intervention or third-party conversion tools. Integrating HappyScribe’s API into a streaming backend automates this task at scale.
-</p>
-
-<p>
-Ingesting, processing and exporting subtitles through one unified API reduces operational complexity and eliminates custom parsing scripts. A well-designed workflow handles rate limits, retries on transient errors and provides clear cost estimates. For engineering teams, the goal is a hands-off pipeline that picks up new SRT files, converts them to VTT and pushes them to a CDN or object storage for playback.
-</p>
-
-<p>
-This use case details how to locate existing SRT transcripts in HappyScribe, request a VTT export, poll for readiness and deliver the final VTT to your asset store. By the end, you will see how a few API calls can replace hours of manual or legacy conversion effort.
-</p>
-
-<p class="alt-bg">
-💡 83% des internautes regardent des vidéos sans le son — les sous-titres sont cruciaux.
-</p>
-
-<h2>Implementation steps</h2>
-
-<ol>
-  <li>
-    <strong>Step 1: retrieve the existing SRT transcription ID</strong><br>
-    Use the GET /transcriptions endpoint to list all completed transcripts tagged with your content identifier. Filter by state and format to find entries where SRT is already generated. Store the returned transcription ID for the export call.
-    <pre><code>curl -H "Authorization: Bearer $API_KEY" \
-  "https://www.happyscribe.com/api/v1/transcriptions?status=automatic_done&tags=episode42" \
-  | jq '.transcriptions[] | select(.format=="srt") | .id'</code></pre>
-    Capture the ID in your script or application and validate it matches your expected media asset.
+     {
+  "export": {
+    "format": "vtt",
+    "transcription_ids": ["TRANSCRIPTION_ID"]
+  }
+}' https://www.happyscribe.com/api/v1/exports | jq -r .id</code></pre>
   </li>
-
-  <li>
-    <strong>Step 2: request a VTT export</strong><br>
-    Call POST /exports with the transcription ID identified in step 1. Specify "vtt" as the target format. This request triggers <strong>parallel exports</strong> under the hood, so you can repeat the call for multiple formats if needed without waiting for one to finish.
-    <pre><code>curl -X POST -H "Authorization: Bearer $API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-    "export": {
-      "format": "vtt",
-      "transcription_ids": ["YOUR_TRANSCRIPTION_ID"]
-    }
-  }' \
-  https://www.happyscribe.com/api/v1/exports</code></pre>
-    The response will include an export ID. Record this for polling.
-  </li>
-
-  <li>
-    <strong>Step 3: poll for export readiness</strong><br>
-    Implement a polling loop that checks GET /exports/{id} until the "state" field reads "ready". Use <strong>reliable polling</strong> with exponential back-off and jitter to avoid triggering rate limits. Respect any "retry_in_seconds" returned in case of HTTP 429 responses.
-    <pre><code>EXPORT_ID="returned_export_id"
-while true; do
-  response=$(curl -s -H "Authorization: Bearer $API_KEY" \
-    https://www.happyscribe.com/api/v1/exports/$EXPORT_ID)
-  state=$(echo "$response" | jq -r .state)
-  if [ "$state" = "ready" ]; then
-    download_url=$(echo "$response" | jq -r .download_link)
-    break
-  elif [ "$state" = "failed" ]; then
-    echo "Export failed" >&2
-    exit 1
-  else
-    sleep 5
-  fi
+  <li>Poll the export endpoint until the state is ready.
+    <pre><code>while true; do
+  state=$(curl -s -H "Authorization: Bearer YOUR_API_KEY" \
+  https://www.happyscribe.com/api/v1/exports/EXPORT_ID | jq -r .state)
+  [ "$state" = "ready" ] && break
+  sleep 5
 done</code></pre>
-    Once ready, the API returns a direct download link. You can fetch that link securely.
   </li>
-
-  <li>
-    <strong>Step 4: download and store the VTT file</strong><br>
-    Retrieve the converted VTT file and upload it to your CDN or cloud storage. Choose an object key or path that aligns with your origin configuration. Verify the file integrity and content type before making it public.
-    <pre><code>curl -L "$download_url" -o episode42.vtt
-
-# Example AWS S3 upload
-aws s3 cp episode42.vtt s3://my-cdn-bucket/subtitles/episode42.vtt \
-  --acl public-read --content-type "text/vtt"</code></pre>
-    In your streaming manifests (HLS or DASH), reference the new VTT URL. Playback will adapt automatically.
-  </li>
-
-  <li>
-    <strong>Step 5: monitor usage and handle errors</strong><br>
-    Track the export activity and costs via GET /exports. Inspect the details section for size, duration and costInCents. Implement alerting on failures or unexpected error codes such as 418 or 503. Use retry logic for transient issues and notify your operations team for persistent errors.
-    <pre><code>curl -H "Authorization: Bearer $API_KEY" \
-  https://www.happyscribe.com/api/v1/exports/$EXPORT_ID \
-  | jq '.details'</code></pre>
-    Log each conversion event with timestamps and response codes. This audit trail helps with troubleshooting and capacity planning.
+  <li>Download the converted VTT file and serve it to the player.
+    <pre><code>curl -L -o subtitles.vtt \
+$(curl -s -H "Authorization: Bearer YOUR_API_KEY" \
+https://www.happyscribe.com/api/v1/exports/EXPORT_ID | jq -r .download_link)</code></pre>
   </li>
 </ol>
 
-<h2>Features that simplify the workflow</h2>
-
 <ul>
-  <li><strong>Stable versioning</strong>: API version lock prevents breaking changes during upgrades to your SDK or pipeline.</li>
-  <li><strong>Parallel exports</strong>: request multiple formats at once without waiting for one conversion to complete.</li>
-  <li><strong>Reliable polling</strong>: built-in retry timers in error responses plus exponential back-off support robust workflows under load.</li>
+  <li><strong>Secure presigned URLs</strong> allow you to upload large files without exposing your credentials or managing your own storage.</li>
+  <li><strong>Multiple export formats</strong> support ensures that you can convert to VTT, SRT, and more with a single API call.</li>
+  <li><strong>Version locked API</strong> protects your integration from breaking changes and ensures long-term stability.</li>
 </ul>
+
+<p class="alt-bg">📊 92% of videos viewed on mobile are watched in silent mode.</p>
 
 <h2>Key takeaways</h2>
-
 <ul>
-  <li>You can convert existing SRT transcripts into VTT with just two API calls and a download step.</li>
-  <li>Implementing exponential back-off and jitter prevents throttling under high concurrency.</li>
-  <li>HappyScribe’s version-locked endpoints and clear cost breakdown simplify integration and budgeting.</li>
+  <li>Automate SRT to VTT conversion to streamline subtitle workflows.</li>
+  <li>Use presigned URLs and version-locked API for secure, reliable integration.</li>
+  <li>Leverage HappyScribe exports to support any player format on demand.</li>
 </ul>
 
-<h2>Mini FAQ</h2>
+<h3>Mini FAQ</h3>
 <div class="accordion">
-
   <div class="accordion-item">
-    <h3>How long does SRT to VTT conversion take?</h3>
-    <p>
-      In most cases, a single VTT export request completes within ten seconds. The actual time depends on file size and current system load. Polling with five-second intervals provides a good balance between responsiveness and rate-limit safety.
-    </p>
+    <button>How fast does conversion complete?</button>
+    <div class="content">
+      <p>Most exports finish within ten seconds; larger files may take up to one minute.</p>
+    </div>
   </div>
-
   <div class="accordion-item">
-    <h3>Can I convert subtitles without re-transcribing the audio?</h3>
-    <p>
-      Yes. If you already have an SRT subtitle in HappyScribe, simply call the exports endpoint to generate VTT. No new transcription or audio upload is required for format-only conversions.
-    </p>
+    <button>Can I convert multiple files in parallel?</button>
+    <div class="content">
+      <p>Yes, you can fire multiple export requests concurrently; they run in parallel and are cost efficient.</p>
+    </div>
   </div>
-
   <div class="accordion-item">
-    <h3>What should I do if I hit a rate limit?</h3>
-    <p>
-      On HTTP 429 responses, parse the "retry_in_seconds" field and pause your requests accordingly. Use exponential back-off for other 5xx errors and implement retries with capped intervals to avoid overwhelming the service under high load.
-    </p>
-  </div>
+    <button>Is it possible to batch process via Python?</button>
+    <div class="content">
+      <p>Yes, you can script with any HTTP client. For example in Python use the requests library:</p>
+      <pre><code>import requests
 
-</div>
-
-<p><em>Automating SRT to VTT conversion with HappyScribe brings consistent quality, predictable costs and seamless integration into your streaming pipeline.</em></p>
-
-</body>
-</html>
+headers = {"Authorization": "Bearer YOUR_API_KEY", "Content-Type": "application/json"}
+data = {"export": {"format": "vtt", "transcription_ids": ["ID1", "ID2"]}}
      
   </main>
 

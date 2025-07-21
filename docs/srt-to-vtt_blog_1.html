@@ -2,8 +2,8 @@
 <html lang='en'>
 <head>
   <meta charset='utf-8'>
-  <title>Srt vs webvtt: which subtitle format is right for your video? - HappyScribe</title>
-  <meta name='description' content='Compare SubRip (.srt) and WebVTT (.vtt) formats to determine which subtitle option best suits your web, social media, and streaming video needs.'>
+  <title>How to batch convert srt to vtt on mac - HappyScribe</title>
+  <meta name='description' content='Learn how to set up Homebrew, install FFmpeg and run a Terminal loop to process all your SRT files into VTT captions on macOS.'>
   <meta name='viewport' content='width=device-width,initial-scale=1'>
   <link rel='canonical' href='https://monsiaz.github.io/demo_happyscribe_contents_gen/srt-to-vtt_blog_1.html'>
   <link rel='stylesheet' href='https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css'>
@@ -18,132 +18,42 @@
 
   <main class='container'>
      <nav id='toc' class='toc'></nav>
-     <h2>Why marketers need to choose the right subtitle format</h2>
-<p>Video content is key to grabbing attention online, but without clear subtitles you could miss out on global viewers, social media engagement, and better reach. You might have asked yourself which subtitle file will work across your ad channels, training modules, or social clips. Picking the wrong format can lead to lost viewers, extra editing time, and added costs.</p>
-
-<p>As a marketer you juggle tight deadlines, varied platforms, and strict budgets. You need subtitles that load fast, look good on all screens, and keep viewers hooked. In this article you will learn how to convert srt to vtt and decide if SRT or WebVTT best suits your campaigns.</p>
-
-<h2>What is the difference between SRT and webvtt?</h2>
-<p>At their core both SRT and WebVTT are text files with timecodes. But tiny details make a big impact on compatibility and look. Understanding those details helps you choose the right one for your workflow.</p>
-
-<ul>
-  <li><strong>File extension</strong>: SRT files end in .srt, while WebVTT uses .vtt.</li>
-  <li><strong>Formatting tags</strong>: WebVTT supports simple styling like text color or position. SRT focuses on plain text.</li>
-  <li><strong>Browser support</strong>: All modern browsers can read WebVTT natively in HTML5 video. SRT often needs a quick conversion or extra player support.</li>
-  <li><strong>Editing ease</strong>: SRT has a very simple format that you can tweak in any text editor. WebVTT requires adding a file header (WEBVTT) and follows a slightly different cue format.</li>
-  <li><strong>Advanced features</strong>: WebVTT can include chapters, descriptions, and metadata for accessibility. SRT is limited to basic captions.</li>
-</ul>
-
-<h2>When to pick SRT over webvtt</h2>
-<p>SRT is still a top choice in many scenarios. It offers simplicity and broad tool support. If you need a quick caption file or you work with legacy systems, SRT might save you time.</p>
-
-<ul>
-  <li>You have a simple video with no need for styling or positioning.</li>
-  <li>Your video platform or player only accepts .srt files.</li>
-  <li>You prefer manual editing in Notepad, TextEdit, or basic subtitle tools.</li>
-  <li>You need to work with third party translators or human subtitle teams who deliver plain SRT.</li>
-</ul>
-
-<h2>When webvtt is a better choice</h2>
-<p>WebVTT shines when you need extra control over styling, accessibility, and browser integration. It’s the go-to format for modern web videos.</p>
-
-<ul>
-  <li>You want to add colored text, italics, or position cues without extra software.</li>
-  <li>You aim to improve SEO by including text directly in HTML5 video tags.</li>
-  <li>Your training modules need chapter markers or detailed audio descriptions.</li>
-  <li>You plan to use the <a href="#">Subtitle editor</a> in HappyScribe to fine tune your captions online.</li>
-</ul>
-
-<h2>How to convert srt to vtt in minutes</h2>
-<p>Ready to switch from SRT to VTT? Converting srt to vtt is fast, whether you pick a hands-free tool or manual steps. Here is a plain-English walkthrough:</p>
-
-<ol>
-  <li>Log in to your HappyScribe account and go to your <a href="#">Automatic transcription</a> dashboard.</li>
-  <li>Upload your .srt file or start a new transcription job with human-made subtitles.</li>
-  <li>Once the file is ready, open it in the <a href="#">Subtitle editor</a>.</li>
-  <li>Click the export button and select .vtt as your format. HappyScribe handles the file header and cue conversion for you.</li>
-  <li>Download the .vtt file and drop it into your video player or CMS.</li>
+     {f%.*}"
+  echo "WEBVTT" > "${filename}.vtt"
+  tail -n +2 "$f" >> "${filename}.vtt"
+done</pre>
+  </li>
+  <li>Save your workflow. Now any SRT file dropped into the folder will spawn a matching VTT file.</li>
 </ol>
 
-<p>If you prefer a quick script approach, our <a href="#">API</a> can convert files on the fly with a simple call. Just send us the SRT and get back a WebVTT file in JSON format.</p>
+<h3>Tip on customizing the header</h3>
 
-<h2>Best practices for high quality subtitles</h2>
-<p>Whether you stick with SRT or move to WebVTT, these tips will keep your captions clear and professional.</p>
+<p>By default, VTT files start with <code>WEBVTT</code>. If you need to add a metadata line like <code>Region: en</code>, insert it right after the header:</p>
+
+<pre>echo "WEBVTT
+
+Region: en" > "${filename}.vtt"</pre>
+
+<p><strong>Pitfall to avoid:</strong> Make sure there is a blank line between the <code>WEBVTT</code> header and your first timestamp or metadata line.</p>
+
+<h2>What if you prefer a Terminal-based approach with FFMPEG?</h2>
+
+<p>FFMPEG is a powerful media tool that can also handle subtitle format conversion. If you already have it installed, batch processing is fast and reliable.</p>
+
+<h3>Installing FFMPEG on Mac</h3>
 
 <ul>
-  <li><strong>Keep it short</strong>: Aim for two lines max per cue. Long sentences can overwhelm the viewer.</li>
-  <li><strong>Check timing</strong>: Sync closely to speech. A delay of more than half a second can confuse the reader.</li>
-  <li><strong>Use speaker labels</strong>: When multiple voices overlap, label each speaker for clarity.</li>
-  <li><strong>Proofread text</strong>: Typos distract. Run a quick spell check or use human-made subtitles from HappyScribe for extra accuracy.</li>
-  <li><strong>Style consistency</strong>: If you add styling tags in WebVTT, keep font size and color uniform across the video.</li>
+  <li>Install Homebrew from <a href="#">https://brew.sh</a>.</li>
+  <li>Run <code>brew install ffmpeg</code> in Terminal.</li>
 </ul>
 
-<p>Common pitfall: forgetting the WEBVTT header in your .vtt file. Most players will reject a VTT file without it. Always open the file in a text editor to confirm the first line reads “WEBVTT”.</p>
+<h3>Running a bulk conversion command</h3>
 
-<h2>Key takeaways</h2>
-<ul>
-  <li>SRT is simple, fast, and widely supported, but has no styling options.</li>
-  <li>WebVTT adds styling, chapters, and better HTML5 support, making it ideal for modern web delivery.</li>
-  <li>Converting srt to vtt is easy with HappyScribe’s Subtitle editor, Automatic transcription, or API.</li>
-</ul>
+<p>Navigate to your subtitle folder in Terminal, then use this simple loop:</p>
 
-<h2>What comes next for your subtitle workflow</h2>
-<p>With the right format in place, you can boost engagement, improve learning, and meet accessibility guidelines across your videos. Try mixing both formats in different projects to find what works best for your team. Remember that HappyScribe is here to simplify each step, from automatic transcription to human-made subtitles.</p>
-
-<p>As you refine your process, keep an eye on emerging web standards and player updates. That way your subtitles stay current and your audience stays engaged. <i>Your subtitle journey just got a lot smoother.</i></p>
-
-<h2>Frequently asked questions</h2>
-<div class="accordion" id="faqAccordion">
-  <div class="accordion-item">
-    <h2 class="accordion-header" id="faqHeading1">
-      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse1" aria-expanded="false" aria-controls="faqCollapse1">
-        What is the main difference between SRT and WebVTT?
-      </button>
-    </h2>
-    <div id="faqCollapse1" class="accordion-collapse collapse" aria-labelledby="faqHeading1" data-bs-parent="#faqAccordion">
-      <div class="accordion-body">
-        SRT is a plain text format with timecodes and dialogue. WebVTT adds a file header, basic styling, positioning, and metadata for chapters or descriptions.
-      </div>
-    </div>
-  </div>
-  <div class="accordion-item">
-    <h2 class="accordion-header" id="faqHeading2">
-      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse2" aria-expanded="false" aria-controls="faqCollapse2">
-        Can I convert srt to vtt for free?
-      </button>
-    </h2>
-    <div id="faqCollapse2" class="accordion-collapse collapse" aria-labelledby="faqHeading2" data-bs-parent="#faqAccordion">
-      <div class="accordion-body">
-        Yes. You can use HappyScribe’s free Subtitle editor to upload an SRT and export it as WebVTT without cost.
-      </div>
-    </div>
-  </div>
-  <div class="accordion-item">
-    <h2 class="accordion-header" id="faqHeading3">
-      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse3" aria-expanded="false" aria-controls="faqCollapse3">
-        Does converting srt to vtt affect timing?
-      </button>
-    </h2>
-    <div id="faqCollapse3" class="accordion-collapse collapse" aria-labelledby="faqHeading3" data-bs-parent="#faqAccordion">
-      <div class="accordion-body">
-        No. Proper conversion keeps timecodes identical. Only the file structure and headers change.
-      </div>
-    </div>
-  </div>
-  <div class="accordion-item">
-    <h2 class="accordion-header" id="faqHeading4">
-      <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faqCollapse4" aria-expanded="false" aria-controls="faqCollapse4">
-        Which players support WebVTT subtitles?
-      </button>
-    </h2>
-    <div id="faqCollapse4" class="accordion-collapse collapse" aria-labelledby="faqHeading4" data-bs-parent="#faqAccordion">
-      <div class="accordion-body">
-        All modern HTML5 video players support WebVTT. Popular platforms like YouTube, Vimeo, and custom web apps can handle .vtt files natively.
-      </div>
-    </div>
-  </div>
-</div>
-     <p><a href="srt-to-vtt.html">&larr; Back to converter landing</a></p><h2>More Articles</h2><ul><li><a href="srt-to-vtt_blog_2.html">How to convert srt to webvtt for free: a step-by-step guide</a></li><li><a href="srt-to-vtt_blog_3.html">Programmatic srt to vtt conversion in python: code examples</a></li><li><a href="srt-to-vtt_blog_4.html">Automating subtitle conversion with ffmpeg cli: srt to vtt tutorial</a></li><li><a href="srt-to-vtt_blog_5.html">Enhance accessibility and seo with webvtt styling techniques</a></li></ul>
+<pre>for f in *.srt; do
+  ffmpeg -i "$f" "${f%.srt}
+     <p><a href="srt-to-vtt.html">&larr; Back to converter landing</a></p><h2>More Articles</h2><ul><li><a href="srt-to-vtt_blog_2.html">How to convert srt to vtt manually in a text editor</a></li><li><a href="srt-to-vtt_blog_3.html">How to convert srt to vtt using python script</a></li><li><a href="srt-to-vtt_blog_4.html">How to convert srt to vtt free online</a></li><li><a href="srt-to-vtt_blog_5.html">How to convert srt to vtt with adobe premiere</a></li><li><a href="srt-to-vtt_blog_6.html">Can i convert srt to vtt in windows command prompt?</a></li><li><a href="srt-to-vtt_blog_7.html">How to use happyscribe api for subtitle conversion</a></li><li><a href="srt-to-vtt_blog_8.html">How to convert srt to vtt with minimal effort</a></li><li><a href="srt-to-vtt_blog_9.html">How to add styling when converting srt to vtt</a></li><li><a href="srt-to-vtt_blog_10.html">Can i batch convert srt to vtt using happyscribe?</a></li></ul>
   </main>
 
   <footer>

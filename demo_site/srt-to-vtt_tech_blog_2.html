@@ -18,121 +18,109 @@
 
   <main class='container'>
      <nav id='toc' class='toc'></nav>
-     <!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Automating SRT → VTT subtitle conversion in CI/CD</title>
-</head>
-<body>
-<h1>Automating SRT → VTT subtitle conversion in CI/CD</h1>
+     {
+    "export": {
+      "format": "vtt",
+      "transcription_ids": ["srt_generated_id"],
+      "show_timestamps": false
+    }
+  }' | jq .
+    </code></pre>
 
-<p>Manual conversion of subtitle files can introduce errors and slow down release cycles for video
-platforms.
-Lack of a repeatable process adds risk and increases support overhead.
-Integrating a reliable conversion step is critical to maintain quality and speed for global
-content workflows.</p>
+    <p>
+      The response contains an export id you will use for polling. Integrate this
+      call into your build config file as a step that runs when tests pass or
+      before a deployment stage.
+    </p>
 
-<p>This article shows a practical approach to build an end to end automation for SRT to VTT
-conversion in a continuous integration and delivery pipeline.
-We will use the <strong>HappyScribe API</strong> to handle uploads, exports and downloads at scale.
-Senior developers and DevOps engineers will learn how to embed these steps in a <strong>CI/CD</strong>
-pipeline with code examples.</p>
+    <h2>What are the authentication best practices?</h2>
 
-<h2>Why automate subtitle conversion?</h2>
-<pre><code>curl -X POST "https://www.happyscribe.com/api/v1/exports" \
-  -H "Authorization: Bearer $API_KEY" \
-  -H "Content-Type: application/json" \
-  -d '{
-  "export": {
-    "format": "vtt",
-    "transcription_ids": ["${TRANS_ID}"]
-  }
-}'
-</code></pre>
+    <p>
+      Securely handling API keys is critical. Use your secrets management solution
+      to inject the <strong>HappyScribe API</strong> key at runtime. Never commit
+      the key to version control or expose it in logs. Rotate keys periodically
+      and grant least privilege at the account level.
+    </p>
 
-<h2>How to authenticate with the API?</h2>
-<pre><code>import os
+    <pre><code>
+# Inject secret at pipeline runtime
+HAPPYSCRIBE_API_KEY=$(vault kv get -field=key secret/happyscribe)
+
+# Example export call with header
+curl -H "Authorization: Bearer $HAPPYSCRIBE_API_KEY" \
+     -H "Content-Type: application/json" \
+     -d '{"export":{"format":"vtt","transcription_ids":["abc123"]}}' \
+     https://www.happyscribe.com/api/v1/exports
+    </code></pre>
+
+    <p>
+      If you hit rate limits you will receive a 429 response with a retry_in_seconds
+      field. Parse it to wait exactly the required time before retrying.
+    </p>
+
+    <h2>How do you handle polling and throttling?</h2>
+
+    <p>
+      After creating an export you need to wait for it to be ready. Polling too
+      aggressively can trigger the rate limit. Implement an exponential backoff
+      with jitter to avoid thundering herd issues when scaling pipelines.
+    </p>
+
+    <pre><code>
+import os
+import time
+import random
 import requests
 
-api_key = os.environ.get("HAPPYSCRIBE_API_KEY")
-headers = {
-    "Authorization": f"Bearer {api_key}",
-    "Content-Type": "application/json"
-}
+API_KEY = os.getenv("HAPPYSCRIBE_API_KEY")
+EXPORT_ID = "export_id_here"
+url = f"https://www.happyscribe.com/api/v1/exports/{EXPORT_ID}"
+headers = {"Authorization": f"Bearer {API_KEY}"}
 
-response = requests.get(
-    "https://www.happyscribe.com/api/v1/transcriptions",
-    headers=headers
-)
+def poll_export():
+    delay = 5
+    while True:
+        resp = requests.get(url, headers=headers).json()
+        state = resp.get("state")
+        if state == "ready":
+            return resp.get("download_link")
+        if state == "failed":
+            raise Exception("Export failed")
+        wait = delay + random.uniform(0, 2)
+        time.sleep(wait)
+        delay = min(delay * 2, 60)
 
-print(response.json())
-</code></pre>
+download_link = poll_export()
+print("Download at:", download_link)
+    </code></pre>
 
-<h2>How to upload an SRT file and request a VTT export?</h2>
-<p>This example uploads an <strong>SRT</strong> file and requests a <strong>VTT</strong> output.</p>
-<pre><code># 1) Obtain a signed URL for upload
-curl -s -H "Authorization: Bearer $API_KEY" \
-  "https://www.happyscribe.com/api/v1/uploads/new?filename=subtitle.srt" \
-  | jq -r .signedUrl > upload_url.txt
+    <p>
+      Use the download link immediately. Signed URLs expire after a short period.
+      Do not reuse them in other contexts.
+    </p>
 
-# 2) Upload the SRT file
-curl -s -X PUT -T subtitle.srt "$(cat upload_url.txt)"
+    <h2>How do you handle source file upload when you only have an SRT?</h2>
 
-# 3) Request VTT export
-curl -s -X POST "https://www.happyscribe.com/api/v1/exports" \
-  -H "Authorization: Bearer $API_KEY" \
+    <p>
+      If you already generated an SRT file from transcription you can skip media
+      upload. The export endpoint accepts transcription IDs directly. If you need
+      to reimport an SRT as a new transcription for alignment or translation,
+      use the uploads endpoint.
+    </p>
+
+    <pre><code>
+# 1. Create a placeholder transcription with existing SRT URL
+curl -X POST https://www.happyscribe.com/api/v1/transcriptions \
+  -H "Authorization: Bearer $HAPPYSCRIBE_API_KEY" \
   -H "Content-Type: application/json" \
   -d '{
-  "export": {
-    "format": "vtt",
-    "transcription_ids": ["${TRANSCRIPT_ID}"]
+    "transcription": {
+      "name": "aligned_subtitle",
+      "language": "en-US",
+      "tmp_url": "https://cdn.example.com/subtitles/myfile.srt",
+      "service": "alignment"
+    }
   }
-}'
-</code></pre>
-
-<h2>How to integrate conversion into a CI/CD pipeline?</h2>
-<pre><code>convert_subtitles:
-  stage: conversion
-  image: curlimages/curl:latest
-  variables:
-    HAPPYSCRIBE_API_KEY: "${HAPPYSCRIBE_API_KEY}"
-  script:
-    - echo "Upload SRT and convert to VTT"
-    - SIGNED_URL=$(curl -s -H "Authorization: Bearer $HAPPYSCRIBE_API_KEY" \
-        "https://www.happyscribe.com/api/v1/uploads/new?filename=video.srt" \
-        | jq -r .signedUrl)
-    - curl -s -X PUT -T video.srt "$SIGNED_URL"
-    - EXPORT_ID=$(curl -s -X POST \
-        -H "Authorization: Bearer $HAPPYSCRIBE_API_KEY" \
-        -H "Content-Type: application/json" \
-        -d '{"export":{"format":"vtt","transcription_ids":["'$TRANSCRIPT_ID'"]}}' \
-        https://www.happyscribe.com/api/v1/exports \
-        | jq -r .id)
-    - |
-      until [ "$(curl -s -H "Authorization: Bearer $HAPPYSCRIBE_API_KEY" \
-         https://www.happyscribe.com/api/v1/exports/$EXPORT_ID \
-         | jq -r .state)" = "ready" ]; do
-        sleep 5
-      done
-    - curl -L "$(curl -s -H "Authorization: Bearer $HAPPYSCRIBE_API_KEY" \
-        https://www.happyscribe.com/api/v1/exports/$EXPORT_ID \
-        | jq -r .download_link)" -o video.vtt
-  only:
-    - main
-</code></pre>
-
-<h2>Key takeaways</h2>
-<ul>
-  <li>Automate subtitle format conversion to reduce manual errors and speed up releases.</li>
-  <li>Use the <strong>HappyScribe API</strong> for authenticated upload, export and download steps.</li>
-  <li>Embed conversion logic into your <strong>CI/CD</strong> workflow for consistent results.</li>
-</ul>
-
-<h2>Next steps</h2>
-<p><i>Implement this flow in your pipeline and validate end to end conversion before merging to main.</i></p>
-</body>
-</html>
      
   </main>
 

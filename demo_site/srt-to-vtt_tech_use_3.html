@@ -18,179 +18,134 @@
 
   <main class='container'>
      <nav id='toc' class='toc'></nav>
-     <html>
-  <body>
-    <h2>Multilingual subtitle pipeline for global releases</h2>
+     { background-color: #f0f4f8; padding: 10px; margin: 20px 0; }
+    .accordion-item { border: 1px solid #ddd; margin-bottom: 10px; padding: 10px; }
+    .accordion-question { font-weight: bold; margin-bottom: 5px; }
+    .accordion-answer { margin-left: 10px; }
+  </style>
+</head>
+<body>
 
-    <p>
-      In a world where content travels instantly across borders, video teams need a reliable
-      pipeline to convert subtitle files from one format to another. A typical scenario involves
-      a global marketing department that delivers an English SRT file for a new product launch.
-      That file needs to be converted to a timed WebVTT file, enriched with language codes,
-      and pushed to a content delivery network for viewers around the world.
-    </p>
+<h2>Multilingual subtitle pipeline for global releases</h2>
 
-    <p>
-      This workflow matters because inconsistent subtitle formats can break automated player
-      integrations, delay release schedules, and frustrate localization partners. By building a
-      programmatic conversion pipeline, engineering teams free localization managers from
-      manual edits and ensure every region gets high-quality captions on time.
-    </p>
+<p>
+A global media team needs to distribute product launch videos to audiences in Asia, Europe, and South America. They maintain subtitle files in SRT for their primary language but require VTT files for web players in each market.
+</p>
 
-    <p class="alt-bg">
-      🔈 69% des utilisateurs quittent une vidéo si les sous-titres sont absents.
-    </p>
+<p>
+This workflow matters because inconsistent or missing subtitles impact accessibility and viewer retention. Broadcasters and streaming services depend on precise timing, accurate translations, and a repeatable process that scales across dozens of titles each quarter.
+</p>
 
-    <h2>Implementation steps</h2>
+<p>
+By automating conversions and translations, teams can reduce manual errors, accelerate release schedules, and serve localized subtitles in formats that integrate directly with modern web players. This ensures global compliance, better SEO, and a uniform viewer experience everywhere.
+</p>
 
-    <ol>
-      <li>
-        Prepare your environment with an API key. Store it securely as an environment variable:
-        <pre><code>export HAPPYSCRIBE_API_KEY="your_api_key_here"</code></pre>
-      </li>
-      <li>
-        Upload your source SRT file. If the file is public, skip to step 4. Otherwise request
-        a presigned URL and upload via PUT:
-        <pre><code># Get upload URL
-curl -H "Authorization: Bearer $HAPPYSCRIBE_API_KEY" \
-"https://www.happyscribe.com/api/v1/uploads/new?filename=video_en.srt" \
-| jq -r .signedUrl > upload_url.txt
+<p class="alt-bg">🔈 69% of users leave a video if subtitles are missing.</p>
 
-# Upload file
-curl -X PUT -T video_en.srt "$(cat upload_url.txt)"
-</code></pre>
-      </li>
-      <li>
-        Confirm that the file is accessible by polling if needed. The presigned URL is valid
-        for 15 minutes. If expired, repeat step 2.
-      </li>
-      <li>
-        Create a transcription record in subtitle mode. Use your presigned URL or public URL:
-        <pre><code>curl -X POST \
--H "Authorization: Bearer $HAPPYSCRIBE_API_KEY" \
--H "Content-Type: application/json" \
--d '{
-  "transcription": {
-    "name": "Global launch English",
-    "language": "en-GB",
-    "tmp_url": "'"$(cat upload_url.txt)"'",
-    "is_subtitle": true,
-    "service": "auto"
-  }
-}' \
-https://www.happyscribe.com/api/v1/transcriptions
-</code></pre>
-      </li>
-      <li>
-        Poll the transcription status until it’s ready for export:
-        <pre><code>TRANS_ID="abc123"
-while true; do
-  STATUS=$(curl -s \
-    -H "Authorization: Bearer $HAPPYSCRIBE_API_KEY" \
+<h2>Implementation using the HappyScribe API</h2>
+
+<ol>
+  <li>
+    Prepare or upload your master SRT file for each source language. If you already have a hosted URL, you can skip the upload step. Otherwise request a signed S3 URL:
+    <pre><code>curl -H "Authorization: Bearer $API_KEY" \
+  "https://www.happyscribe.com/api/v1/uploads/new?filename=master_en.srt" \
+  | jq -r .signedUrl &gt; upload_url.txt</code></pre>
+  </li>
+
+  <li>
+    PUT your local SRT into the signed URL. This stores the file in HappyScribe’s bucket for ingestion.
+    <pre><code>curl -X PUT -T master_en.srt "$(cat upload_url.txt)"</code></pre>
+  </li>
+
+  <li>
+    Create a transcription entry with the SRT file. Mark it as subtitle input and choose auto alignment. This generates a timeline you can later convert or translate.
+    <pre><code>curl -X POST -H "Authorization: Bearer $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "transcription": {
+      "name": "Product_Launch_2025_EN",
+      "language": "en-US",
+      "tmp_url": "'"$(cat upload_url.txt)"'",
+      "is_subtitle": true,
+      "service": "alignment"
+    }
+  }' \
+  https://www.happyscribe.com/api/v1/transcriptions</code></pre>
+  </li>
+
+  <li>
+    Poll the transcription status until it reaches <code>automatic_done</code>. Use exponential back-off to respect rate limits.
+    <pre><code>while true; do
+  STATE=$(curl -s -H "Authorization: Bearer $API_KEY" \
     https://www.happyscribe.com/api/v1/transcriptions/$TRANS_ID \
     | jq -r .state)
-  echo "Status: $STATUS"
-  [ "$STATUS" = "automatic_done" ] && break
+  [ "$STATE" = "automatic_done" ] && break
   sleep 10
-done
-</code></pre>
-      </li>
-      <li>
-        Request an export to WebVTT. You can export multiple formats in parallel by sending
-        separate requests:
-        <pre><code>curl -X POST \
--H "Authorization: Bearer $HAPPYSCRIBE_API_KEY" \
--H "Content-Type: application/json" \
--d '{
-  "export": {
-    "format": "vtt",
-    "transcription_ids": ["'"$TRANS_ID"'"]
-  }
-}' \
-https://www.happyscribe.com/api/v1/exports
-</code></pre>
-      </li>
-      <li>
-        Poll the export endpoint for readiness and download:
-        <pre><code>EXP_ID="exp456"
+done</code></pre>
+  </li>
+
+  <li>
+    Export the aligned transcript as SRT. This step confirms the timeline and prepares the file for translation or format conversion.
+    <pre><code>curl -X POST -H "Authorization: Bearer $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "export": {
+      "format": "srt",
+      "transcription_ids": ["'"$TRANS_ID"'"]
+    }
+  }' \
+  https://www.happyscribe.com/api/v1/exports</code></pre>
+  </li>
+
+  <li>
+    Download the SRT once the export state becomes <code>ready</code>. Store it as your canonical timed text file.
+    <pre><code>EXP_ID=abc123
 while true; do
-  EXP=$(curl -s \
-    -H "Authorization: Bearer $HAPPYSCRIBE_API_KEY" \
+  EXP=$(curl -s -H "Authorization: Bearer $API_KEY" \
     https://www.happyscribe.com/api/v1/exports/$EXP_ID)
-  if [ "$(echo "$EXP" | jq -r .state)" = "ready" ]; then
-    curl -L "$(echo "$EXP" | jq -r .download_link)" -o subtitles.vtt
-    break
-  fi
+  [ "$(echo $EXP | jq -r .state)" = "ready" ] && \
+    curl -L "$(echo $EXP | jq -r .download_link)" -o Product_Launch_EN.srt && break
   sleep 5
-done
-</code></pre>
-      </li>
-      <li>
-        Validate the final WebVTT file for syntax and timing. You can run a quick check
-        with standard WebVTT linters or upload to a staging player.
-      </li>
-      <li>
-        Automate this sequence in your CI/CD pipeline or backend job scheduler. Use
-        exponential back-off and error handling to retry on HTTP 429 or 5xx responses.
-      </li>
-    </ol>
+done</code></pre>
+  </li>
 
-    <h2>HappyScribe features that simplify the workflow</h2>
+  <li>
+    For each target language, submit a translation order. This example requests Spanish and German machine translation in one batch.
+    <pre><code>curl -X POST -H "Authorization: Bearer $API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "order": {
+      "source_transcription_id": "'"$TRANS_ID"'",
+      "target_languages": ["es-ES","de-DE"],
+      "service": "auto",
+      "confirm": true
+    }
+  }' \
+  https://www.happyscribe.com/api/v1/orders/translation</code></pre>
+  </li>
 
-    <p>
-      <strong>Format flexibility</strong> lets you convert between 12+ subtitle and transcript formats
-      with a single API endpoint.
-    </p>
+  <li>
+    Poll the translation order until <code>fulfilled</code>. Each target language results in a new transcription ID. Collect all outputs.
+    <pre><code>while true; do
+  STATUS=$(curl -s -H "Authorization: Bearer $API_KEY" \
+    https://www.happyscribe.com/api/v1/orders/$ORDER_ID \
+    | jq -r .state)
+  [ "$STATUS" = "fulfilled" ] && break
+  sleep 30
+done</code></pre>
+  </li>
 
-    <p>
-      <strong>Presigned uploads</strong> eliminate the need to host large files temporarily on
-      your infrastructure before processing.
-    </p>
-
-    <p>
-      <strong>Parallel exports</strong> allow you to generate SRT, VTT, and other formats
-      concurrently, reducing overall turnaround time.
-    </p>
-
-    <h2>Key takeaways</h2>
-
-    <ul>
-      <li>Programmatic subtitle conversion streamlines global releases and reduces manual errors.</li>
-      <li>HappyScribe’s API supports high throughput and flexible workflows from upload to download.</li>
-      <li>Built-in error handling and throttling safeguards ensure a resilient pipeline.</li>
-    </ul>
-
-    <h3>Mini FAQ</h3>
-
-    <details open>
-      <summary>Which subtitle formats are supported?</summary>
-      <p>
-        HappyScribe supports SRT, VTT, STL, AVID, and many broadcast formats including
-        Subtitle Workshop and Interop STL. You can request multiple formats in parallel.
-      </p>
-    </details>
-
-    <details open>
-      <summary>How do I handle rate limits in bulk processing?</summary>
-      <p>
-        The default rate limit is 200 POST requests to /transcriptions per hour per API key.
-        On HTTP 429, parse the retry_in_seconds field and back off accordingly. You can
-        request limit increases for large-scale workflows.
-      </p>
-    </details>
-
-    <details open>
-      <summary>Can I translate subtitles as part of the same pipeline?</summary>
-      <p>
-        Yes. After your initial export, use the /orders/translation endpoint to machine-
-        or human-translate into multiple target languages. You can then export each
-        translation to VTT or other formats in one step.
-      </p>
-    </details>
-
-    <p><em>Engineers can integrate this pipeline in under an afternoon, unlocking global reach with minimal effort.</em></p>
-  </body>
-</html>
+  <li>
+    Export each translated transcription as VTT. The VTT format integrates seamlessly with HTML5 video players and streaming platforms.
+    <pre><code>for T_ID in "${TRANSLATED_IDS[@]}"; do
+  curl -X POST -H "Authorization: Bearer $API_KEY" \
+    -H "Content-Type: application/json" \
+    -d '{
+      "export": {
+        "format": "vtt",
+        "transcription_ids": ["'"$T_ID"'"]
+      }
+    }
      
   </main>
 
