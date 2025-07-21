@@ -4,12 +4,18 @@ Use case name: "${USE_NAME}"
 Conversion context: "${F1} to ${F2}"
 
 Requirements
+- Editorial Guidelines:
+- Tone: Friendly, enthusiastic, and conversational, yet professional. Position HappyScribe as a thought leader. Speak directly to the reader (e.g., "you'll learn," "we'll dive into").
+- Language: Use simple, direct US English. Avoid technical jargon where possible.
+- Words to AVOID: Multifaceted, therefore, elicit, enhance, thus, begets, utilize, imperative, caveat, transcreator, employ, consequently, intricate, implement, incites, harness, subsequently, elaborate, elevate.
+- Structure: Start the introduction by clearly stating the purpose of the use case. Use questions in sub-headers (<h2>, <h3>) to guide the reader. Use bullet points and lists to improve readability. End with a clear call to action.
+
 1. Open with a scenario that explains why this conversion is important for the industry segment.
-2. Provide a step-by-step workflow (tools, scripts, HappyScribe API calls).
+2. Provide a clear, step-by-step workflow (tools or online platforms) that a professional audience can follow without requiring extensive coding. Mention HappyScribe features where relevant rather than showing full API scripts.
 3. Highlight at least three HappyScribe features that improve this workflow (subtitle editor, AI notetaker, API, etc.).
-4. Add a mini FAQ (3 pairs) specific to this use case.
+4. Add a 'Mini FAQ' section (<h3>) with 3 relevant question-answer pairs, formatted as a Bootstrap 5 accordion (answers visible by default).
 5. Finish with a persuasive CTA linking to HappyScribe.
-6. Sentence-case headings, acronyms uppercase, no em dashes.
-7. Basic HTML only, no generic "Conclusion".
+6. Use Sentence case for headings, with acronyms in uppercase. Do not use the em dash (—).
+7. Use basic HTML only and no generic headings like "Conclusion".
 
 Return STRICT valid HTML (no wrapper tags). 

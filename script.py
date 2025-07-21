@@ -36,7 +36,13 @@ _SECRETS = _load_keys()
 # Configuration helpers                                                       #
 ###############################################################################
 
-OPENAI_MODEL = os.getenv("OPENAI_MODEL", "o4-mini-2025-04-16")
+# ---------------------------------------------------------------------------
+# Model routing
+# ---------------------------------------------------------------------------
+# Single chat model (fast)
+BASE_MODEL = "o4-mini-2025-04-16"
+
+OPENAI_MODEL = os.getenv("OPENAI_MODEL", BASE_MODEL)
 OPENAI_API_KEY = _SECRETS.get("OPENAI_API_KEY")
 SERPAPI_API_KEY = _SECRETS.get("SERPAPI_API_KEY", "")
 
@@ -133,14 +139,16 @@ class SEOGenerator:
         self,
         system_message: str,
         user_prompt: str,
+        model_override: Optional[str] = None,
     ) -> Tuple[str, List[Dict[str, str]], List[Dict[str, str]], List[Dict[str, str]]]:
-        """Call the chat model and return parsed JSON sections."""
+
+        model_id = model_override or OPENAI_MODEL
         async with self.semaphore:
             response = await self.client.chat.completions.create(
-                model=OPENAI_MODEL,
+                model=model_id,
                 messages=[
                     {"role": "system", "content": system_message},
-                    {"role": "user", "content": user_prompt},
+                    {"role": "user",   "content": user_prompt},
                 ],
             )
             answer = response.choices[0].message.content
@@ -232,7 +240,7 @@ def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="Generate SEO landing content + pages.")
     p.add_argument("--input_csv", default=DEFAULT_CSV)
     p.add_argument("--output_json", default=DEFAULT_OUTPUT)
-    p.add_argument("--concurrency", type=int, default=3)
+    p.add_argument("--concurrency", type=int, default=6)
     p.add_argument("--test", action="store_true", default=DEFAULT_TEST_MODE, help="enable test mode to process only top rows")
     p.add_argument("--limit", type=int)
     p.add_argument("--debug", action="store_true")
@@ -266,6 +274,8 @@ async def main() -> None:
         use_tpl = Template(fp.read())
     with open(os.path.join(PROMPTS_DIR, "comparison_prompt.txt"), "r", encoding="utf-8") as fp:
         comp_tpl = Template(fp.read())
+    with open(os.path.join(PROMPTS_DIR, "ideas_prompt.txt"), "r", encoding="utf-8") as fp:
+        ideas_tpl = Template(fp.read())
 
     async def _wrap(idx: int, row: pd.Series):
         kw_primary = row["Keyword 1"]
@@ -283,7 +293,35 @@ async def main() -> None:
             related_searches=related_searches,
         )
 
-        content, faq, blogs, uses = await generator._single_call(SYSTEM_MESSAGE, prompt)  # type: ignore
+        # Landing content -> always generated with BASE_MODEL
+        content, faq, blogs, uses = await generator._single_call(SYSTEM_MESSAGE, prompt, model_override=BASE_MODEL)  # type: ignore
+
+        # ------- second pass for enriched ideas (3 each) ---------------------
+        related_q = [q.get("snippet") or q.get("question") for q in serp_context.get("related_questions", [])][:5]
+        organic_snips = [o.get("snippet", "") for o in serp_context.get("organic_results", [])][:4]
+
+        ideas_prompt = ideas_tpl.substitute(
+            RELATED_Q="\n".join(f"- {q}" for q in related_q if q),
+            ORGANIC_SNIPPETS="\n".join(f"- {s}" for s in organic_snips if s)
+        )
+
+        try:
+            # We only need the blog and use-case lists (3 items each)
+            _, _, extra_blogs, extra_uses = await generator._single_call(
+                SYSTEM_MESSAGE,
+                ideas_prompt,
+                model_override=BASE_MODEL,  # single model
+            )
+            # merge while avoiding duplicates
+            def _merge(src, extra, key):
+                titles = {item[key] for item in src}
+                for itm in extra:
+                    if itm[key] not in titles and len(src) < 10:
+                        src.append(itm)
+            _merge(blogs, extra_blogs, "title")
+            _merge(uses, extra_uses, "name")
+        except Exception as e:
+            logging.warning("Ideas prompt failed: %s", e)
         # Debug: log blog ideas and use cases returned by the model
         logging.debug("Row %d returned blog_ideas (%d): %s", idx, len(blogs), blogs)
         logging.debug("Row %d returned use_cases (%d): %s", idx, len(uses), uses)
@@ -323,7 +361,7 @@ async def main() -> None:
     with open(os.path.join(PROMPTS_DIR, "article_prompt.txt"), "r", encoding="utf-8") as fp:
         article_tpl = Template(fp.read())
 
-    async def _write_page(path: str, title: str, body_html: str, extra_nav: str = "", meta_desc: str = ""):
+    async def _write_page(path: str, title: str, body_html: str, extra_nav: str = "", meta_desc: str = "", model_id: str = ""):
         """Write an HTML page with optional navigation/footer."""
         
         page_slug = os.path.basename(path)
@@ -347,7 +385,7 @@ async def main() -> None:
     
     <!-- Styles -->
     <link rel="stylesheet" href="https://www.happyscribe.com/assets/hs.landing-42122b4ad66b2e1435c21ff4c12c2cadf6b5aa464214dc79f1ad1ebd2d99aa21.css">
-    <link rel="stylesheet" href="/settings/web_assets/style.css">
+    <link rel="stylesheet" href="settings/web_assets/style.css">
 </head>
 <body>
     <header class='topbar'>
@@ -366,7 +404,11 @@ async def main() -> None:
         {body_html}
         {extra_nav}
     </main>
-    <footer><div class='container'><p>&copy; HappyScribe</p></div></footer>
+    <footer>
+      <div class="container small text-muted">
+         © HappyScribe · Generated by <strong>{model_id}</strong>
+      </div>
+    </footer>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
@@ -407,29 +449,29 @@ async def main() -> None:
             if not question or not answer:
                 continue
 
-            item_html = f"""
-            <div class="accordion-item">
-                <h3 class="accordion-header">
-                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#{prefix}-{i}">
-                        {question}
-                    </button>
-                </h3>
-                <div id="{prefix}-{i}" class="accordion-collapse collapse">
-                    <div class="accordion-body">{answer}</div>
-                </div>
-            </div>
-            """
+            target_id = f"{prefix}-{i}"
+            item_html = (
+                f'<div class="accordion-item">'
+                f'  <h3 class="accordion-header" id="heading-{target_id}">' 
+                f'    <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#{target_id}" aria-expanded="true" aria-controls="{target_id}">' 
+                f'      {question}' 
+                f'    </button>' 
+                f'  </h3>' 
+                f'  <div id="{target_id}" class="accordion-collapse collapse show" aria-labelledby="heading-{target_id}" >' 
+                f'    <div class="accordion-body">{answer}</div>' 
+                f'  </div>' 
+                f'</div>'
+            )
             items_html.append(item_html)
 
         if not items_html:
             return ""
 
-        return f"""
-        <h2>Frequently Asked Questions</h2>
-        <div class="accordion" id="faqAccordion-{prefix}">
-            {''.join(items_html)}
-        </div>
-        """
+        return (
+            f'<div class="faq-block"><h2>Frequently Asked Questions</h2>'
+            f'<div class="accordion" id="faqAccordion-{prefix}">' 
+            + ''.join(items_html) + '</div></div>'
+        )
 
     # Convenience: slugify helper
     def _slugify(txt: str) -> str:
@@ -437,69 +479,118 @@ async def main() -> None:
         slug = re.sub(r'[^a-z0-9]+', '-', base.lower()).strip('-')
         return slug[:60] or 'page'
 
-    for row in results:
-        kw_p = row["keyword_primary"]
-        kw_s = row["keyword_secondary"]
-        f1 = row["format_1"]
-        f2 = row["format_2"]
-        # Prepare slug and paths
-        slug = re.sub(r"[^a-z0-9]+", "-", kw_p.lower()).strip("-")
-        landing_path = os.path.join(demo_dir, f"{slug}.html")
+    # ------------------------------------------------------------------
+    # Generate blog, use-case, and landing pages for each result --------
+    # ------------------------------------------------------------------
 
-        # --- Generate BLOG pages -------------------------------------------------
-        blog_links: List[Tuple[str, str, str]] = []  # (fname, title, meta)
-        for idx, blog in enumerate(row["blog_ideas"], 1):
-            fname = f"blog_{idx}_{_slugify(blog['title'])}.html"
-            blog_links.append((fname, blog["title"], blog.get("meta", "")))
+    for res in results:
+        kw_p = res["keyword_primary"]
+        kw_s = res["keyword_secondary"]
+        f1 = res["format_1"]
+        f2 = res["format_2"]
 
-        for fname, title_b, meta_b in blog_links:
-            dst = os.path.join(demo_dir, fname)
-            if not os.path.exists(dst):
-                prompt = article_tpl.substitute(TITLE=title_b, KW_PRIMARY=kw_p, KW_SECONDARY=kw_s)
-                body_html, *_ = await generator._single_call(SYSTEM_MESSAGE, prompt)  # type: ignore
-                nav_back = f'<p><a href="{slug}.html">&larr; Back to converter landing</a></p>'
-                extra_links = "<h2>More Articles</h2><ul>" + "".join(
-                    f'<li><a href="{f}">{t}</a></li>' for f, t, _ in blog_links if f != fname
+        slug = _slugify(f"{f1}-to-{f2}")
+        landing_fname = f"{slug}.html"
+        landing_path = os.path.join(demo_dir, landing_fname)
+
+        # Build filename lists for blogs and use-cases
+        blog_links = [
+            (f"{slug}_blog_{i}.html", b.get("title", f"Blog {i}"), b.get("meta", ""))
+            for i, b in enumerate(res.get("blog_ideas", []), 1)
+        ]
+
+        use_links = [
+            (f"{slug}_use_{i}.html", u.get("name", f"Use case {i}"), u.get("description", ""))
+            for i, u in enumerate(res.get("use_cases", []), 1)
+        ]
+
+        async def _gen_blog(fname: str, title_b: str, meta_b: str, idx: int):
+            prompt = article_tpl.substitute(TITLE=title_b, KW_PRIMARY=kw_p, KW_SECONDARY=kw_s)
+            model_to_use = BASE_MODEL
+            body_html, *_ = await generator._single_call(
+                SYSTEM_MESSAGE, prompt, model_override=model_to_use
+            )
+            nav_back = f'<p><a href="{landing_fname}">&larr; Back to converter landing</a></p>'
+            extra_links = "<h2>More Articles</h2><ul>" + "".join(
+                f'<li><a href="{f}">{t}</a></li>' for f, t, _ in blog_links if f != fname
+            ) + "</ul>"
+            await _write_page(
+                os.path.join(demo_dir, fname),
+                title_b,
+                body_html,
+                nav_back + extra_links,
+                meta_b,
+                model_id=model_to_use,
+            )
+
+        async def _gen_use(fname: str, name_u: str, desc_u: str, idx: int):
+            prompt = use_tpl.substitute(USE_NAME=name_u, F1=f1.upper(), F2=f2.upper())
+            model_to_use = BASE_MODEL
+            body_html, *_ = await generator._single_call(
+                SYSTEM_MESSAGE, prompt, model_override=model_to_use
+            )
+            nav_back = f'<p><a href="{landing_fname}">&larr; Back to converter landing</a></p>'
+            extra_links = "<h2>More Use Cases</h2><ul>" + "".join(
+                f'<li><a href="{f}">{n}</a></li>' for f, n, _ in use_links if f != fname
+            ) + "</ul>"
+            await _write_page(
+                os.path.join(demo_dir, fname),
+                name_u,
+                body_html,
+                nav_back + extra_links,
+                desc_u,
+                model_id=model_to_use,
+            )
+
+        tasks: List[asyncio.Task] = []
+        tasks += [
+            asyncio.create_task(_gen_blog(f, t, m, idx))
+            for idx, (f, t, m) in enumerate(blog_links, 1)
+        ]
+        tasks += [
+            asyncio.create_task(_gen_use(f, n, d, idx))
+            for idx, (f, n, d) in enumerate(use_links, 1)
+        ]
+        await asyncio.gather(*tasks)
+
+        # ---------------- Landing page ----------------
+        content_html = _ensure_html(res["content"])
+        comp_html = _ensure_html(res.get("comparison", ""))
+        faq_html = _build_faq_accordion(res.get("faq", []), slug)
+
+        nav_html = ""
+        block_parts = []
+        if blog_links:
+            block_parts.append(
+                "<h2>Related Articles</h2><ul class='related-list'>" + "".join(
+                    f'<li><a href=\"{fname}\">{title}</a></li>' for fname, title, _ in blog_links
                 ) + "</ul>"
-                await _write_page(dst, title_b, body_html, nav_back + extra_links, meta_b)
-
-        # --- Generate USE-CASE pages -------------------------------------------
-        use_links: List[Tuple[str, str, str]] = []  # (fname, name, desc)
-        for idx, use in enumerate(row["use_cases"], 1):
-            fname = f"use_{idx}_{_slugify(use['name'])}.html"
-            use_links.append((fname, use["name"], use.get("description", "")))
-
-        for fname, name_u, desc_u in use_links:
-            dst = os.path.join(demo_dir, fname)
-            if not os.path.exists(dst):
-                prompt = use_tpl.substitute(USE_NAME=name_u, F1=f1.upper(), F2=f2.upper())
-                body_html, *_ = await generator._single_call(SYSTEM_MESSAGE, prompt)  # type: ignore
-                nav_back = f'<p><a href="{slug}.html">&larr; Back to converter landing</a></p>'
-                extra_links = "<h2>More Use Cases</h2><ul>" + "".join(
-                    f'<li><a href="{f}">{n}</a></li>' for f, n, _ in use_links if f != fname
+            )
+        if use_links:
+            block_parts.append(
+                "<h2>Professional Use Cases</h2><ul class='related-list'>" + "".join(
+                    f'<li><a href=\"{fname}\">{name}</a></li>' for fname, name, _ in use_links
                 ) + "</ul>"
-                await _write_page(dst, name_u, body_html, nav_back + extra_links, desc_u)
+            )
+        if block_parts:
+            nav_html = "<hr class='section-divider'><div class='block-section'>" + "<hr class='section-divider'>".join(block_parts) + "</div>"
 
-        # --- Write (or rewrite) the landing page with navigation ---------------
-        content_html = _ensure_html(row["content"])
-        comp_html = _ensure_html(row.get("comparison", ""))
+        await _write_page(
+            landing_path,
+            kw_p,
+            content_html + comp_html + faq_html + nav_html,
+            model_id=BASE_MODEL,
+        )
 
-        if content_html:
-            faq_html = _build_faq_accordion(row.get("faq", []), slug)
-            nav_html = ""
-            if blog_links:
-                nav_html += "<h2>Related Articles</h2><ul>" + "".join(
-                    f'<li><a href="{fname}">{title}</a></li>' for fname, title, _ in blog_links
-                ) + "</ul>"
-            if use_links:
-                nav_html += "<h2>Professional Use Cases</h2><ul>" + "".join(
-                    f'<li><a href="{fname}">{name}</a></li>' for fname, name, _ in use_links
-                ) + "</ul>"
+        logging.info(
+            "✅ Generated landing + %d blogs + %d use cases for %s → %s",
+            len(blog_links),
+            len(use_links),
+            f1.upper(),
+            f2.upper(),
+        )
 
-            landing_html = content_html + comp_html + faq_html + nav_html
-            # Always overwrite to ensure links are up to date
-            await _write_page(landing_path, kw_p, landing_html)
-
+    # ------------------------------------------------------------------
     # Generate an index.html listing all generated pages
     pages = sorted([f for f in os.listdir(demo_dir) if f.endswith('.html')])
     list_items = ''.join(f'<li><a href="{p}">{p.replace(".html", " ").replace("-", " ").title()}</a></li>' for p in pages)

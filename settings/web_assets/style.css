@@ -1,19 +1,55 @@
-/* Simple demo styles */
-body {
-  font-family: system-ui, sans-serif;
-  margin: 0;
-  color: #222;
-  background: linear-gradient(120deg,#fdfcfb 0%,#e2d1c3 100%);
+/* HappyScribe Brand Fonts */
+@font-face {
+  font-family: 'Acid Grotesk';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url(https://www.happyscribe.com/assets/acid-grotesk/acid-grotesk-normal-webfont-24a87cd5164659b794429b04c3dc330347c07594447f91bd45b-57c5f0a5.woff2) format('woff2');
 }
 
-/* Top navigation bar */
+@font-face {
+  font-family: 'Acid Grotesk';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url(https://www.happyscribe.com/assets/acid-grotesk/acid-grotesk-medium-webfont-429071bfb1b699f33480c54019e8f094f10e6aa7c3b73f0331227c4614f8a86b.woff2) format('woff2');
+}
+
+@font-face {
+  font-family: 'Acid Grotesk';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url(https://www.happyscribe.com/assets/acid-grotesk/acid-grotesk-bold-webfont-2c4a450ed5127ffe2b58dfcb06f34f2c30acee28e4d440c2b6751d42e323bcd5.woff2) format('woff2');
+}
+
+@font-face {
+  font-family: 'RL Refusit';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url(https://www.happyscribe.com/assets/rl-refusit/rl-refusit-semibold-webfont-909a117578c0912cdd7b59f21adda0329e966c6c51c72d32e3ec8067c57e340e.woff2) format('woff2');
+}
+
+/* General Body & Theme Colors */
+body {
+  font-family: 'Acid Grotesk', system-ui, sans-serif; /* Use brand font */
+  margin: 0;
+  color: #1a1a1a;
+  background: #fdfcfa; /* Subtle off-white from new design */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Updated Top Navigation Bar */
 .topbar {
   position: sticky;
   top: 0;
-  z-index: 10;
-  background: rgba(255,255,255,0.85);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 1px 3px rgba(0,0,0,.06);
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid #ebebeb;
+  padding: 1rem 0;
 }
 .topbar-inner {
   display: flex;
@@ -22,75 +58,109 @@ body {
   gap: 1.5rem;
 }
 .brand img {
-  height: 36px;
+  height: 28px; /* Adjusted for new logo style */
   display: block;
+}
+.main-nav {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
 }
 .main-nav a {
-  margin-left: 1rem;
   font-size: 0.95rem;
-  color: #222;
+  color: #333;
   text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s;
 }
-.main-nav a:hover { color: #2b7bff; }
+.main-nav a:hover { color: #0052ff; }
 
-/* Primary CTA button */
-.btn-primary {
+/* Updated Button Styles */
+.btn {
   display: inline-block;
-  background: #ffd94c;
-  color: #000;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  text-decoration: none;
   font-weight: 600;
+  border: 1px solid transparent;
+  transition: all 0.2s;
 }
-.btn-primary:hover { background:#ffce14; }
+.btn-primary {
+  background: #0052ff; /* New primary blue */
+  color: #fff;
+}
+.btn-primary:hover {
+  background: #003dbf;
+}
+.btn-secondary {
+  background: #FFD94C; /* HappyScribe Yellow */
+  color: #1a1a1a;
+}
+.btn-secondary:hover {
+  background: #ffce2e;
+}
 
-header {
-  background: none;
-  color: inherit;
-  padding: 0;
-  margin-bottom: 2rem;
-}
+/* Content & Layout */
 .container {
-  width: min(90%, 960px);
+  width: min(90%, 1100px);
   margin: 0 auto;
 }
-h1 {
-  margin: 0;
-  font-size: 1.8rem;
+main.container {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
 }
-main h2 {
+h1, h2, h3 {
+  color: #000;
+  font-weight: 700;
+  line-height: 1.3;
+}
+h1 { font-size: 3rem; margin-bottom: 1rem; }
+h2 { font-size: 2.25rem; margin-top: 3rem; border-bottom: none; padding-bottom: 0; }
+h3 { font-size: 1.5rem; margin-top: 2rem; }
+
+/* Distinct block wrapper */
+.block-section {
+  background: #ffffff;
+  border: 1px solid #eaeaea;
+  border-radius: 12px;
+  padding: 2rem;
   margin-top: 3rem;
-  font-size: 1.4rem;
-  border-bottom: 2px solid #2b7bff33;
-  padding-bottom: 0.25rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,.03);
 }
-/* FAQ accordion */
+
+/* Custom Accordion Styles to match new design */
+.accordion {
+  border: none;
+}
 .accordion-item {
-  border-bottom: 1px solid #ddd;
+  background-color: #fff;
+  border: 1px solid #eaeaea;
+  border-radius: 12px;
+  margin-bottom: 1rem;
+}
+.accordion-header {
+  font-size: 1.1rem;
+  font-weight: 600;
 }
 .accordion-button {
-  background: none;
-  border: none;
-  width: 100%;
-  text-align: left;
-  padding: 0.75rem 0;
+  border-radius: 12px !important;
+  background-color: #fff;
+  color: #1a1a1a;
+  font-weight: 600;
+}
+.accordion-button:not(.collapsed) {
+  color: #0052ff;
+  background-color: #f5f8ff;
+  box-shadow: none;
+}
+.accordion-button:focus {
+  box-shadow: 0 0 0 0.25rem rgba(0, 82, 255, 0.2);
+}
+.accordion-body {
   font-size: 1rem;
-  cursor: pointer;
+  line-height: 1.6;
 }
-.accordion-button:after {
-  content: '+';
-  float: right;
-}
-.accordion-item.open .accordion-button:after {
-  content: '–';
-}
-.accordion-content {
-  display: none;
-  padding-bottom: 0.75rem;
-}
-.accordion-item.open .accordion-content {
-  display: block;
-}
+
 /* Card grid for blogs & uses */
 .card-grid {
   display: grid;
@@ -113,11 +183,12 @@ a.card-link {
   color: inherit;
 }
 footer {
-  background: #eee;
-  padding: 1rem 0;
+  background: #f7f7f9;
+  padding: 2rem 0;
   margin-top: 4rem;
-  font-size: 0.875rem;
+  font-size: 0.9rem;
   text-align: center;
+  border-top: 1px solid #eaeaea;
 }
 /* comparison table */
 .comp-table {
@@ -131,6 +202,47 @@ footer {
   padding: 0.5rem 0.75rem;
 }
 .comp-table th {
-  background: #2b7bff33;
+  background: #f5f8ff;
   text-align: left;
+  font-weight: 600;
+}
+.section-divider {
+  border: 0;
+  height: 1px;
+  background: #eaeaea;
+  margin: 4rem 0;
+}
+
+/* Comparison table tweaks */
+.comp-table th,
+.comp-table td {
+  vertical-align: top;
+  padding: 0.75rem 1rem;
+}
+.comp-table tr:nth-child(even) {
+  background: #fafafa;
+}
+
+/* Related articles & uses styling */
+.related-list {
+  list-style: none;
+  padding-left: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit,minmax(220px,1fr));
+  gap: 1rem;
+}
+.related-list li {
+  background: #fff;
+  border: 1px solid #eaeaea;
+  border-radius: 8px;
+  padding: 1rem;
+  transition: box-shadow .2s;
+}
+.related-list li:hover { box-shadow: 0 2px 6px rgba(0,0,0,.05); } 
+
+.faq-block {
+  margin-top: 3rem;
+}
+.accordion-item + .accordion-item {
+  margin-top: 0.75rem;
 } 
