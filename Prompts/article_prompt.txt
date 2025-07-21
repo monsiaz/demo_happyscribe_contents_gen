@@ -3,6 +3,11 @@ Generate a comprehensive (~1500 words) technical blog article.
 Topic title: "${TITLE}"
 Primary keyword: "${KW_PRIMARY}"
 Secondary keyword: "${KW_SECONDARY}"
+Other planned blog titles for context (do not repeat angles):
+${ALL_BLOGS}
+
+Other planned professional use cases in the same cluster:
+${ALL_USES}
 
 Requirements
 - Editorial Guidelines:
@@ -12,11 +17,24 @@ Requirements
 - Structure: Start the introduction by clearly stating the article's purpose. Use questions in sub-headers (<h2>, <h3>) to guide the reader. Use bullet points and lists to improve readability.
 
 1. Begin with an engaging introduction that clearly states the article's purpose.
+   • Start by framing the BUSINESS PROBLEM the reader faces before diving into technical definitions.
+   • Adopt an angle for a specific persona – choose one that best fits the topic (e.g., Marketer, Videographer, Teacher) and speak to their daily challenges.
 2. Provide at least four practical sections (use <h2>, <h3>) that focus on real-world scenarios, tips, and best practices for users (content creators, marketers, educators, accessibility leads). Avoid heavy code snippets; prefer plain-English walkthroughs, checklists, and actionable advice.
 3. Intersperse best-practice tips and pitfalls to avoid. Include short illustrative examples only if they add value (no long code blocks).
 4. Integrate HappyScribe product mentions naturally (Automatic transcription, Human-made subtitles, API, Subtitle editor, etc.). Include at least three internal links using <a href="#">placeholder</a>.
 5. Headings must use Sentence case; acronyms like FFMPEG, SRT, VTT must be uppercase. No bland headings like "Conclusion".
-6. Use basic HTML only (no markdown) and do not use the em dash (—).
-7. At the end of the article, add a 'Frequently Asked Questions' section (<h2>) with 3-5 relevant questions, formatted as a Bootstrap 5 accordion.
+6. Insert a **Key takeaways** block just before the FAQ:<br><h2>Key takeaways</h2><ul><li>…</li><li>…</li><li>…</li></ul>
+7. Use basic HTML only (no markdown) and do not use the em dash (—).
+8. At the end of the article, add a 'Frequently Asked Questions' section (<h2>) with 3-5 relevant questions, formatted as a Bootstrap 5 accordion.
 
 Return STRICT valid HTML (no wrapper tags). 
+
+Additional formatting rules (strict):
+- Headings: use <h2> tags only, Sentence case (capitalize first letter and proper nouns only). Do NOT use ALL CAPS.
+- Forbidden: Markdown syntax, en/em dashes (–, —), placeholders.
+- Lists: use <ul><li>…</li></ul>; never use HTML entity &amp;bull;. For ordered steps, use <ol><li>…</li></ol>.
+- <h2> headings must be evocative and descriptive – avoid generic titles like "Introduction" or "Further reading".
+- Split paragraphs: no paragraph longer than 7 lines; insert a blank line between paragraphs for readability.
+- Use <strong> sparingly to emphasize key points (do not use **).
+- The final <h2> serves as a conclusion but must NOT contain the word "conclusion"; craft an original forward-looking title instead.
+- The last sentence of the article must be wrapped in <i>…</i> and provide a high-level summary. 

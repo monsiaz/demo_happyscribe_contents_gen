@@ -36,3 +36,13 @@ Return STRICT valid JSON with exactly these keys and nothing more:
   "blog_ideas": [ {"title": "...", "meta": "..."}, ... 10 items ],
   "use_cases": [ {"name": "...", "description": "..."}, ... 10 items ]
 } 
+
+Additional formatting rules (strict):
+- Headings: use <h2> tags only, Sentence case; no ALL CAPS.
+- Forbidden: Markdown syntax, en/em dashes (–, —), placeholders.
+- Lists: use <ul><li>…</li></ul> or <ol><li>…</li></ol>; never use &amp;bull; entity.
+- <h2> headings must be evocative and descriptive – avoid generic words like "Introduction", "Summary".
+- Split paragraphs: no more than 7 lines; ensure blank line between paragraphs.
+- Use <strong> to highlight essential points (no **).
+- Final <h2> serves as wrap-up; avoid the word "conclusion".
+- Last sentence before the FAQ must be in italics (<i>) and give a high-level summary. 

@@ -3,6 +3,12 @@ Generate a detailed (~2300 words) landing page for the professional use case bel
 Use case name: "${USE_NAME}"
 Conversion context: "${F1} to ${F2}"
 
+Other planned blog titles for context (avoid overlap):
+${ALL_BLOGS}
+
+Full list of use cases planned for this cluster:
+${ALL_USES}
+
 Requirements
 - Editorial Guidelines:
 - Tone: Friendly, enthusiastic, and conversational, yet professional. Position HappyScribe as a thought leader. Speak directly to the reader (e.g., "you'll learn," "we'll dive into").
@@ -11,10 +17,23 @@ Requirements
 - Structure: Start the introduction by clearly stating the purpose of the use case. Use questions in sub-headers (<h2>, <h3>) to guide the reader. Use bullet points and lists to improve readability.
 
 1. Open with a scenario that explains why this conversion is important for the industry segment.
+   • Lead with the concrete business pain the target persona is facing (Marketer, Videographer, Teacher, etc.).
 2. Provide a clear, step-by-step workflow (tools or online platforms) that a professional audience can follow without requiring extensive coding. Mention HappyScribe features where relevant rather than showing full API scripts.
 3. Highlight at least three HappyScribe features that improve this workflow (subtitle editor, AI notetaker, API, etc.).
-4. Add a 'Mini FAQ' section (<h3>) with 3 relevant question-answer pairs, formatted as a Bootstrap 5 accordion (answers visible by default).
-5. Use Sentence case for headings, with acronyms in uppercase. Do not use the em dash (—).
-6. Use basic HTML only and no generic headings like "Conclusion".
+4. Add a visually distinct **Key takeaways** block (<h3>Key takeaways</h3><ul>…) with 3 bullets just before the Mini FAQ.
+5. Add an info highlight box near the top with the statistic: <p class="alt-bg">💡 83% of viewers watch videos on mute — captions are essential.</p>
+6. Add a 'Mini FAQ' section (<h3>) with 3 relevant question-answer pairs, formatted as a Bootstrap 5 accordion (answers visible by default).
+7. Use Sentence case for headings, with acronyms in uppercase. Do not use the em dash (—).
+8. Use basic HTML only and no generic headings like "Conclusion".
 
 Return STRICT valid HTML (no wrapper tags). 
+
+Additional formatting rules (strict):
+- Headings: use <h2> tags only, Sentence case – no ALL CAPS.
+- Forbidden: Markdown syntax, en/em dashes (–, —), placeholders.
+- Lists: use <ul><li>…</li></ul>; for numbered lists use <ol><li>…</li></ol>; never use &amp;bull;.
+- <h2> headings must be evocative and descriptive – avoid generic titles like "Introduction".
+- Split paragraphs: max 7 lines each; blank line between paragraphs.
+- Highlight key ideas with <strong> (no **).
+- Final <h2> acts as conclusion but must avoid the word "conclusion".
+- Final sentence of the page must be italicised (<i>…</i>) summarising the piece. 
