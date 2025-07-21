@@ -195,11 +195,20 @@ class SEOGenerator:
         # If we don't expect JSON, return HTML directly
         if not expect_json:
             logging.debug("Not expecting JSON, returning HTML directly")
-            # Validate that it looks like HTML content
-            if not cleaned.strip().startswith('<') or len(cleaned) < 100:
-                logging.warning("Content doesn't look like proper HTML: %s", repr(cleaned[:200]))
-                return f"<p>Error: Invalid content generated. Expected HTML but got: {cleaned[:100]}...</p>", [], [], []
-            return cleaned, [], [], []
+            # Apply HTML cleaning first
+            cleaned_html = _ensure_html(cleaned)
+            
+            # More flexible validation for HTML content
+            if len(cleaned_html.strip()) < 50:
+                logging.warning("Content too short: %d chars", len(cleaned_html))
+                return f"<p>Error: Generated content too short ({len(cleaned_html)} chars). Retrying...</p>", [], [], []
+            
+            # If it doesn't start with HTML tag, wrap it
+            if not cleaned_html.strip().startswith('<'):
+                logging.debug("Content doesn't start with HTML tag, wrapping...")
+                cleaned_html = f"<div>{cleaned_html}</div>"
+                
+            return cleaned_html, [], [], []
         
         # Try parsing JSON; fallback to Python literal eval if it fails
         try:
@@ -544,8 +553,12 @@ async def main() -> None:
             if first_tag != -1:
                 txt = txt[first_tag:]
         
-        # If already HTML with headings
+        # If already HTML with headings, return as-is
         if txt.startswith('<') and '<h' in txt:
+            return txt
+            
+        # If starts with HTML tag (any), return as-is
+        if txt.startswith('<') and '>' in txt:
             return txt
             
         # Handle JSON wrapped content
@@ -570,9 +583,16 @@ async def main() -> None:
         
         # Remove ``` fences
         if txt.startswith('```'):
-            txt = txt.lstrip('`').split('```', 1)[-1]
+            lines = txt.split('\n')
+            # Remove first line (```html, ```json, etc.)
+            if len(lines) > 1:
+                lines = lines[1:]
+            # Remove last ``` if present
+            if lines and lines[-1].strip() == '```':
+                lines = lines[:-1]
+            txt = '\n'.join(lines).strip()
             
-        # Try regex extraction
+        # Try regex extraction for quoted content
         m = _html_re.search(txt)
         if m:
             html_escaped = m.group(1)
@@ -581,8 +601,19 @@ async def main() -> None:
             except Exception:
                 pass
             return html_escaped
-            
-        return raw
+        
+        # If it looks like broken JSON or template code, try to extract HTML
+        if '{' in txt and '}' in txt:
+            # Look for HTML content within the response
+            html_match = re.search(r'<h[1-6][^>]*>.*?</.*?>', txt, re.DOTALL)
+            if html_match:
+                # Find the start of HTML content
+                start = txt.find('<h')
+                if start != -1:
+                    return txt[start:]
+        
+        # Return cleaned text
+        return txt
 
     # CTA stripping helper removed – prompts no longer generate marketing calls
 
@@ -634,7 +665,7 @@ async def main() -> None:
             return txt
         
         # First, preserve known acronyms
-        acronyms = ['SRT', 'VTT', 'HTML', 'CSS', 'API', 'JSON', 'XML', 'HTTP', 'HTTPS', 'URL', 'SEO', 'AI', 'ML', 'CI', 'CD', 'DVD', 'TV', 'HD', 'MP4', 'AVI', 'MOV', 'WEBM', 'FFMPEG', 'UTF', 'ASCII', 'WEBVTT']
+        acronyms = ['SRT', 'VTT', 'HTML', 'CSS', 'API', 'JSON', 'XML', 'HTTP', 'HTTPS', 'URL', 'SEO', 'AI', 'ML', 'CI', 'CD', 'DVD', 'TV', 'HD', 'MP4', 'AVI', 'MOV', 'WEBM', 'FFMPEG', 'UTF', 'ASCII', 'WEBVTT', 'HAPPYSCRIBE']
         
         # Split into words
         words = txt.split()
@@ -646,14 +677,17 @@ async def main() -> None:
             
             if clean_word in acronyms:
                 # Preserve acronym case but keep original punctuation
-                result.append(word.upper() if clean_word == word.upper() else 
-                            re.sub(r'[a-zA-Z]+', clean_word, word))
+                punctuation = re.sub(r'[a-zA-Z]', '', word)
+                result.append(clean_word + punctuation)
             elif i == 0:
-                # Capitalize first word
+                # Always capitalize first word completely
                 result.append(word.capitalize())
             else:
-                # Lowercase other words
-                result.append(word.lower())
+                # Lowercase other words except proper nouns
+                if word.lower() in ['happyscribe', 'github', 'youtube', 'vimeo', 'premiere', 'pro', 'windows', 'mac', 'linux']:
+                    result.append(word.capitalize())
+                else:
+                    result.append(word.lower())
         
         return ' '.join(result)
 
@@ -705,9 +739,27 @@ async def main() -> None:
                 ALL_USES="\n".join(all_use_names),
                 STAT_INFO=stat_info,)
             model_to_use = BASE_MODEL
-            body_html, *_ = await generator._single_call(
-                SYSTEM_MESSAGE, prompt, model_override=model_to_use, expect_json=False
-            )
+            
+            # Retry logic for content generation
+            max_retries = 2
+            for retry in range(max_retries):
+                try:
+                    body_html, *_ = await generator._single_call(
+                        SYSTEM_MESSAGE, prompt, model_override=model_to_use, expect_json=False
+                    )
+                    # Check if content is valid
+                    if "Error:" not in body_html and len(body_html.strip()) > 200:
+                        break
+                    elif retry < max_retries - 1:
+                        logging.warning("Blog content invalid for %s, retrying (%d/%d)", fname, retry + 1, max_retries)
+                        await asyncio.sleep(1)
+                except Exception as e:
+                    if retry < max_retries - 1:
+                        logging.warning("Blog generation failed for %s, retrying: %s", fname, e)
+                        await asyncio.sleep(2)
+                    else:
+                        body_html = f"<h1>{title_b}</h1><p>Content generation failed after {max_retries} attempts. Please regenerate this page.</p>"
+            
             nav_back = f'<p><a href="{landing_fname}">&larr; Back to converter landing</a></p>'
             extra_links = "<h2>More Articles</h2><ul>" + "".join(
                 f'<li><a href="{f}">{t}</a></li>' for f, t, _ in blog_links if f != fname
@@ -731,9 +783,27 @@ async def main() -> None:
                 STAT_INFO=stat_info,
             )
             model_to_use = BASE_MODEL
-            body_html, *_ = await generator._single_call(
-                SYSTEM_MESSAGE, prompt, model_override=model_to_use, expect_json=False
-            )
+            
+            # Retry logic for content generation
+            max_retries = 2
+            for retry in range(max_retries):
+                try:
+                    body_html, *_ = await generator._single_call(
+                        SYSTEM_MESSAGE, prompt, model_override=model_to_use, expect_json=False
+                    )
+                    # Check if content is valid
+                    if "Error:" not in body_html and len(body_html.strip()) > 200:
+                        break
+                    elif retry < max_retries - 1:
+                        logging.warning("Use case content invalid for %s, retrying (%d/%d)", fname, retry + 1, max_retries)
+                        await asyncio.sleep(1)
+                except Exception as e:
+                    if retry < max_retries - 1:
+                        logging.warning("Use case generation failed for %s, retrying: %s", fname, e)
+                        await asyncio.sleep(2)
+                    else:
+                        body_html = f"<h1>{name_u}</h1><p>Content generation failed after {max_retries} attempts. Please regenerate this page.</p>"
+            
             nav_back = f'<p><a href="{landing_fname}">&larr; Back to converter landing</a></p>'
             extra_links = "<h2>More Use Cases</h2><ul>" + "".join(
                 f'<li><a href="{f}">{n}</a></li>' for f, n, _ in use_links if f != fname

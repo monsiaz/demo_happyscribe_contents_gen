@@ -12,11 +12,11 @@ Output must be STRICT valid HTML (no wrapper tags). All content must be in Engli
      </tbody>
    </table>
 
-2. Below the table, add an <h2>"📂 Usage guide: which format to choose?"</h2> followed by an HTML table with class="comp-table":
-   <table class="comp-table">
-     <thead>
-       <tr><th>Use case</th><th>Recommendation</th><th>Persona</th></tr>
-     </thead>
+2. Below the table, add an <h2>"📂 Usage guide: which format to choose?"</h2> followed by an HTML table with class="usage-table":
+<table class="usage-table">
+  <thead>
+    <tr><th>Use case</th><th>Recommendation</th><th>Persona</th></tr>
+  </thead>
      <tbody>
        [Provide exactly 10 varied rows covering: web development, TV broadcast, e-learning, social media, accessibility, streaming, mobile apps, corporate training, video conferencing, podcasting]
      </tbody>
